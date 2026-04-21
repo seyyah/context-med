@@ -317,6 +317,14 @@ curator eval --suite eval/known-good/ eval/known-bad/
 
 Tüm bilinen-iyi kaynakların geçtiğini, bilinen-kötü kaynakların reddedildiğini doğrular. Yeni kural değişikliği bu testten geçmeden aktive olmaz.
 
+### Senaryo 5 — Tarayıcı İçi Bağımsız Kürasyon (context-gate-ext)
+
+Sistem mimarisi yalnızca yerelleştirilmiş bir `context-core` pipeline'ına hizmet etmek zorunda değildir. Bir Chrome Eklentisi (`context-gate-ext`) formuna bürünerek `context-core`'dan bağımsız bir şekilde dış web uygulamalarında da çalışabilir.
+
+Örneğin, kullanıcı Gemini veya ChatGPT'ye yapılandırılmamış, uzun ve dağınık bir metin (text) belgesi yüklemek istediğinde eklenti upload anında araya girer. Kullanıcıdan kısa bir niyet tanımı alır ve şuna benzer otonom bir destek sunar: *"Bu belgede odaklanmak istediğiniz konu dışında kalan gürültülü metinleri (ör: toplantı dışı sohbetler) ayıklayıp, rafine edilmiş temiz bir 'Source' üreterek LLM'e yüklememi ister misiniz?"* 
+
+Kullanıcı onayladığında, belgenin ham hali tarayıcı düzeyinde SWOT analizinden geçirilir ve gereksiz bölümler budanarak yalnızca ilgili, temiz metin LLM'in promptuna/bağlamına iletilir. Bu sayede üretken yapay zekanın girdi kalitesi güvence altına alınmış olur.
+
 ---
 
 ## 8. Ne Yapmaz (What It Does Not Do)
