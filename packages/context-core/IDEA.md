@@ -1,6 +1,6 @@
 # context-core
 
-*Ham kaynaktan (PDF, URL, ses, tez planı) context-wiki derleme, intent sınıflandırma ve çıktı modüllerine yönlendirme: context-va → context-paper → context-slides zincirinin paylaşılan altyapısı ve koordinatörü.*
+*Ham kaynaktan (PDF, URL, ses, tez planı) context-wiki derleme, intent sınıflandırma ve çıktı modüllerine (context-va, context-paper, context-slides ve ekosistem eklentilerine) yönlendirme zincirinin paylaşılan altyapısı ve koordinatörü.*
 
 > Bu belge IDEA standardını takip eder. Alt-sistemlerin içeriğini tekrar etmez; yalnızca aralarındaki bağı, paylaşılan altyapıyı ve orkestrasyon mantığını tanımlar. context-va, context-paper, context-slides ve context-wiki detayları kendi dosyalarında yaşar — buraya referans verilir, kopyalanmaz.
 
@@ -23,7 +23,7 @@ Bu dört adım hiçbir alt-sistemin kendi dosyasında tanımlanmamıştır. Nexu
 
 ## 2. Paylaşılan Altyapı
 
-Nexus'un altyapısı soldan sağa dört katmandan oluşur. Her katmanın ayrı bir dosyası vardır; burada yalnızca sınırları ve sırası tanımlanır:
+context-med'un altyapısı soldan sağa dört katmandan oluşur. Her katmanın ayrı bir dosyası vardır; burada yalnızca sınırları ve sırası tanımlanır:
 
 ```
 Ham Kaynak
@@ -86,9 +86,11 @@ Kullanıcı çıktı tipini açıkça belirtebilir ya da belirtmeyebilir. contex
 
 | Intent | Modül | Girdi Koşulu |
 |--------|-------|-------------|
-| `graphical-abstract` | context-va | PDF manuscript mevcut |
-| `manuscript` | context-paper | Grafik özet veya tez planı mevcut |
-| `presentation` | context-slides | context-va JSON veya manuscript mevcut |
+| `graphical-abstract` | context-va (Infographic/SVG) | PDF manuscript mevcut |
+| `manuscript` | context-paper (Executive Summary/Report) | Grafik özet veya tez planı mevcut |
+| `presentation` | context-slides (PPTX Destesi) | context-va JSON veya manuscript mevcut |
+| `education-kit` | context-edu (Quiz, FAQ, Worksheet) | Herhangi bir micro-wiki mevcut |
+| `media-script` | context-audio (Podcast/Audio-Script) | Herhangi bir micro-wiki mevcut |
 | `qa` | context-wiki runtime | Herhangi bir micro-wiki mevcut |
 | `chain` | context-va → context-paper → context-slides | PDF manuscript, hedef format = "tam zincir" |
 
@@ -117,7 +119,26 @@ Zincirin herhangi bir noktasından başlanabilir:
 
 ---
 
-## 4. Veri Kontratları (Interfaces)
+## 4. Çalışma Zamanı Motoru (Runtime Engine): Generator / Critic Döngüsü
+
+Ham kaynaktan hedef formata (slide, va, paper, quiz vb.) dönüşüm basit bir LLM çağrısı değildir. `context-med`'in ilkel MVP'sinden (`studio-agent`) elde edilen içgörüyle, tüm çıktı modülleri tek bir standart çalışma zamanı motorunu (Runtime Engine) paylaşır:
+
+**Generator / Critic Pipeline (Derleyici Mimarisi):**
+Her veri transformasyonu veya artefakt üretimi şu disiplinle çalışır:
+
+`[Micro-Wiki / Girdi JSON] → Generator(LLM) → Critic(LLM) → [Reviser(LLM)] → Schema Validation → Render → Write(Provenance)`
+
+1. **Sıkı Şema (Strict Schema) Kontratları:** Her çıktı formatının kendine ait bir JSON Schema'sı veya YAML config'i vardır. Jeneratör yapılandırılmış çıktı verir, regex tabanlı uydurmalar kullanılmaz.
+2. **Kritik (Critic) ve Kontrol Geçitleri (Lint / Gate):** Jeneratörün ürettiği taslak doğrudan kullanıcıya verilmez. Çıktı, `knowledge-base` ile karşılaştırılarak bir **Critic** tarafından denetlenir. Halüsinasyon, kaynakta olmayan veri uydurma ve formata uymama durumlarında reddedilir. Yüksek riskli alanlarda (medikal) human-review (insan onayı) geçidi koşulmalıdır.
+3. **Gerçek Artefakt Çıktıları:** Sistem HTML/JSON taklidi yapmaz. Hedef modül native formatı (örn. `.pptx`, `.svg`, native `.md`) üretmekle mükelleftir.
+4. **Re-render ve Versiyonlama (Stale Detection):** Üretilen artefakt yalnızca bir dosya değil; "hangi kaynak hash'inden, hangi şemayla üretildiği" bilgisini (lineage/provenance) taşıyan bir build dosyasıdır. Kaynak PDF veya wiki değiştiğinde, artefakt "stale" (bayat) olur ve kontrollü olarak yeniden derlenir.
+5. **Writeback (Geri Besleme):** Artefakt üretimi tek yönlü değildir. Sık başarısız olan üretimler (örn. sürekli kalitesiz çıkan discussion bölümleri), wiki'deki eksiklikleri tespit etmede bir teşhis aracıdır. Bu hatalar wiki'yi besler.
+
+Bu motor, bir destek chatbot'undan ziyade, deterministik bir **artefakt derleyicisidir (artifact compiler)**. Kullanıcı "bana bunu açıkla" demez; sistemi "bunu çalışma kağıdına çevir", "bunu yönetici özetine çevir", "bunu grafik özete derle" şeklinde araç olarak kullanır. Kaynak veride değişiklik olduğunda tüm zincir yeniden derlenebilir.
+
+---
+
+## 5. Veri Kontratları (Interfaces)
 
 Nexus'un tanımlaması gereken tek şey jeneratörler arası veri formatlarıdır. Her jeneratörün kendi iç formatı kendi dosyasında yaşar; burası yalnızca el sıkışma noktalarını tanımlar.
 
@@ -152,7 +173,7 @@ Bu iki kontrat değişirse, değişiklik burada güncellenir. Modül dosyaları 
 
 ---
 
-## 5. Cerebra ile İlişki
+## 6. Cerebra ile İlişki
 
 `rag-wiki.md` dual-mode'u tanımlar (standalone / cerebra-composed). context-core aynı dual-mode'u miras alır:
 
@@ -163,7 +184,7 @@ Standalone çalışırken Cerebra bağımlılığı yoktur. Cerebra bağlanınca
 
 ---
 
-## 6. Package Conformance
+## 7. Package Conformance
 
 Cerebra ekosisteminde bir modül olarak Nexus şu kontratlara uymalıdır:
 
