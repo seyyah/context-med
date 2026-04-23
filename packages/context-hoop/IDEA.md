@@ -1,4 +1,4 @@
-# context-hoop (human-in-loop MCP)
+# context-hoop (human-in-the-the-loop MCP; HITL)
 
 Aksiyon alan ajanlar için, risk seviyesine göre insan katılımını zorunlu ve denetlenebilir hale getiren, adapter-agnostic bir Model Context Protocol (MCP) orkestrasyon katmanı.
 
