@@ -1,0 +1,15 @@
+# Summary config — 10-minute audio summary format
+duration_min: 10
+format: summary
+audience: healthcare-professional
+language: en
+voice_config:
+  narrator: professional-female
+  emphasis_style: clinical
+sections:
+  - intro: 1min
+  - key_points: 5min
+  - clinical_implications: 2min
+  - limitations: 1min
+  - outro: 1min
+source_citations: timestamps

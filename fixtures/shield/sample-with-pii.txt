@@ -1,0 +1,12 @@
+Dr. Ahmet Yılmaz discussed the case of patient Fatma Kaya (TC: 12345678901),
+a 45-year-old female presenting with chest pain. Her phone number is 0532 123 4567
+and her email is fatma.kaya@email.com.
+
+Lab results showed troponin I at 0.45 ng/mL (normal <0.04). ECG revealed
+ST-segment elevation in leads II, III, and aVF.
+
+Dr. Yılmaz's personal note: "Remember to call the insurance company about the
+MRI reimbursement — my policy number is TR-2026-88421."
+
+The patient was diagnosed with inferior STEMI and transferred to the cath lab.
+PCI was performed successfully with stent placement in the RCA.

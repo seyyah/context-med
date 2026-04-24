@@ -1,0 +1,53 @@
+{
+  "study_id": "af-noac-2026",
+  "title": "Impact of NOAC Therapy on Ischemic Stroke Rates in Atrial Fibrillation",
+  "imrad": {
+    "introduction": {
+      "background": "Atrial fibrillation is the most common sustained arrhythmia affecting 2-4% of adults globally.",
+      "gap": "Real-world Turkish population data on NOAC effectiveness remains limited.",
+      "objective": "To compare ischemic stroke rates among AF patients by anticoagulation strategy."
+    },
+    "methods": {
+      "design": "Retrospective cohort study",
+      "setting": "Ankara University Faculty of Medicine",
+      "period": "January 2022 — December 2024",
+      "population": "245 AF patients",
+      "groups": [
+        {"name": "NOAC", "n": 156},
+        {"name": "Warfarin", "n": 52},
+        {"name": "No anticoagulation", "n": 37}
+      ],
+      "primary_outcome": "Ischemic stroke at 12 months",
+      "statistics": ["Chi-square test", "Multivariate logistic regression"]
+    },
+    "results": {
+      "demographics": {
+        "mean_age": "62.3 ± 11.7",
+        "male_pct": 57.9,
+        "hypertension_pct": 68.2
+      },
+      "primary_outcome": {
+        "overall_events": 14,
+        "overall_rate_pct": 5.7,
+        "by_group": [
+          {"group": "NOAC", "events": 5, "rate_pct": 3.2},
+          {"group": "Warfarin", "events": 4, "rate_pct": 7.7},
+          {"group": "None", "events": 5, "rate_pct": 13.5}
+        ],
+        "p_values": [
+          {"comparison": "NOAC vs None", "p": 0.012},
+          {"comparison": "Warfarin vs None", "p": 0.048}
+        ]
+      }
+    },
+    "discussion": {
+      "main_finding": "NOAC therapy showed significantly lower stroke rates.",
+      "comparison_to_literature": "Consistent with NOAC meta-analysis (Ruff et al., Lancet 2022).",
+      "limitations": [
+        "Retrospective design limits causal inference.",
+        "Single-center study may reduce generalizability.",
+        "Small sample size in no-anticoagulation group."
+      ]
+    }
+  }
+}

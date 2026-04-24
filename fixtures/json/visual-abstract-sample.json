@@ -1,0 +1,39 @@
+{
+  "study_id": "af-noac-2026",
+  "title": "Impact of NOAC Therapy on Ischemic Stroke Rates in Atrial Fibrillation",
+  "authors": ["Yilmaz A", "Kaya F", "Demir M"],
+  "journal_target": "jama",
+  "pico": {
+    "population": "245 AF patients, mean age 62.3 ± 11.7 years, 57.9% male",
+    "intervention": "NOAC therapy (apixaban, rivaroxaban, edoxaban, dabigatran)",
+    "comparator": "Warfarin or no anticoagulation",
+    "outcome": "Ischemic stroke at 12 months"
+  },
+  "key_results": [
+    {
+      "metric": "Ischemic stroke rate (NOAC)",
+      "value": "3.2%",
+      "n": "5/156",
+      "source_quote": "In NOAC group: 5/156 (3.2%)"
+    },
+    {
+      "metric": "Ischemic stroke rate (warfarin)",
+      "value": "7.7%",
+      "n": "4/52",
+      "source_quote": "In warfarin group: 4/52 (7.7%)"
+    },
+    {
+      "metric": "Ischemic stroke rate (no anticoagulation)",
+      "value": "13.5%",
+      "n": "5/37",
+      "source_quote": "In no-anticoagulation group: 5/37 (13.5%)"
+    },
+    {
+      "metric": "p-value (NOAC vs none)",
+      "value": "0.012",
+      "source_quote": "p-value (NOAC vs no anticoagulation): 0.012"
+    }
+  ],
+  "conclusion": "NOAC therapy was associated with significantly lower ischemic stroke rates compared to no anticoagulation.",
+  "conclusion_source_quote": "NOAC therapy was associated with significantly lower ischemic stroke rates compared to no anticoagulation (p=0.012)."
+}

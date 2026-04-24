@@ -1,0 +1,30 @@
+ABSTRACT
+
+Title: Impact of NOAC Therapy on Ischemic Stroke Rates in Atrial Fibrillation:
+A Retrospective Cohort Study
+
+Background: Atrial fibrillation (AF) is the most common sustained arrhythmia and
+a major risk factor for ischemic stroke. Non-vitamin K oral anticoagulants (NOACs)
+have emerged as alternatives to warfarin, but real-world Turkish population data
+remains limited.
+
+Objective: To compare ischemic stroke rates among AF patients receiving NOAC therapy,
+warfarin, or no anticoagulation in a Turkish tertiary care setting.
+
+Methods: This retrospective cohort study included 245 AF patients diagnosed at
+Ankara University Faculty of Medicine (January 2022 — December 2024). Patients
+were grouped by anticoagulation strategy: NOAC (n=156), warfarin (n=52), and
+no anticoagulation (n=37). Primary outcome was ischemic stroke at 12 months.
+CHA₂DS₂-VASc scores were calculated for all patients. Statistical analysis used
+chi-square test and multivariate logistic regression.
+
+Results: Mean age was 62.3 ± 11.7 years (57.9% male). Ischemic stroke occurred
+in 14 patients (5.7%) at 12 months. The NOAC group had significantly lower stroke
+rates (3.2%) compared to no anticoagulation (13.5%, p=0.012). Warfarin (7.7%)
+showed intermediate results (p=0.048 vs no anticoagulation).
+
+Conclusion: NOAC therapy was associated with significantly lower stroke rates in
+Turkish AF patients. These findings support NOAC use as first-line anticoagulation
+in this population.
+
+Keywords: atrial fibrillation, NOAC, stroke prevention, CHA₂DS₂-VASc, Turkey

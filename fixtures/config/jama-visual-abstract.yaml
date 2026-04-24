@@ -1,0 +1,25 @@
+# JAMA Visual Abstract Configuration
+journal: jama
+canvas:
+  width: 1200
+  height: 1800
+  bleed: 36
+palette:
+  primary: "#2B579A"
+  secondary: "#E87722"
+  background: "#FFFFFF"
+  text: "#333333"
+typography:
+  heading: "Source Sans Pro Bold"
+  body: "Source Sans Pro Regular"
+  stats: "Source Sans Pro Bold"
+sections:
+  - header
+  - pico
+  - key_results
+  - conclusion
+  - footer
+constraints:
+  max_text_density: 0.35
+  source_quote_required: true
+  numerical_hallucination_tolerance: 0

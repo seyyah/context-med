@@ -1,0 +1,47 @@
+# ACS Chest Pain — Beginner Scenario
+scenario_id: acs-chest-pain-01
+diagnosis: acute-coronary-syndrome
+difficulty: beginner
+duration_target_min: 12
+
+patient_persona:
+  name: Mehmet
+  age: 58
+  gender: male
+  occupation: teacher
+  medical_literacy: low
+
+presenting_complaint:
+  chief: "I feel a pressure in my chest"
+  onset_min_ago: 30
+
+hidden_clinical_data:
+  vital_signs:
+    bp: "145/90"
+    pulse: 98
+    spo2: 94
+  red_flags:
+    - radiation_to_left_arm
+    - diaphoresis
+    - dyspnea_on_exertion
+  family_history:
+    - father_mi_age_55
+  medications:
+    - metoprolol_50mg_daily
+
+disclosure_rules:
+  must_not_disclose_unless_asked:
+    - family_history
+    - medication_list
+    - smoking_history
+  must_disclose_on_direct_question:
+    - pain_radiation
+    - pain_character
+    - associated_symptoms
+  must_never_disclose:
+    - diagnosis_label
+    - medical_jargon_usage
+
+grounding_sources:
+  - wiki: cardiovascular/atrial-fibrillation.md
+  - wiki: emergency/chest-pain-triage.md
