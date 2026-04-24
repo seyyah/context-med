@@ -587,6 +587,31 @@ context-gate ingest \
 **Expected:** Prints profiling plan (detected format, page count, domain). No files written.
 **Exit Code:** `0`
 
+
+#### Scenario (Extension) — Invalid Config (Error)
+
+```bash
+context-gate ingest \
+  --input fixtures/raw/sample-text.txt \
+  --output output/error.json \
+  --config fixtures/config/corrupt-config.yaml
+```
+
+**Expected:** `Error: Invalid YAML configuration in fixtures/config/corrupt-config.yaml`
+**Exit Code:** `1`
+
+
+#### Scenario (Extension) — Schema / Validation Check (Error)
+
+```bash
+context-gate ingest \
+  --input fixtures/json/invalid-schema-sample.json \
+  --output output/failed.json
+```
+
+**Expected:** `Error: Validation failed — schema mismatch or hallucination detected.`
+**Exit Code:** `2`
+
 ### Exit Codes
 
 | Code | Meaning | Example |

@@ -1,0 +1,15 @@
+{
+  "title": "Sample Structural output without source quote",
+  "abstract": "This is a dummy text.",
+  "key_results": [
+    {
+      "finding": "The overall risk ratio was 1.45."
+      "error_missing_comma": true
+    },
+    {
+      "finding": "There was a significant improvement.",
+      "source_quote": "" 
+    }
+  ],
+  "__meta": "This file intentionally violates JSON syntax (missing comma) AND schema rules (empty source_quote) for test purposes."
+}

@@ -1,0 +1,12 @@
+name: Sample Configuration
+version: 1.0
+type: corrupt_test
+fields:
+  - id: title
+    label: Title
+    type: string
+  - id: missing_indent
+  label: This is incorrectly indented
+  type: bad_yaml
+  - broken list item
+[invalid json mixed in]

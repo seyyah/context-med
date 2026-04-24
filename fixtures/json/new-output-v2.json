@@ -1,0 +1,9 @@
+{
+  "version": "2.0",
+  "eval_score": 82, 
+  "metrics": {
+    "fluency": 0.95,
+    "accuracy": 0.79 
+  },
+  "content": "New output generated from latest model, deliberately showing an accuracy drop for eval failure testing."
+}

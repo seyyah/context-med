@@ -1,0 +1,9 @@
+{
+  "version": "1.0",
+  "eval_score": 85,
+  "metrics": {
+    "fluency": 0.9,
+    "accuracy": 0.82
+  },
+  "content": "Baseline text generated from previous stable model."
+}
