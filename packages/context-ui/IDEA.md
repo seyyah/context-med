@@ -184,3 +184,88 @@ Standalone modda context-ui, context-core'un local API'ına bağlanır. Aynı ar
 | Graphical abstract çıktısı | `context-va.md` |
 | Manuscript çıktısı | `context-paper.md` |
 | Sunum çıktısı | `context-slides.md` |
+
+---
+
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-ui",
+  "version": "0.1.0",
+  "bin": { "context-ui": "./bin/cli.js" },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-ui serve` | Start development server | | `--port`, `--verbose` |
+| `context-ui build` | Build production bundle | `--output` | `--format`, `--verbose` |
+| `context-ui lint` | Lint UI components and accessibility | `--input` | `--format`, `--verbose` |
+| `context-ui status` | Check API backend connectivity | | `--format`, `--verbose` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Start Dev Server
+
+```bash
+context-ui serve --port 3000
+```
+
+**Expected:** Dev server starts on port 3000.
+**Exit Code:** `0`
+
+#### Scenario 2 — Build Production
+
+```bash
+context-ui build --output dist/
+```
+
+**Expected Output:** Optimized production bundle in `dist/`.
+**Exit Code:** `0`
+
+#### Scenario 3 — Lint Components
+
+```bash
+context-ui lint --input src/ --format json
+```
+
+**Expected Output:** JSON report with accessibility issues, unused components.
+**Exit Code:** `0` if pass, `2` if violations.
+
+#### Scenario 4 — Status Check
+
+```bash
+context-ui status --format json
+```
+
+**Expected Output:** JSON with backend API connectivity status for each context-med module.
+**Exit Code:** `0`
+
+#### Scenario 5 — Build Missing Output (Error)
+
+```bash
+context-ui build
+```
+
+**Expected:** `Error: required option '--output <path>' not specified`
+**Exit Code:** `1`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Server started / build complete |
+| `1` | General error | Missing argument, build failure |
+| `2` | Validation error | Accessibility violations |
+| `3` | External dependency error | Backend API unreachable |

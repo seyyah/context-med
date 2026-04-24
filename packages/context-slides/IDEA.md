@@ -327,4 +327,123 @@ Yalnızca konuşmacı notlarını yeniden üretir; slayt içeriğine dokunmaz. "
 
 ---
 
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-slides",
+  "version": "0.1.0",
+  "bin": { "context-slides": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-slides generate` | Generate slide deck from wiki/JSON source | `--input`, `--output` | `--config`, `--format`, `--language`, `--dry-run` |
+| `context-slides convert` | Convert deck between formats | `--input`, `--output`, `--format` | `--verbose` |
+| `context-slides compare` | Compare two deck versions | `--input`, `--baseline` | `--output`, `--format` |
+| `context-slides speaker-notes` | Generate speaker notes for existing deck | `--input`, `--output` | `--config`, `--duration`, `--language` |
+| `context-slides batch` | Batch generate decks from directory | `--input`, `--output` | `--config`, `--concurrency` |
+| `context-slides eval` | Ratchet evaluation against baseline | `--input`, `--baseline` | `--output`, `--format` |
+
+### Additional Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--duration` | `string` | `10min` | Target presentation duration |
+| `--slide-count` | `number` | `auto` | Target number of slides |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Generate Deck
+
+```bash
+context-slides generate \
+  --input fixtures/json/manuscript-imrad-sample.json \
+  --output output/deck.json \
+  --config fixtures/config/conference-10min.yaml \
+  --format json
+```
+
+**Input:** Structured IMRaD JSON.
+**Expected Output:** JSON slide deck with title, content, and layout per slide.
+**Exit Code:** `0`
+
+#### Scenario 2 — Convert to PPTX
+
+```bash
+context-slides convert \
+  --input output/deck.json \
+  --output output/deck.pptx \
+  --format pptx
+```
+
+**Input:** JSON slide deck.
+**Expected Output:** PowerPoint file.
+**Exit Code:** `0`
+
+#### Scenario 3 — Generate Speaker Notes
+
+```bash
+context-slides speaker-notes \
+  --input output/deck.json \
+  --output output/deck-with-notes.json \
+  --duration 10min
+```
+
+**Expected Output:** Deck JSON with `speaker_notes` field per slide, timed for target duration.
+**Exit Code:** `0`
+
+#### Scenario 4 — Compare Versions
+
+```bash
+context-slides compare \
+  --input output/deck-v2.json \
+  --baseline output/deck-v1.json \
+  --format json
+```
+
+**Expected Output:** Diff report showing added/removed/changed slides.
+**Exit Code:** `0`
+
+#### Scenario 5 — Missing Input (Error)
+
+```bash
+context-slides generate --output output/deck.json
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 6 — Dry Run
+
+```bash
+context-slides generate \
+  --input fixtures/json/manuscript-imrad-sample.json \
+  --output output/deck.json \
+  --dry-run
+```
+
+**Expected:** Prints generation plan (slide count, sections). No files written.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Deck generated/converted |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | source_quote missing in content |
+| `3` | External dependency error | LLM API timeout |
+
+---
+
 > **Living Artifact Notu.** Bu belge yaşayan bir artefakttır. Yeni konferans config dosyaları eklendikçe, SpeakerNotesAgent'ın stil parametreleri genişledikçe ve AutoVA/ManuscriptForge ile entegrasyon derinleştikçe güncellenir. Tezdeki "derleme, üretim değil" çerçevesi değişmedikçe teze dokunma; değiştiyse tezi yeniden yaz, önceki versiyonu `## Eski Tez` olarak altına bırak.

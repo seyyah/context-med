@@ -246,3 +246,108 @@ Bu idea file, social-agent’ın ne yapması gerektiğini ve ne olmaması gerekt
 
 Bu dokümanı LLM ajanına ver, mevcut repo state’ini okumasını iste ve birlikte ilk küçük ama gerçek sosyal akışı seçin. Örneğin yalnızca LinkedIn + X için haftalık plan ve draft üretimiyle başlayın; sonra moderation ve writeback’i ekleyin. Merkez kaybolursa elinde sadece çok yazan bir post botu kalır. Merkez korunursa, zamanla markanın sosyal hafızası ve operasyon katmanı birlikte güçlenir.
 
+
+---
+
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/social-agent",
+  "version": "0.1.0",
+  "bin": { "social-agent": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `social-agent plan` | Generate weekly social media plan | `--input`, `--output` | `--config`, `--format`, `--language`, `--dry-run` |
+| `social-agent draft` | Draft posts for specific platform | `--input`, `--output` | `--config`, `--platform`, `--format` |
+| `social-agent moderate` | Moderate incoming comments/messages | `--input`, `--output` | `--config`, `--format`, `--verbose` |
+| `social-agent batch` | Batch draft for multiple platforms | `--input`, `--output` | `--config`, `--concurrency` |
+| `social-agent eval` | Ratchet evaluation against baseline | `--input`, `--baseline` | `--output`, `--format` |
+
+### Additional Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--platform` | `string` | `linkedin` | Platform: `linkedin` \| `x` \| `instagram` \| `tiktok` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Generate Weekly Plan
+
+```bash
+social-agent plan \
+  --input fixtures/wiki/cardiovascular/atrial-fibrillation.md \
+  --output output/social-plan.json \
+  --format json
+```
+
+**Input:** Wiki content as source material.
+**Expected Output:** JSON weekly plan with post topics, platforms, and timing.
+**Exit Code:** `0`
+
+#### Scenario 2 — Draft Platform-Specific Posts
+
+```bash
+social-agent draft \
+  --input output/social-plan.json \
+  --output output/linkedin-posts.json \
+  --platform linkedin \
+  --format json
+```
+
+**Input:** Social plan JSON.
+**Expected Output:** Platform-adapted post drafts.
+**Exit Code:** `0`
+
+#### Scenario 3 — Moderate Comments
+
+```bash
+social-agent moderate \
+  --input input/comments-batch.json \
+  --output output/moderation-report.json \
+  --format json
+```
+
+**Expected Output:** JSON moderation report with approve/flag/escalate decisions.
+**Exit Code:** `0`
+
+#### Scenario 4 — Missing Input (Error)
+
+```bash
+social-agent plan --output output/plan.json
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 5 — Dry Run
+
+```bash
+social-agent plan \
+  --input fixtures/wiki/cardiovascular/atrial-fibrillation.md \
+  --output output/plan.json \
+  --dry-run
+```
+
+**Expected:** Prints plan overview (topic count, platforms). No files written.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Plan generated, posts drafted |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | Brand guideline violation, content policy |
+| `3` | External dependency error | Platform API timeout |

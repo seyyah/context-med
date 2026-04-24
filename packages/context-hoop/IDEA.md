@@ -96,3 +96,103 @@ Ajanı tamamen kapatmaya gerek kalmadan, üretim ortamında oluşan hatalı RAG 
 - MCP adapter seçimi runtime'da context üzerinden geliyor (şu an 'slack'), ileride tenant config'ine bağlanması için ne gerekiyor?
 - İnsan onayı/yanıtı için ayrılmış süre dilimi (örn 10 dakika) aşıldığında UI üzerinde nasıl bir fallback State'e gidilecek?
 - RAG "ingest" operasyonunda insan kararlarının kalıcılığı ve versiyonlanması sağlanırken, birden fazla uzman görüşünda Conflict Resolution nasıl idare edilecek?
+
+---
+
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-hoop",
+  "version": "0.1.0",
+  "bin": { "context-hoop": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-hoop trigger` | Trigger HITL escalation for a task | `--input` | `--config`, `--format`, `--dry-run` |
+| `context-hoop status` | Check status of pending escalations | | `--format`, `--verbose` |
+| `context-hoop approve` | Approve a pending escalation | `--input` | `--format`, `--verbose` |
+| `context-hoop reject` | Reject a pending escalation with feedback | `--input` | `--format`, `--verbose` |
+| `context-hoop lint` | Validate HITL configuration | `--input` | `--format`, `--verbose` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Trigger Escalation
+
+```bash
+context-hoop trigger \
+  --input output/risky-extraction.json \
+  --format json
+```
+
+**Input:** JSON task result flagged for human review.
+**Expected Output:** Escalation ticket ID, notification sent via configured MCP adapter (Slack/email).
+**Exit Code:** `0`
+
+#### Scenario 2 — Check Pending Status
+
+```bash
+context-hoop status --format json
+```
+
+**Expected Output:** JSON array of pending escalations with IDs, timestamps, and urgency levels.
+**Exit Code:** `0`
+
+#### Scenario 3 — Approve Escalation
+
+```bash
+context-hoop approve \
+  --input escalation-12345.json
+```
+
+**Expected Output:** Approval confirmed, writeback triggered.
+**Exit Code:** `0`
+
+#### Scenario 4 — Missing Input (Error)
+
+```bash
+context-hoop trigger
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 5 — Nonexistent Escalation (Error)
+
+```bash
+context-hoop approve --input nonexistent-escalation.json
+```
+
+**Expected:** `Error: Input file not found: nonexistent-escalation.json`
+**Exit Code:** `1`
+
+#### Scenario 6 — Dry Run
+
+```bash
+context-hoop trigger \
+  --input output/risky-extraction.json \
+  --dry-run
+```
+
+**Expected:** Prints escalation plan (adapter, recipients, urgency). No notification sent.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Escalation triggered/approved |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | Invalid escalation state |
+| `3` | External dependency error | MCP adapter unreachable |
+

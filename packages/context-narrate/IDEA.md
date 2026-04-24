@@ -488,6 +488,121 @@ acaVibe "Tinder for research papers" iken, context-narrate **"Tinder for medical
 
 ---
 
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-narrate",
+  "version": "0.1.0",
+  "bin": { "context-narrate": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-narrate generate` | Generate audio narrative from wiki content | `--input`, `--output` | `--config`, `--format`, `--language`, `--dry-run` |
+| `context-narrate faq` | Generate FAQ-style audio from wiki | `--input`, `--output` | `--config`, `--format`, `--language` |
+| `context-narrate batch` | Batch generate audio for multiple wiki pages | `--input`, `--output` | `--config`, `--concurrency` |
+| `context-narrate eval` | Ratchet evaluation of audio quality | `--input`, `--baseline` | `--output`, `--format` |
+
+### Additional Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--voice` | `string` | `professional-female` | Voice profile for TTS |
+| `--duration` | `string` | `auto` | Target duration (e.g., `10min`, `auto`) |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Generate Audio Summary
+
+```bash
+context-narrate generate \
+  --input fixtures/wiki/cardiovascular/atrial-fibrillation.md \
+  --output output/narrate-af.mp3 \
+  --config fixtures/config/summary-10min.yaml \
+  --format mp3
+```
+
+**Input:** Wiki page markdown.
+**Expected Output:** MP3 audio file with structured narration (intro, key points, implications, outro).
+**Exit Code:** `0`
+
+#### Scenario 2 — FAQ-style Audio
+
+```bash
+context-narrate faq \
+  --input fixtures/wiki/emergency/chest-pain-triage.md \
+  --output output/faq-chest-pain.mp3 \
+  --language en
+```
+
+**Input:** Wiki page.
+**Expected Output:** Q&A format audio covering key clinical questions from the wiki.
+**Exit Code:** `0`
+
+#### Scenario 3 — Batch Processing
+
+```bash
+context-narrate batch \
+  --input fixtures/wiki/ \
+  --output output/narrate-batch/ \
+  --config fixtures/config/summary-10min.yaml
+```
+
+**Input:** Directory of wiki pages.
+**Expected Output:** One audio file per wiki page in `output/narrate-batch/`.
+**Exit Code:** `0`
+
+#### Scenario 4 — Missing Input (Error)
+
+```bash
+context-narrate generate --output output/audio.mp3
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 5 — Nonexistent Input (Error)
+
+```bash
+context-narrate generate --input nonexistent.md --output output/audio.mp3
+```
+
+**Expected:** `Error: Input file not found: nonexistent.md`
+**Exit Code:** `1`
+
+#### Scenario 6 — Dry Run
+
+```bash
+context-narrate generate \
+  --input fixtures/wiki/cardiovascular/atrial-fibrillation.md \
+  --output output/audio.mp3 \
+  --dry-run
+```
+
+**Expected:** Prints narration plan (sections, voice, estimated duration). No files written.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Audio generated |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | Script too short for target duration |
+| `3` | External dependency error | TTS API timeout |
+
+---
+
 > **Living Artifact Notu.** Bu belge yaşayan bir artefakttır. Yeni TTS engine'leri eklendikçe, ses profili çeşitliliği arttıkça, kullanıcı analytics'i daha fazla öğrendikçe güncellenir. Tezdeki "wiki yapısı = senaryo iskeleti, format config = anlatı derinliği" çerçevesi değişmedikçe teze dokunma; değiştiyse tezi yeniden yaz.
 
 ---

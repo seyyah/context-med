@@ -299,4 +299,125 @@ Context-med köküyle ilişki:
 
 ---
 
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-sites",
+  "version": "0.1.0",
+  "bin": { "context-sites": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-sites build` | Build static site from wiki content | `--input`, `--output` | `--config`, `--format`, `--language`, `--dry-run` |
+| `context-sites deploy` | Deploy built site to target | `--input` | `--target`, `--dry-run`, `--verbose` |
+| `context-sites validate` | Validate built site for broken links, missing assets | `--input` | `--format`, `--verbose` |
+| `context-sites lint` | Lint wiki sources for site-readiness | `--input` | `--format`, `--verbose` |
+| `context-sites batch` | Build sites for multiple wiki notebooks | `--input`, `--output` | `--config`, `--concurrency` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Build Site from Wiki
+
+```bash
+context-sites build \
+  --input fixtures/wiki/cardiovascular/ \
+  --output output/site-cardio/ \
+  --format html \
+  --language en
+```
+
+**Input:** Wiki directory with markdown pages.
+**Expected Output:** Static HTML site in `output/site-cardio/` with `index.html`, provenance footer, and navigation.
+**Exit Code:** `0`
+
+#### Scenario 2 — Validate Built Site
+
+```bash
+context-sites validate \
+  --input output/site-cardio/ \
+  --format json
+```
+
+**Input:** Built site directory.
+**Expected Output:** JSON report with broken links, missing assets, accessibility issues.
+**Exit Code:** `0` if all pass, `2` if validation errors found.
+
+#### Scenario 3 — Lint Wiki Sources
+
+```bash
+context-sites lint \
+  --input fixtures/wiki/ \
+  --format json
+```
+
+**Input:** Wiki directory.
+**Expected Output:** JSON report listing pages missing titles, broken internal links, or orphan pages.
+**Exit Code:** `0`
+
+#### Scenario 4 — Dry Run Build
+
+```bash
+context-sites build \
+  --input fixtures/wiki/cardiovascular/ \
+  --output output/site/ \
+  --dry-run
+```
+
+**Expected:** Prints build plan (page count, asset list) to stdout. No files written.
+**Exit Code:** `0`
+
+#### Scenario 5 — Missing Input (Error)
+
+```bash
+context-sites build --output output/site/
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 6 — Empty Wiki Directory (Error)
+
+```bash
+context-sites build \
+  --input empty-dir/ \
+  --output output/site/
+```
+
+**Expected:** `Error: No markdown files found in input directory`
+**Exit Code:** `1`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Site built or validation passed |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | Broken links, missing provenance |
+| `3` | External dependency error | Deploy target unreachable |
+
+### Output Schema (validate)
+
+```json
+{
+  "pages_checked": "number",
+  "broken_links": ["string"],
+  "missing_assets": ["string"],
+  "provenance_missing": ["string"],
+  "pass": "boolean"
+}
+```
+
+---
+
 *Bu dosya yaşayan bir belgedir. Pipeline evrimleştikçe, yeni faz kararları alındıkça veya teknik kısıtlar değiştikçe güncellenmelidir. Son güncelleme: Nisan 2026.*

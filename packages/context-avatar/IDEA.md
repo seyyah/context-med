@@ -649,6 +649,122 @@ v1 birinci önceliktir. v4 vizyoner hedeftir; v1-v3 ticari viabiliteyi kanıtlam
 
 ---
 
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-avatar",
+  "version": "0.1.0",
+  "bin": { "context-avatar": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-avatar render` | Render talking-head video from script+voice | `--input`, `--output` | `--config`, `--format`, `--language`, `--dry-run` |
+| `context-avatar consent` | Verify consent status for voice/face subject | `--input` | `--format`, `--verbose` |
+| `context-avatar preview` | Generate low-res preview with watermark | `--input`, `--output` | `--config`, `--format` |
+| `context-avatar batch` | Batch render multiple videos | `--input`, `--output` | `--config`, `--concurrency` |
+| `context-avatar eval` | Ratchet evaluation of render quality | `--input`, `--baseline` | `--output`, `--format` |
+
+### Additional Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--voice` | `string` | `default` | Voice profile ID for TTS |
+| `--face` | `string` | `default` | Face/avatar profile ID |
+| `--watermark` | `boolean` | `true` | Add watermark overlay |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Render Video
+
+```bash
+context-avatar render \
+  --input fixtures/wiki/cardiovascular/atrial-fibrillation.md \
+  --output output/avatar-video.mp4 \
+  --config fixtures/config/summary-10min.yaml \
+  --format mp4
+```
+
+**Input:** Wiki content as script source.
+**Expected Output:** MP4 video with talking-head avatar narrating content.
+**Exit Code:** `0`
+
+#### Scenario 2 — Consent Verification
+
+```bash
+context-avatar consent \
+  --input consent/subject-001.json \
+  --format json
+```
+
+**Expected Output:** Consent status report (valid/expired/missing).
+**Exit Code:** `0` if valid, `2` if expired or missing.
+
+#### Scenario 3 — Preview with Watermark
+
+```bash
+context-avatar preview \
+  --input fixtures/wiki/cardiovascular/atrial-fibrillation.md \
+  --output output/preview.mp4
+```
+
+**Expected Output:** Low-res video with mandatory watermark overlay.
+**Exit Code:** `0`
+
+#### Scenario 4 — Missing Input (Error)
+
+```bash
+context-avatar render --output output/video.mp4
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 5 — Missing Consent (Error)
+
+```bash
+context-avatar render \
+  --input fixtures/wiki/cardiovascular/atrial-fibrillation.md \
+  --output output/video.mp4 \
+  --voice unconsented-voice-id
+```
+
+**Expected:** `Error: Consent not found for voice profile 'unconsented-voice-id'`
+**Exit Code:** `2`
+
+#### Scenario 6 — Dry Run
+
+```bash
+context-avatar render \
+  --input fixtures/wiki/cardiovascular/atrial-fibrillation.md \
+  --output output/video.mp4 \
+  --dry-run
+```
+
+**Expected:** Prints render plan (script length, voice profile, estimated duration). No files written.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Video rendered |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | Consent missing/expired, watermark bypass attempt |
+| `3` | External dependency error | TTS/Avatar API timeout |
+
+---
+
 > **Living Artifact Notu.** Bu belge yaşayan bir artefakttır. Yeni face/voice render engine'leri, yeni regülasyonlar, yeni consent standartları geldikçe güncellenir. Tezdeki "script + subject + consent = video" denklemi değişmedikçe teze dokunma; değiştiyse tezi yeniden yaz.
 
 ---

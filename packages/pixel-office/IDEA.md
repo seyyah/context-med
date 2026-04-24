@@ -171,3 +171,82 @@ Bu dokümanı LLM ajanına ver, cofounder-office ideasını birlikte okutun, ve 
 - Cost/maliyet stratejisi: event polling tüm runtime'ı sürekli wake ediyorsa battery drain / compute cost üretir. Push-based event bus vs. polling tradeoff'u.
 - Mobile / küçük ekran: pixel-office bir iPad'de çalışır mı? Ofis tek ekrana sığmazsa mimari bozulur mu?
 - Persona görsel farklılaştırması: 10 karakter sprite yetersiz kalabilir — her persona'ya benzersiz aksesuar (gözlük, şapka) sistemi gerekebilir. Yoksa kullanıcı karakterlerin kimi temsil ettiğini karıştırır.
+
+---
+
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/pixel-office",
+  "version": "0.1.0",
+  "bin": { "pixel-office": "./bin/cli.js" },
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `pixel-office serve` | Start pixel office dev server | | `--port`, `--config`, `--verbose` |
+| `pixel-office build` | Build production bundle | `--output` | `--format`, `--verbose` |
+| `pixel-office render` | Render office snapshot image | `--output` | `--config`, `--format` |
+| `pixel-office status` | Show office event stream status | | `--format`, `--verbose` |
+| `pixel-office lint` | Validate sprite assets and event config | `--input` | `--format`, `--verbose` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Start Dev Server
+
+```bash
+pixel-office serve --port 3001
+```
+
+**Expected:** Pixel office UI starts on port 3001.
+**Exit Code:** `0`
+
+#### Scenario 2 — Render Snapshot
+
+```bash
+pixel-office render \
+  --output output/office-snapshot.png \
+  --format png
+```
+
+**Expected Output:** Static PNG image of current office state.
+**Exit Code:** `0`
+
+#### Scenario 3 — Lint Assets
+
+```bash
+pixel-office lint --input assets/ --format json
+```
+
+**Expected Output:** JSON report on sprite assets (missing frames, invalid dimensions).
+**Exit Code:** `0` if pass, `2` if issues.
+
+#### Scenario 4 — Build Missing Output (Error)
+
+```bash
+pixel-office build
+```
+
+**Expected:** `Error: required option '--output <path>' not specified`
+**Exit Code:** `1`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Server started / snapshot rendered |
+| `1` | General error | Missing argument, build failure |
+| `2` | Validation error | Sprite asset missing |
+| `3` | External dependency error | Event bus unreachable |

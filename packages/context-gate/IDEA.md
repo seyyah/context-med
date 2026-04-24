@@ -484,4 +484,118 @@ Eşit koşullarda daha kısa kural kazanır.
 
 ---
 
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-gate",
+  "version": "0.1.0",
+  "bin": { "context-gate": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-gate ingest` | Ingest and profile a single source document | `--input`, `--output` | `--config`, `--format`, `--language`, `--dry-run` |
+| `context-gate batch` | Batch ingest multiple source documents | `--input`, `--output` | `--config`, `--concurrency` |
+| `context-gate eval` | Ratchet evaluation of extraction quality | `--input`, `--baseline` | `--output`, `--format` |
+| `context-gate lint` | Validate provenance and extraction completeness | `--input` | `--format`, `--verbose` |
+| `context-gate compare` | Compare two extraction versions | `--input`, `--baseline` | `--output`, `--format` |
+
+### Additional Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--domain` | `string` | `general` | Clinical domain for profiling |
+| `--risk-threshold` | `number` | `0.7` | Risk threshold for escalation |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Ingest Source
+
+```bash
+context-gate ingest \
+  --input fixtures/raw/sample-paper.txt \
+  --output output/gate-profile.json \
+  --domain cardiovascular \
+  --format json
+```
+
+**Input:** Raw research paper text.
+**Expected Output:** JSON extraction profile with provenance, risk assessment, and extracted data points.
+**Exit Code:** `0`
+
+#### Scenario 2 — Batch Ingestion
+
+```bash
+context-gate batch \
+  --input fixtures/raw/ \
+  --output output/gate-batch/ \
+  --domain cardiovascular
+```
+
+**Input:** Directory of raw documents.
+**Expected Output:** One profile JSON per input. Summary report in `output/gate-batch/summary.json`.
+**Exit Code:** `0`
+
+#### Scenario 3 — Lint Provenance
+
+```bash
+context-gate lint \
+  --input output/gate-profile.json \
+  --format json
+```
+
+**Expected Output:** Provenance validation report (SHA-256 match, source traceability, completeness).
+**Exit Code:** `0` if pass, `2` if violations found.
+
+#### Scenario 4 — Missing Input (Error)
+
+```bash
+context-gate ingest --output output/profile.json
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 5 — Nonexistent Input (Error)
+
+```bash
+context-gate ingest --input nonexistent.pdf --output output/profile.json
+```
+
+**Expected:** `Error: Input file not found: nonexistent.pdf`
+**Exit Code:** `1`
+
+#### Scenario 6 — Dry Run
+
+```bash
+context-gate ingest \
+  --input fixtures/raw/sample-paper.txt \
+  --output output/profile.json \
+  --dry-run
+```
+
+**Expected:** Prints profiling plan (detected format, page count, domain). No files written.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Ingestion completed |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | Provenance mismatch, extraction incomplete |
+| `3` | External dependency error | LLM API timeout |
+
+---
+
 > **Living Artifact Notu.** Bu belge yaşayan bir artefakttır. Extraction sınırları netleştikçe, yeni domain config'leri eklendikçe ve ratchet deneyiminden yeni kısıtlamalar öğrenildikçe güncellenir. Tezdeki "ayıkla, üretme" çerçevesi değişmedikçe teze dokunma; değiştiyse tezi yeniden yaz, önceki versiyonu `## Eski Tez` olarak altına bırak.

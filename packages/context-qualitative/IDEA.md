@@ -419,6 +419,144 @@ Tek bir wiki/raw külliyatından, beş farklı çıktı formatına ulaşan doğr
 
 ---
 
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-qualitative",
+  "version": "0.1.0",
+  "bin": { "context-qualitative": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-qualitative analyze` | Run qualitative analysis on single source | `--input`, `--output` | `--config`, `--format`, `--language`, `--method`, `--dry-run` |
+| `context-qualitative batch` | Process multiple sources via MapReduce | `--input`, `--output` | `--config`, `--concurrency`, `--method` |
+| `context-qualitative eval` | Ratchet evaluation against baseline | `--input`, `--baseline` | `--output`, `--format` |
+| `context-qualitative compile` | Compile analysis results into structured findings | `--input`, `--output` | `--format`, `--language` |
+
+### Standard Flags (additional)
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--method` | `string` | `thematic` | Analysis method: `thematic` \| `phenomenological` \| `content` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Thematic Analysis
+
+```bash
+context-qualitative analyze \
+  --input fixtures/raw/sample-meeting-notes.txt \
+  --output output/qual-themes.json \
+  --method thematic \
+  --format json
+```
+
+**Input:** Raw meeting notes or interview transcript.
+**Expected Output:** JSON with themes, codes, supporting quotes (each with `source_quote`).
+**Exit Code:** `0`
+
+#### Scenario 2 — Batch MapReduce Analysis
+
+```bash
+context-qualitative batch \
+  --input fixtures/raw/ \
+  --output output/qual-batch/ \
+  --method thematic \
+  --concurrency 3
+```
+
+**Input:** Directory of raw text files (Map phase processes each, Reduce phase merges).
+**Expected Output:** Per-file analysis + merged synthesis in `output/qual-batch/synthesis.json`.
+**Exit Code:** `0`
+
+#### Scenario 3 — Ratchet Evaluation
+
+```bash
+context-qualitative eval \
+  --input output/qual-themes-v2.json \
+  --baseline output/qual-themes-v1.json
+```
+
+**Expected:** Comparison report. New version must ≥ baseline coverage.
+**Exit Code:** `0` if pass, `2` if regression detected.
+
+#### Scenario 4 — Missing Input (Error)
+
+```bash
+context-qualitative analyze --output output/qual.json
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 5 — Invalid Method (Error)
+
+```bash
+context-qualitative analyze \
+  --input fixtures/raw/sample-paper.txt \
+  --output output/qual.json \
+  --method grounded-theory
+```
+
+**Expected:** `Error: Invalid method 'grounded-theory'. Valid: thematic, phenomenological, content`
+**Exit Code:** `1`
+
+#### Scenario 6 — Dry Run
+
+```bash
+context-qualitative analyze \
+  --input fixtures/raw/sample-meeting-notes.txt \
+  --output output/qual.json \
+  --dry-run
+```
+
+**Expected:** Prints analysis plan (method, source length, estimated tokens). No files written.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Analysis completed |
+| `1` | General error | Missing file, invalid argument, bad method |
+| `2` | Validation error | source_quote missing, hallucination detected |
+| `3` | External dependency error | LLM API timeout, cross-provider validation failed |
+
+### Output Schema (analyze)
+
+```json
+{
+  "method": "string (thematic|phenomenological|content)",
+  "source_file": "string",
+  "themes": [
+    {
+      "name": "string",
+      "codes": ["string"],
+      "supporting_quotes": [
+        {
+          "text": "string",
+          "source_quote": "string (verbatim from input)",
+          "line_ref": "number"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
 > **Living Artifact Notu.** Bu belge yaşayan bir artefakttır. Yeni analiz çerçeveleri eklendikçe, yeni LLM sağlayıcıları entegre edildikçe, araştırmacı geri bildirimleri pipeline'ı iyileştirdikçe güncellenir. Tezdeki "MapReduce + yerel PII bekçisi + heterojen ajan + çapraz-sağlayıcı validator" çerçevesi değişmedikçe teze dokunma; değiştiyse tezi yeniden yaz.
 
 ---

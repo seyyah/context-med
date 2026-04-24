@@ -924,3 +924,91 @@ Proje Deposu: `/home/seyyah/works/xtatistix/dev/context-med`
 ---
 
 *Bu belge, Turkcell IAMX Dijital İş Gücü projesinden ilham alınarak, sağlık sektörünün özel gereksinimlerine (biyometrik tanıma, bağlamsal hafıza, KVKK uyumluluk) uyarlanmıştır. Ancak, IAMX belgesindeki pazarlama iddiaları yerine, klinik güvenlik, veri gizliliği ve operasyonel gerçekçilik önceliklendirilmiştir.*
+
+---
+
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-kiosk",
+  "version": "0.1.0",
+  "bin": { "context-kiosk": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-kiosk serve` | Start kiosk server/UI | `--config` | `--port`, `--verbose` |
+| `context-kiosk calibrate` | Calibrate biometric sensors | `--input` | `--config`, `--dry-run` |
+| `context-kiosk test` | Run self-test on kiosk hardware/software | | `--format`, `--verbose` |
+| `context-kiosk status` | Show kiosk operational status | | `--format`, `--verbose` |
+| `context-kiosk lint` | Validate kiosk configuration | `--input` | `--format`, `--verbose` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Start Kiosk
+
+```bash
+context-kiosk serve \
+  --config fixtures/config/kiosk-default.yaml \
+  --port 8080
+```
+
+**Expected:** Kiosk UI starts on port 8080.
+**Exit Code:** `0`
+
+#### Scenario 2 — Self-Test
+
+```bash
+context-kiosk test --format json
+```
+
+**Expected Output:** JSON report with hardware/software component status (camera, NFC, display).
+**Exit Code:** `0` if all pass, `2` if failures.
+
+#### Scenario 3 — Status Check
+
+```bash
+context-kiosk status --format json
+```
+
+**Expected Output:** JSON with uptime, active sessions, sensor status.
+**Exit Code:** `0`
+
+#### Scenario 4 — Missing Config (Error)
+
+```bash
+context-kiosk serve
+```
+
+**Expected:** `Error: required option '--config <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 5 — Dry Run Calibration
+
+```bash
+context-kiosk calibrate \
+  --input fixtures/config/kiosk-default.yaml \
+  --dry-run
+```
+
+**Expected:** Prints calibration plan without modifying hardware. No side effects.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Kiosk started/test passed |
+| `1` | General error | Missing config, invalid argument |
+| `2` | Validation error | Hardware failure, sensor offline |
+| `3` | External dependency error | Biometric API unreachable |

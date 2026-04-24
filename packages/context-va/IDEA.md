@@ -298,4 +298,162 @@ MVP'nin "başarılı" olduğunu nasıl ölçeceğiz:
 
 ---
 
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-va",
+  "version": "0.1.0",
+  "bin": { "context-va": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-va generate` | Generate visual abstract from single source | `--input`, `--output` | `--config`, `--format`, `--language`, `--dry-run` |
+| `context-va batch` | Process multiple sources from directory | `--input`, `--output` | `--config`, `--format`, `--concurrency` |
+| `context-va eval` | Run ratchet evaluation against baseline | `--input`, `--baseline` | `--output`, `--format` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Single Visual Abstract
+
+```bash
+context-va generate \
+  --input fixtures/raw/sample-thesis-abstract.txt \
+  --output output/va-result.json \
+  --config fixtures/config/jama-visual-abstract.yaml \
+  --format json
+```
+
+**Input:** Raw thesis abstract text file.
+**Expected Output:** JSON file containing `study_id`, `title`, `pico`, `key_results[]` (each with `source_quote`).
+**Exit Code:** `0`
+
+#### Scenario 2 — Batch Processing
+
+```bash
+context-va batch \
+  --input fixtures/raw/ \
+  --output output/va-batch/ \
+  --config fixtures/config/jama-visual-abstract.yaml
+```
+
+**Input:** Directory of raw source text files.
+**Expected Output:** One JSON file per input in `output/va-batch/`.
+**Exit Code:** `0`
+
+#### Scenario 3 — Ratchet Evaluation
+
+```bash
+context-va eval \
+  --input output/va-result-v2.json \
+  --baseline output/va-result-v1.json \
+  --output output/eval-report.json
+```
+
+**Input:** New output + baseline output.
+**Expected Output:** Evaluation report with pass/fail per metric. New version must ≥ baseline.
+**Exit Code:** `0` if pass, `2` if regression detected.
+
+#### Scenario 4 — Missing Input (Error)
+
+```bash
+context-va generate --output output/va.json
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 5 — Nonexistent Input File (Error)
+
+```bash
+context-va generate \
+  --input nonexistent/abstract.txt \
+  --output output/va.json
+```
+
+**Expected:** `Error: Input file not found: nonexistent/abstract.txt`
+**Exit Code:** `1`
+
+#### Scenario 6 — Dry Run
+
+```bash
+context-va generate \
+  --input fixtures/raw/sample-thesis-abstract.txt \
+  --output output/va.json \
+  --dry-run
+```
+
+**Expected:** Prints planned operations to stdout. No files written.
+**Exit Code:** `0`
+
+#### Scenario 7 — Invalid Config (Error)
+
+```bash
+context-va generate \
+  --input fixtures/raw/sample-thesis-abstract.txt \
+  --output output/va.json \
+  --config broken.yaml
+```
+
+**Expected:** `Error: Config file not found: broken.yaml`
+**Exit Code:** `1`
+
+#### Scenario 8 — source_quote Discipline Violation
+
+```bash
+context-va eval \
+  --input output/va-missing-quotes.json \
+  --baseline output/va-baseline.json
+```
+
+**Expected:** `Error: Validation failed — key_results[2].source_quote is empty`
+**Exit Code:** `2`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Normal VA generation completed |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | source_quote missing, hallucination detected |
+| `3` | External dependency error | LLM API timeout |
+
+### Output Schema
+
+```json
+{
+  "study_id": "string (required)",
+  "title": "string (required)",
+  "journal_target": "string",
+  "pico": {
+    "population": "string",
+    "intervention": "string",
+    "comparator": "string",
+    "outcome": "string"
+  },
+  "key_results": [
+    {
+      "metric": "string (required)",
+      "value": "string (required)",
+      "n": "string",
+      "source_quote": "string (required, verbatim from source)"
+    }
+  ],
+  "conclusion": "string",
+  "conclusion_source_quote": "string (required)"
+}
+```
+
+---
+
 > **Living Artifact Notu.** Bu belge "yaşayan bir artefakt"tır: pipeline geliştikçe belge de güncellenir. Pipeline'ın temel felsefesi, journal kapsama listesi veya autoresearch döngüsünün mekanizması belirgin biçimde değişirse ilgili bölümü güncelle — geçmişi silme, farkı yansıt. AutoVA'nın "derleme problemi" çerçevesi değişmedikçe tez bölümüne dokunma; değiştiyse tezi yeniden yaz, önceki versiyonu `## Eski Tez` olarak altına bırak. Revision notları repository commit geçmişinde izlenebilir.

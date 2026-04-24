@@ -367,3 +367,111 @@ Bu doküman kasıtlı olarak soyuttur. DB schema, API endpoint'leri, admin UI ta
 Bu dört şey doğru uygulanırsa, sistem tıbbi eğitimde güvenilir değerlendirme platformu olur. Aksi halde sadece bir quiz generator olur.
 
 Bu dokümanı LLM ajanına ver, mevcut repo state'ini okumasını iste, ve birlikte bir sonraki küçük, kılavuzlu iyileştirmeyi seçin. İlk hedef: standalone modda transcript → quiz üretimi çalışır hale getirmek. Wiki entegrasyonu sonraki adım.
+
+---
+
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-cert",
+  "version": "0.1.0",
+  "bin": { "context-cert": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-cert generate` | Generate quiz questions from source | `--input`, `--output` | `--config`, `--count`, `--difficulty`, `--audience`, `--dry-run` |
+| `context-cert review` | List questions by status | | `--status`, `--format`, `--verbose` |
+| `context-cert approve` | Approve a draft question | `--input` | `--format`, `--verbose` |
+| `context-cert reject` | Reject a draft question with reason | `--input` | `--reason`, `--format` |
+| `context-cert eval` | Ratchet evaluation of generation quality | `--input`, `--baseline` | `--output`, `--format` |
+| `context-cert batch` | Batch generate from wiki domain | `--input`, `--output` | `--count`, `--difficulty`, `--concurrency` |
+
+### Additional Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--count` | `number` | `5` | Number of questions to generate |
+| `--difficulty` | `string` | `medium` | Difficulty: `easy` \| `medium` \| `hard` |
+| `--audience` | `string` | `junior_doctor` | Target: `patient` \| `junior_doctor` \| `specialist` |
+| `--status` | `string` | `draft` | Filter: `draft` \| `approved` \| `rejected` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Generate from Transcript
+
+```bash
+context-cert generate \
+  --input fixtures/raw/sample-thesis-abstract.txt \
+  --output output/quiz-questions.json \
+  --count 5 \
+  --difficulty medium \
+  --audience junior_doctor
+```
+
+**Input:** Raw transcript or thesis text.
+**Expected Output:** JSON array of 5 draft quiz questions with options, correct answer, and explanation.
+**Exit Code:** `0`
+
+#### Scenario 2 — Generate from Wiki
+
+```bash
+context-cert generate \
+  --input fixtures/wiki/cardiovascular/ \
+  --output output/quiz-cardio.json \
+  --count 10 \
+  --difficulty hard
+```
+
+**Input:** Wiki domain directory.
+**Expected Output:** JSON array of quiz questions with `wiki_page` source references.
+**Exit Code:** `0`
+
+#### Scenario 3 — Review Drafts
+
+```bash
+context-cert review --status draft --format json
+```
+
+**Expected Output:** JSON array of pending draft questions.
+**Exit Code:** `0`
+
+#### Scenario 4 — Missing Input (Error)
+
+```bash
+context-cert generate --output output/quiz.json
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 5 — Dry Run
+
+```bash
+context-cert generate \
+  --input fixtures/wiki/cardiovascular/ \
+  --output output/quiz.json \
+  --dry-run
+```
+
+**Expected:** Prints generation plan (source pages, count, difficulty). No files written.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Questions generated/approved |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | Question format invalid, hallucination detected |
+| `3` | External dependency error | LLM API timeout |

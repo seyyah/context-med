@@ -159,3 +159,108 @@ Bu doküman kasıtlı olarak soyuttur. Hangi CRM veya ESP, hangi ad platform SDK
 
 Bu idea file, marketing-agent’in ne yapması ve ne olmaması gerektiği konusunda ajanınla aynı hizaya gelmen için vardır; tek bir implementasyon tarifi değildir. İlk adımda bir veya iki spesifik use-case seç (örneğin: “yeni feature launch email + in-app banner paketi” veya “self-serve trial nurture serisi”) ve ajanla birlikte bunlar için şema + runtime akışını tasarla. Merkez kaybolursa, elinde sadece “daha uzun metin yazan bir chatbot” kalır; merkez korunursa, marketing ekibin zamanla kendini taşıyan bir sistem kurmuş olur.
 
+
+---
+
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/marketing-agent",
+  "version": "0.1.0",
+  "bin": { "marketing-agent": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `marketing-agent brief` | Generate marketing brief from wiki content | `--input`, `--output` | `--config`, `--format`, `--language`, `--dry-run` |
+| `marketing-agent draft` | Draft marketing content (email, ad, landing) | `--input`, `--output` | `--config`, `--format`, `--channel` |
+| `marketing-agent lint` | Validate content against brand guidelines | `--input` | `--config`, `--format`, `--verbose` |
+| `marketing-agent batch` | Batch draft across channels | `--input`, `--output` | `--config`, `--concurrency` |
+| `marketing-agent eval` | Ratchet evaluation against baseline | `--input`, `--baseline` | `--output`, `--format` |
+
+### Additional Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--channel` | `string` | `email` | Channel: `email` \| `ad` \| `landing` \| `social` |
+| `--persona` | `string` | `default` | Target persona for content |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Generate Brief
+
+```bash
+marketing-agent brief \
+  --input fixtures/wiki/cardiovascular/atrial-fibrillation.md \
+  --output output/marketing-brief.json \
+  --format json
+```
+
+**Input:** Wiki content.
+**Expected Output:** Marketing brief with key messages, target personas, channel recommendations.
+**Exit Code:** `0`
+
+#### Scenario 2 — Draft Content
+
+```bash
+marketing-agent draft \
+  --input output/marketing-brief.json \
+  --output output/email-draft.md \
+  --channel email \
+  --format md
+```
+
+**Input:** Marketing brief JSON.
+**Expected Output:** Email draft optimized for channel.
+**Exit Code:** `0`
+
+#### Scenario 3 — Lint Against Brand
+
+```bash
+marketing-agent lint \
+  --input output/email-draft.md \
+  --format json
+```
+
+**Expected Output:** JSON report on brand guideline compliance.
+**Exit Code:** `0` if pass, `2` if violations.
+
+#### Scenario 4 — Missing Input (Error)
+
+```bash
+marketing-agent brief --output output/brief.json
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 5 — Dry Run
+
+```bash
+marketing-agent brief \
+  --input fixtures/wiki/cardiovascular/atrial-fibrillation.md \
+  --output output/brief.json \
+  --dry-run
+```
+
+**Expected:** Prints brief plan (detected topics, personas). No files written.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Brief/draft generated |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | Brand guideline violation |
+| `3` | External dependency error | LLM API timeout |

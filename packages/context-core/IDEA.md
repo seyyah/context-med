@@ -207,3 +207,102 @@ Bu dosyanın açıklamadığı detaylar için:
 | [4] Output | context-va | `context-va.md` |
 | [4] Output | context-paper | `context-paper.md` |
 | [4] Output | context-slides | `context-slides.md` |
+
+---
+
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-core",
+  "version": "0.1.0",
+  "bin": { "context-core": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-core chain` | Run full pipeline chain (gate→wiki→module) | `--input`, `--output` | `--config`, `--format`, `--intent`, `--dry-run` |
+| `context-core route` | Route input to appropriate module | `--input` | `--intent`, `--format`, `--verbose` |
+| `context-core status` | Show pipeline status for active jobs | | `--format`, `--verbose` |
+| `context-core health` | Health check all connected modules | | `--format`, `--verbose` |
+
+### Additional Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--intent` | `string` | `auto` | Target module: `graphical-abstract` \| `manuscript` \| `presentation` \| `chain` \| `auto` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Full Chain
+
+```bash
+context-core chain \
+  --input fixtures/raw/sample-thesis-abstract.txt \
+  --output output/chain/ \
+  --intent chain \
+  --format json
+```
+
+**Input:** Raw thesis abstract.
+**Expected Output:** gate profile + wiki page + VA + manuscript + slides in `output/chain/`.
+**Exit Code:** `0`
+
+#### Scenario 2 — Route to Module
+
+```bash
+context-core route \
+  --input fixtures/raw/sample-thesis-abstract.txt \
+  --intent graphical-abstract
+```
+
+**Expected Output:** Detected intent and target module name.
+**Exit Code:** `0`
+
+#### Scenario 3 — Health Check
+
+```bash
+context-core health --format json
+```
+
+**Expected Output:** JSON status of each connected module (gate, wiki, va, paper, slides, shield).
+**Exit Code:** `0` if all healthy, `3` if any module unreachable.
+
+#### Scenario 4 — Missing Input (Error)
+
+```bash
+context-core chain --output output/chain/
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 5 — Dry Run
+
+```bash
+context-core chain \
+  --input fixtures/raw/sample-thesis-abstract.txt \
+  --output output/chain/ \
+  --dry-run
+```
+
+**Expected:** Prints pipeline execution plan (modules, order, estimated steps). No files written.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Chain completed |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | Intent classification ambiguous |
+| `3` | External dependency error | Module unreachable |

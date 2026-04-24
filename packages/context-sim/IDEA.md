@@ -982,6 +982,124 @@ Bu hibrit Mod A'nın anamnez zenginliğini + Mod B'nin klinik karar verme disipl
 
 ---
 
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-sim",
+  "version": "0.1.0",
+  "bin": { "context-sim": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-sim compile` | Compile scenario from wiki sources | `--input`, `--output` | `--config`, `--format`, `--language`, `--dry-run` |
+| `context-sim start` | Start interactive simulation session | `--input` | `--mode`, `--config`, `--verbose` |
+| `context-sim evaluate` | Evaluate completed session against rubric | `--input`, `--output` | `--config`, `--format` |
+| `context-sim batch` | Batch compile scenarios | `--input`, `--output` | `--config`, `--concurrency` |
+| `context-sim eval` | Ratchet evaluation against baseline | `--input`, `--baseline` | `--output`, `--format` |
+
+### Additional Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--mode` | `string` | `modeB` | Simulation mode: `modeA` (LLM) \| `modeB` (offline/compiled) |
+| `--topic` | `string` | | Clinical topic for scenario |
+| `--difficulty` | `string` | `beginner` | Difficulty: `beginner` \| `intermediate` \| `advanced` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Compile Scenario
+
+```bash
+context-sim compile \
+  --input fixtures/scenarios/acs-chest-pain-01.yaml \
+  --output output/compiled-scenario.json \
+  --format json
+```
+
+**Input:** Scenario YAML with patient persona, clinical data, disclosure rules.
+**Expected Output:** Compiled scenario JSON ready for session execution.
+**Exit Code:** `0`
+
+#### Scenario 2 — Start Simulation Session
+
+```bash
+context-sim start \
+  --input output/compiled-scenario.json \
+  --mode modeB
+```
+
+**Input:** Compiled scenario JSON.
+**Expected Output:** Interactive session in terminal (stdin/stdout dialogue).
+**Exit Code:** `0` on completion.
+
+#### Scenario 3 — Evaluate Session
+
+```bash
+context-sim evaluate \
+  --input output/session-log.json \
+  --output output/eval-report.json \
+  --format json
+```
+
+**Input:** Session log JSON.
+**Expected Output:** Evaluation report with rubric scores, areas for improvement.
+**Exit Code:** `0`
+
+#### Scenario 4 — Batch Compile
+
+```bash
+context-sim batch \
+  --input fixtures/scenarios/ \
+  --output output/sim-compiled/
+```
+
+**Input:** Directory of scenario YAML files.
+**Expected Output:** One compiled JSON per scenario.
+**Exit Code:** `0`
+
+#### Scenario 5 — Missing Input (Error)
+
+```bash
+context-sim compile --output output/scenario.json
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 6 — Dry Run
+
+```bash
+context-sim compile \
+  --input fixtures/scenarios/acs-chest-pain-01.yaml \
+  --output output/scenario.json \
+  --dry-run
+```
+
+**Expected:** Prints compilation plan (topic, difficulty, wiki sources). No files written.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Scenario compiled/session completed |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | Scenario schema invalid, wiki source missing |
+| `3` | External dependency error | LLM/TTS API timeout |
+
+---
+
 > **Living Artifact Notu.** Bu belge yaşayan bir artefakttır. Yeni senaryolar eklendikçe, validasyon pilotu sonuçları geldikçe, LLM ve TTS engine'leri geliştikçe, rule engine-tabanlı use case'ler (KadDoğSim vb.) olgunlaştıkça güncellenir. Tezdeki "bilgi asimetrisi invariantı + wiki-grounded senaryo üretimi + validated evaluation" çerçevesi değişmedikçe teze dokunma; değiştiyse tezi yeniden yaz.
 
 ---

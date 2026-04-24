@@ -739,3 +739,109 @@ NOKTA, `10-draft-ideas/noslop-mobile.md` felsefesine **sıkı sıkıya** bağlı
 
 *Document Version: 1.0 | Date: April 2026 | Author: NAIM (via Claude Code)*
 *Aligned with: nokta.md, istabot-knowledge.md, istabot-mrlc.md*
+
+---
+
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/istabot-nokta",
+  "version": "0.1.0",
+  "bin": { "istabot-nokta": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `istabot-nokta discover` | Run DISCOVER phase (literature gap, RQ) | `--input`, `--output` | `--config`, `--format`, `--language`, `--dry-run` |
+| `istabot-nokta design` | Run DESIGN phase (power analysis, survey) | `--input`, `--output` | `--config`, `--format` |
+| `istabot-nokta execute` | Run EXECUTE phase (data analysis) | `--input`, `--output` | `--config`, `--format` |
+| `istabot-nokta publish` | Run PUBLISH phase (manuscript draft) | `--input`, `--output` | `--config`, `--format`, `--language` |
+| `istabot-nokta status` | Show project MRLC phase status | `--input` | `--format`, `--verbose` |
+| `istabot-nokta eval` | Ratchet evaluation | `--input`, `--baseline` | `--output`, `--format` |
+
+### Additional Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--phase` | `string` | `auto` | MRLC phase: `discover` \| `design` \| `execute` \| `publish` \| `auto` |
+| `--domain` | `string` | | Clinical domain keyword |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Discover Phase
+
+```bash
+istabot-nokta discover \
+  --input fixtures/raw/sample-thesis-abstract.txt \
+  --output output/idea.md \
+  --domain "cardiovascular" \
+  --format md
+```
+
+**Input:** Raw keywords or thesis abstract.
+**Expected Output:** `project-idea.md` with PICO, research question, literature gap.
+**Exit Code:** `0`
+
+#### Scenario 2 — Execute Phase (Analysis)
+
+```bash
+istabot-nokta execute \
+  --input fixtures/raw/sample-paper.txt \
+  --output output/analysis-report.json \
+  --format json
+```
+
+**Input:** Collected data or raw paper.
+**Expected Output:** Analysis report with statistical results and APA formatting.
+**Exit Code:** `0`
+
+#### Scenario 3 — Project Status
+
+```bash
+istabot-nokta status \
+  --input output/ \
+  --format json
+```
+
+**Expected Output:** JSON with current MRLC phase, completed milestones, next steps.
+**Exit Code:** `0`
+
+#### Scenario 4 — Missing Input (Error)
+
+```bash
+istabot-nokta discover --output output/idea.md
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 5 — Dry Run
+
+```bash
+istabot-nokta discover \
+  --input fixtures/raw/sample-thesis-abstract.txt \
+  --output output/idea.md \
+  --dry-run
+```
+
+**Expected:** Prints discovery plan (keywords, domain, estimated papers). No files written.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Phase completed |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | MRLC sequence violation, data quality |
+| `3` | External dependency error | PubMed/R API timeout |

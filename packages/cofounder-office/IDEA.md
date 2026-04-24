@@ -192,3 +192,96 @@ Bu dokümanı LLM ajanına ver, mevcut repo state'ini okut, ve birlikte küçük
 - Multi-user ofisler: bu draft tek solopreneur varsayımı üzerine kurulu. İki kurucunun aynı ofisi paylaştığı senaryo v2'ye ait.
 - Persona marketplace'i ile cerebra'nın brain marketplace'i arasındaki ilişki: ayrı mı yaşarlar, birleşik mi? Bu karar brain ekosistemi tartışmasıyla bağlantılıdır.
 - Cofounder-office'in LLM maliyet profili: her persona ayrı context taşır; naif implementasyonda maliyet patlar. Context paylaşımı ve prompt caching stratejisi v1 Definition of Done'a girmeli.
+
+---
+
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/cofounder-office",
+  "version": "0.1.0",
+  "bin": { "cofounder-office": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `cofounder-office roster` | List active personas in the office | | `--format`, `--verbose` |
+| `cofounder-office fire` | Remove/deactivate a persona | `--input` | `--format`, `--verbose` |
+| `cofounder-office digest` | Generate office digest/summary | `--output` | `--config`, `--format`, `--dry-run` |
+| `cofounder-office consult` | Query a specific persona for advice | `--input` | `--persona`, `--format`, `--verbose` |
+| `cofounder-office eval` | Ratchet evaluation of persona fidelity | `--input`, `--baseline` | `--output`, `--format` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: List Roster
+
+```bash
+cofounder-office roster --format json
+```
+
+**Expected Output:** JSON array of active personas with role, status, and last active timestamp.
+**Exit Code:** `0`
+
+#### Scenario 2 — Generate Digest
+
+```bash
+cofounder-office digest \
+  --output output/office-digest.json \
+  --format json
+```
+
+**Expected Output:** Office activity digest with per-persona summaries.
+**Exit Code:** `0`
+
+#### Scenario 3 — Consult Persona
+
+```bash
+cofounder-office consult \
+  --input fixtures/raw/sample-meeting-notes.txt \
+  --persona cto \
+  --format json
+```
+
+**Expected Output:** CTO persona's analysis of the meeting notes.
+**Exit Code:** `0`
+
+#### Scenario 4 — Missing Persona (Error)
+
+```bash
+cofounder-office consult \
+  --input fixtures/raw/sample-meeting-notes.txt \
+  --persona nonexistent-persona
+```
+
+**Expected:** `Error: Persona 'nonexistent-persona' not found in roster`
+**Exit Code:** `1`
+
+#### Scenario 5 — Dry Run Digest
+
+```bash
+cofounder-office digest \
+  --output output/digest.json \
+  --dry-run
+```
+
+**Expected:** Prints digest plan (active personas, pending tasks). No files written.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Roster listed, digest generated |
+| `1` | General error | Missing argument, persona not found |
+| `2` | Validation error | Persona fidelity below threshold |
+| `3` | External dependency error | LLM API timeout |

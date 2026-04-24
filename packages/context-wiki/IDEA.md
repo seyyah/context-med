@@ -55,3 +55,114 @@ Not
 Bu doküman kasıtlı olarak soyuttur. Hangi vektör indeksi, hangi re-ranker, kılavuz dosyasının tam şeması, eskalasyon UI'ı, widget embed API'si, ratchet veri seti formatı — hepsi micro-wiki'ye, müşteriye ve altyapı tercihlerine bağlıdır. rag-wiki'nin mevcut paket mimarisi (subdomain, adapters, ingestion, bot, widget, evaluation) bu soyut örüntünün bir somutlaştırmasıdır; tek somutlaştırma değildir.
 Bu dokümanı LLM ajanına ver, mevcut repo state'ini okumasını iste, ve birlikte bir sonraki küçük, kılavuzlu iyileştirmeyi seçin. "Daha akıllı cevaplar" hedefi değildir; daha disiplinli çekilmeler ve daha temiz writeback'ler hedefidir. İyileştirme bu iki metrikten gelirse sistem yolundadır.
 
+---
+
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-wiki",
+  "version": "0.1.0",
+  "bin": { "context-wiki": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-wiki ingest` | Ingest raw source into micro-wiki | `--input`, `--output` | `--config`, `--format`, `--language`, `--dry-run` |
+| `context-wiki compile` | Compile micro-wiki from raw sources | `--input`, `--output` | `--config`, `--format` |
+| `context-wiki lint` | Validate wiki structure and provenance | `--input` | `--format`, `--verbose` |
+| `context-wiki eval` | Ratchet evaluation of wiki quality | `--input`, `--baseline` | `--output`, `--format` |
+| `context-wiki query` | Query wiki content (RAG retrieval) | `--input`, `--query` | `--format`, `--verbose` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Ingest Raw Source
+
+```bash
+context-wiki ingest \
+  --input fixtures/raw/sample-paper.txt \
+  --output output/wiki/cardiovascular/ \
+  --format md
+```
+
+**Input:** Raw text document (paper, thesis, guideline).
+**Expected Output:** Structured markdown wiki page with provenance metadata block.
+**Exit Code:** `0`
+
+#### Scenario 2 — Compile Wiki from Sources
+
+```bash
+context-wiki compile \
+  --input fixtures/raw/ \
+  --output output/wiki/ \
+  --format md
+```
+
+**Input:** Directory of raw source documents.
+**Expected Output:** Structured wiki directory with one page per source, cross-links, and index.
+**Exit Code:** `0`
+
+#### Scenario 3 — Lint Wiki Structure
+
+```bash
+context-wiki lint \
+  --input fixtures/wiki/ \
+  --format json
+```
+
+**Input:** Wiki directory.
+**Expected Output:** JSON report: missing provenance blocks, orphan pages, broken cross-links.
+**Exit Code:** `0` if all pass, `2` if issues found.
+
+#### Scenario 4 — Query Wiki (RAG)
+
+```bash
+context-wiki query \
+  --input fixtures/wiki/ \
+  --query "What is the recommended anticoagulation for AF with CHA2DS2-VASc >= 2?" \
+  --format json
+```
+
+**Expected Output:** Retrieved wiki chunks with confidence scores and source references.
+**Exit Code:** `0`
+
+#### Scenario 5 — Missing Input (Error)
+
+```bash
+context-wiki ingest --output output/wiki/
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 6 — Dry Run
+
+```bash
+context-wiki ingest \
+  --input fixtures/raw/sample-paper.txt \
+  --output output/wiki/ \
+  --dry-run
+```
+
+**Expected:** Prints extraction plan (detected sections, estimated pages). No files written.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Ingestion/compilation completed |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | Missing provenance, orphan pages |
+| `3` | External dependency error | Embedding model unavailable |
+
+

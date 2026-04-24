@@ -146,3 +146,160 @@ context-shield, LLM ekosistemindeki gizlilik sorununa yüzeysel bir kural seti (
 3. *Levenshtein, V. I. (1966). Binary codes capable of correcting deletions, insertions, and reversals.*
 4. *Xenova / Transformers.js: State-of-the-art Machine Learning for the Web*
 5. *HuggingFace Turkish NER Datasets & Evaluation Metrics*
+
+---
+
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-shield",
+  "version": "0.1.0",
+  "bin": { "context-shield": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-shield scan` | Detect PII entities in input without modifying | `--input` | `--format`, `--verbose` |
+| `context-shield mask` | Mask PII entities and produce anonymized output | `--input`, `--output` | `--config`, `--format`, `--language`, `--dry-run` |
+| `context-shield unmask` | Restore masked entities using mapping file | `--input`, `--output`, `--map` | `--format`, `--verbose` |
+| `context-shield batch` | Batch mask entire directory | `--input`, `--output` | `--config`, `--concurrency` |
+| `context-shield eval` | Evaluate masking precision/recall against gold set | `--input`, `--baseline` | `--output`, `--format` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: PII Scan
+
+```bash
+context-shield scan \
+  --input fixtures/shield/sample-with-pii.txt \
+  --format json
+```
+
+**Input:** Text file containing PII (names, TC numbers, phone, email).
+**Expected Output (stdout):**
+```json
+{
+  "entities_found": 5,
+  "entities": [
+    { "type": "PERSON", "value": "Ahmet Yılmaz", "offset": [3, 15] },
+    { "type": "PERSON", "value": "Fatma Kaya", "offset": [42, 52] },
+    { "type": "TC_ID", "value": "12345678901", "offset": [58, 69] },
+    { "type": "PHONE", "value": "0532 123 4567", "offset": [93, 106] },
+    { "type": "EMAIL", "value": "fatma.kaya@email.com", "offset": [126, 146] }
+  ]
+}
+```
+**Exit Code:** `0`
+
+#### Scenario 2 — Happy Path: PII Masking
+
+```bash
+context-shield mask \
+  --input fixtures/shield/sample-with-pii.txt \
+  --output output/masked.txt \
+  --format txt
+```
+
+**Input:** Text file with PII.
+**Expected Output:** Anonymized file where PII is replaced with tokens (e.g., `[PERSON_1]`, `[TC_ID_1]`). A mapping file `output/masked.txt.map.json` is also created.
+**Exit Code:** `0`
+
+#### Scenario 3 — Happy Path: Unmask (De-masking)
+
+```bash
+context-shield unmask \
+  --input output/masked.txt \
+  --output output/restored.txt \
+  --map output/masked.txt.map.json
+```
+
+**Input:** Masked text + mapping file.
+**Expected Output:** Restored original text with fuzzy matching for token placement.
+**Exit Code:** `0`
+
+#### Scenario 4 — Missing Input (Error)
+
+```bash
+context-shield mask --output output/masked.txt
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 5 — Nonexistent Input File (Error)
+
+```bash
+context-shield scan --input nonexistent.txt
+```
+
+**Expected:** `Error: Input file not found: nonexistent.txt`
+**Exit Code:** `1`
+
+#### Scenario 6 — Dry Run
+
+```bash
+context-shield mask \
+  --input fixtures/shield/sample-with-pii.txt \
+  --output output/masked.txt \
+  --dry-run
+```
+
+**Expected:** Prints detected entities to stdout without writing masked file.
+**Exit Code:** `0`
+
+#### Scenario 7 — Unmask Missing Map File (Error)
+
+```bash
+context-shield unmask \
+  --input output/masked.txt \
+  --output output/restored.txt \
+  --map nonexistent.map.json
+```
+
+**Expected:** `Error: Map file not found: nonexistent.map.json`
+**Exit Code:** `1`
+
+#### Scenario 8 — Zero PII Document
+
+```bash
+context-shield scan \
+  --input fixtures/wiki/cardiovascular/atrial-fibrillation.md
+```
+
+**Expected Output:** `{ "entities_found": 0, "entities": [] }`
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Masking/unmasking completed |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | Map file corrupt, entity mismatch |
+| `3` | External dependency error | NER model not loaded |
+
+### Output Schema (scan)
+
+```json
+{
+  "entities_found": "number",
+  "entities": [
+    {
+      "type": "string (PERSON|TC_ID|PHONE|EMAIL|ADDRESS|ORG)",
+      "value": "string (original PII text)",
+      "offset": "[start, end]",
+      "confidence": "number (0-1)"
+    }
+  ]
+}
+```

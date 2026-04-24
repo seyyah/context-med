@@ -629,4 +629,128 @@ USTA, cerebra ekosisteminde diğer modüllerle şu ilişkileri kurar:
 
 ---
 
+## CLI Reference
+
+### Infrastructure
+
+```json
+{
+  "name": "@context-med/context-paper",
+  "version": "0.1.0",
+  "bin": { "context-paper": "./bin/cli.js" },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose"
+  }
+}
+```
+
+### Command Table
+
+| Command | Description | Required Flags | Optional Flags |
+|---------|-------------|----------------|----------------|
+| `context-paper forge` | Generate manuscript from thesis/abstract | `--input`, `--output` | `--config`, `--format`, `--language`, `--dry-run` |
+| `context-paper verify` | Verify source_quote discipline in manuscript | `--input` | `--format`, `--verbose` |
+| `context-paper compile` | Compile IMRaD sections from structured JSON | `--input`, `--output` | `--config`, `--format`, `--language` |
+| `context-paper batch` | Process multiple theses in batch | `--input`, `--output` | `--config`, `--concurrency` |
+| `context-paper eval` | Ratchet evaluation against baseline | `--input`, `--baseline` | `--output`, `--format` |
+
+### Usage Scenarios
+
+#### Scenario 1 — Happy Path: Forge Manuscript
+
+```bash
+context-paper forge \
+  --input fixtures/raw/sample-thesis-abstract.txt \
+  --output output/manuscript.json \
+  --config fixtures/config/jama-visual-abstract.yaml \
+  --format json
+```
+
+**Input:** Raw thesis abstract text.
+**Expected Output:** JSON with IMRaD sections (`introduction`, `methods`, `results`, `discussion`), each with `source_quote` fields.
+**Exit Code:** `0`
+
+#### Scenario 2 — Verify source_quote Discipline
+
+```bash
+context-paper verify \
+  --input fixtures/json/manuscript-imrad-sample.json \
+  --format json
+```
+
+**Input:** Structured manuscript JSON.
+**Expected Output:** Validation report: pass/fail for each numerical claim's `source_quote`.
+**Exit Code:** `0` if all pass, `2` if violations found.
+
+#### Scenario 3 — Compile to Markdown
+
+```bash
+context-paper compile \
+  --input fixtures/json/manuscript-imrad-sample.json \
+  --output output/manuscript.md \
+  --format md \
+  --language en
+```
+
+**Input:** Structured IMRaD JSON.
+**Expected Output:** Formatted Markdown manuscript with section headers and citations.
+**Exit Code:** `0`
+
+#### Scenario 4 — Missing Input (Error)
+
+```bash
+context-paper forge --output output/manuscript.json
+```
+
+**Expected:** `Error: required option '--input <path>' not specified`
+**Exit Code:** `1`
+
+#### Scenario 5 — Nonexistent Input (Error)
+
+```bash
+context-paper forge --input nonexistent.txt --output output/ms.json
+```
+
+**Expected:** `Error: Input file not found: nonexistent.txt`
+**Exit Code:** `1`
+
+#### Scenario 6 — Dry Run
+
+```bash
+context-paper forge \
+  --input fixtures/raw/sample-thesis-abstract.txt \
+  --output output/manuscript.json \
+  --dry-run
+```
+
+**Expected:** Prints extraction plan (detected sections, token estimate). No files written.
+**Exit Code:** `0`
+
+### Exit Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `0` | Success | Manuscript generated |
+| `1` | General error | Missing file, invalid argument |
+| `2` | Validation error | source_quote missing, hallucination detected |
+| `3` | External dependency error | LLM/istabot API timeout |
+
+### Output Schema (forge)
+
+```json
+{
+  "study_id": "string",
+  "title": "string",
+  "imrad": {
+    "introduction": { "background": "string", "gap": "string", "objective": "string" },
+    "methods": { "design": "string", "setting": "string", "population": "string", "statistics": ["string"] },
+    "results": { "demographics": {}, "primary_outcome": { "by_group": [], "p_values": [] } },
+    "discussion": { "main_finding": "string", "limitations": ["string"] }
+  }
+}
+```
+
+---
+
 > **Living Artifact Notu.** Bu belge yaşayan bir artefakttır: istabot.com entegrasyonu derinleştikçe, yeni klinik alan wiki'leri eklendikçe, pilot tez dönüşümlerinden yeni ratchet kuralları öğrenildikçe güncellenir. Tezdeki "grafik özetten makaleye ters-derleme" çerçevesi değişmedikçe teze dokunma; değiştiyse tezi yeniden yaz, önceki versiyonu `## Eski Tez` olarak altına bırak.
