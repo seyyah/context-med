@@ -177,119 +177,75 @@ tests/cli/
 
 #### Minimal Test Example (copy & adapt)
 
-```javascript
-// tests/cli/helpers.js
-const { execSync } = require('child_process');
-const path = require('path');
-const fs = require('fs');
-const os = require('os');
-
-const CLI = path.resolve(__dirname, '../../bin/cli.js');
-const FIXTURES = path.resolve(__dirname, '../../../../fixtures');
-
-function runCLI(args) {
-  try {
-    const stdout = execSync(`node ${CLI} ${args}`, {
-      encoding: 'utf-8',
-      timeout: 30000,
-    });
-    return { stdout, stderr: '', exitCode: 0 };
-  } catch (err) {
-    return {
-      stdout: err.stdout || '',
-      stderr: err.stderr || '',
-      exitCode: err.status || 1,
-    };
-  }
-}
-
-function makeTmpDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'ctx-test-'));
-}
-
-function cleanTmpDir(dir) {
-  fs.rmSync(dir, { recursive: true, force: true });
-}
-
-module.exports = { runCLI, FIXTURES, CLI, makeTmpDir, cleanTmpDir };
-```
+Use the shared test utility located at `tests/helpers/cli-test-utils.js` from the repository root:
 
 ```javascript
-// tests/cli/generate.test.js
+// tests/cli/smoke.test.js
 const path = require('path');
-const fs = require('fs');
-const { runCLI, FIXTURES, makeTmpDir, cleanTmpDir } = require('./helpers');
+const { execCli, FIXTURES, setupOutputDir, teardownOutputDir, expectFileExists } = require('../../../tests/helpers/cli-test-utils');
 
-describe('<package-name> generate', () => {
-  let tmpDir;
+const PKG = '<package-name>';
+const BIN = path.resolve(__dirname, '../../bin/cli.js');
 
-  beforeEach(() => { tmpDir = makeTmpDir(); });
-  afterEach(() => { cleanTmpDir(tmpDir); });
+
+  afterAll(() => teardownOutputDir(PKG));
 
   // P0 — Smoke
   test('--help displays usage information', () => {
-    const { stdout, exitCode } = runCLI('--help');
+    const { stdout, exitCode } = execCli(BIN, ['--help']);
     expect(exitCode).toBe(0);
     expect(stdout).toContain('Usage:');
   });
 
   test('--version displays semver', () => {
-    const { stdout, exitCode } = runCLI('--version');
+    const { stdout, exitCode } = execCli(BIN, ['--version']);
     expect(exitCode).toBe(0);
     expect(stdout).toMatch(/\d+\.\d+\.\d+/);
   });
 
   // P0 — Happy Path
   test('produces valid JSON from wiki input', () => {
-    const out = path.join(tmpDir, 'result.json');
-    const { exitCode } = runCLI(
-      `generate -i ${FIXTURES}/wiki/cardiovascular/atrial-fibrillation.md -o ${out}`
-    );
+    const outDir = setupOutputDir(PKG, 'happy-path');
+    const out = path.join(outDir, 'result.json');
+    const { exitCode } = execCli(BIN, [
+      'generate',
+      '--input', path.join(FIXTURES, 'wiki/cardiovascular/atrial-fibrillation.md'),
+      '--output', out
+    ]);
     expect(exitCode).toBe(0);
-    expect(fs.existsSync(out)).toBe(true);
-    const data = JSON.parse(fs.readFileSync(out, 'utf-8'));
-    expect(data).toHaveProperty('title');
+    expectFileExists(out);
   });
 
   // P0 — Error: missing input
   test('exits 1 when --input is missing', () => {
-    const { exitCode, stderr } = runCLI(`generate -o ${tmpDir}/out.json`);
-    expect(exitCode).toBe(1);
-    expect(stderr).toContain('input');
+    const { exitCode, stderr } = execCli(BIN, ['generate', '--output', '/tmp/out.json']);
+    expect(exitCode).not.toBe(0);
+    expect(stderr).toMatch(/input/i);
   });
 
   // P0 — Error: nonexistent file
   test('exits 1 when input file does not exist', () => {
-    const { exitCode, stderr } = runCLI(
-      `generate -i /no/such/file.md -o ${tmpDir}/out.json`
-    );
-    expect(exitCode).toBe(1);
-    expect(stderr).toContain('not found');
+    const { exitCode, stderr } = execCli(BIN, [
+      'generate', 
+      '--input', '/no/such/file.md', 
+      '--output', '/tmp/out.json'
+    ]);
+    expect(exitCode).not.toBe(0);
+    expect(stderr).toMatch(/found|enoent/i);
   });
 
   // P1 — Dry Run
   test('--dry-run does not write output file', () => {
-    const out = path.join(tmpDir, 'result.json');
-    const { exitCode } = runCLI(
-      `generate -i ${FIXTURES}/wiki/cardiovascular/atrial-fibrillation.md -o ${out} --dry-run`
-    );
+    const outDir = setupOutputDir(PKG, 'dry-run');
+    const out = path.join(outDir, 'result.json');
+    const { exitCode } = execCli(BIN, [
+      'generate',
+      '--input', path.join(FIXTURES, 'wiki/cardiovascular/atrial-fibrillation.md'),
+      '--output', out,
+      '--dry-run'
+    ]);
     expect(exitCode).toBe(0);
-    expect(fs.existsSync(out)).toBe(false);
-  });
-
-  // P1 — source_quote discipline
-  test('all numerical values include source_quote', () => {
-    const out = path.join(tmpDir, 'result.json');
-    runCLI(
-      `generate -i ${FIXTURES}/wiki/cardiovascular/atrial-fibrillation.md -o ${out}`
-    );
-    const data = JSON.parse(fs.readFileSync(out, 'utf-8'));
-    if (data.key_results) {
-      data.key_results.forEach((r) => {
-        expect(r.source_quote).toBeDefined();
-        expect(r.source_quote.length).toBeGreaterThan(0);
-      });
-    }
+    expect(require('fs').existsSync(out)).toBe(false);
   });
 });
 ```
