@@ -1,0 +1,121 @@
+name: "Release: Semantic Version & Changelog"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/**"
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  version-and-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git User
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Detect Changed Packages
+        id: pkgs
+        run: |
+          # Get list of changed packages compared to previous commit
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          PACKAGES=$(echo "$CHANGED_FILES" | grep '^packages/' | cut -d '/' -f 2 | sort | uniq || true)
+          # Store as a multiline string
+          {
+            echo "packs<<EOF"
+            echo -e "$PACKAGES"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: Bump Version and Update Changelog
+        if: steps.pkgs.outputs.packs != ''
+        id: bump
+        run: |
+          PACKAGES="${{ steps.pkgs.outputs.packs }}"
+          DATE=$(date +'%Y-%m-%d')
+          
+          # Extract PR Author directly from commit message (GitHub puts " (#PR_ID)" in merge commits)
+          # Alternatively fallback to commit author
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          PR_NUM=$(echo "$COMMIT_MSG" | grep -oE '\(#([0-9]+)\)' | grep -oE '[0-9]+' || echo "")
+          CONTRIBUTOR=$(git log -1 --pretty="%an")
+
+          if [ -n "$PR_NUM" ]; then
+              # Get PR Author from GitHub API (requires gh cli but curl is safer here without auth complexites, just stringing it if available)
+              CONTRIBUTOR_GH=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM | jq -r .user.login)
+              if [ "$CONTRIBUTOR_GH" != "null" ] && [ -n "$CONTRIBUTOR_GH" ]; then
+                  CONTRIBUTOR="@$CONTRIBUTOR_GH"
+              fi
+          fi
+
+          echo "Detected Contributor: $CONTRIBUTOR"
+
+          while IFS= read -r pack; do
+            [ -z "$pack" ] && continue
+            echo "Processing package: $pack"
+            
+            # Find the latest tag for this package
+            # Example tag format: context-gate-v1.2.3
+            LATEST_TAG=$(git tag -l "$pack-v*" | sort -V | tail -n 1)
+            
+            if [ -z "$LATEST_TAG" ]; then
+              NEXT_VERSION="v0.1.0"
+            else
+              # Extract numeric part
+              VERSION_ONLY="${LATEST_TAG#*-v}"
+              # Split into array
+              IFS='.' read -ra V_PARTS <<< "$VERSION_ONLY"
+              MAJOR="${V_PARTS[0]}"
+              MINOR="${V_PARTS[1]}"
+              PATCH="${V_PARTS[2]}"
+
+              # Minor Bump Request
+              NEXT_MINOR=$((MINOR + 1))
+              NEXT_VERSION="v${MAJOR}.${NEXT_MINOR}.0"
+            fi
+            
+            NEXT_TAG="$pack-$NEXT_VERSION"
+            echo "New Tag: $NEXT_TAG"
+
+            # Create the release note block
+            NEW_CHANGELOG_ENTRY="## [$NEXT_TAG] — $DATE\n\n### Katkıda Bulunan\n- $CONTRIBUTOR\n\n### İyileştirmeler\n- 📦 $pack paketi güncellendi.\n- $COMMIT_MSG\n"
+
+            # Prepend to CHANGELOG.md right after the header if exists
+            if grep -q "^## \[Unreleased\]" CHANGELOG.md; then
+               # Insert after Unreleased line
+               sed -i "/^## \[Unreleased\]/a \\\\n$NEW_CHANGELOG_ENTRY" CHANGELOG.md
+            else
+               # Append to top if Unreleased section missing
+               echo -e "$NEW_CHANGELOG_ENTRY\n$(cat CHANGELOG.md)" > CHANGELOG.md
+            fi
+
+            # Tag the commit local
+            git tag $NEXT_TAG
+
+            # Push tag
+            git push origin $NEXT_TAG
+            
+            # Create GitHub Release
+            gh release create $NEXT_TAG --title "🚀 $pack $NEXT_VERSION" --notes "Paket: \`$pack\` güncellendi. Hazırlayan: $CONTRIBUTOR"
+            
+          done <<< "$PACKAGES"
+
+          # Commit & Push Changelog modifications back to main
+          git add CHANGELOG.md
+          if ! git diff --cached --quiet; then
+              git commit -m "docs(changelog): auto-update changelog for recent package releases [skip ci]"
+              git push origin main
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

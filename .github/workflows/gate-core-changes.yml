@@ -1,0 +1,135 @@
+name: "Gate: Human Review Required"
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  check-for-core-changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.base_ref }}
+
+      - name: Detect core file changes
+        id: detect
+        run: |
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Define rules
+          # - packages/<name>/* (Allowed)
+          # - fixtures/* (HITL needed)
+          # - tests/* (HITL needed)
+          # - Any other core file (HITL needed)
+
+          CORE_FILES=""
+          ONLY_ALLOWED=true
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+
+            IS_ALLOWED=false
+
+            # Allow changes ONLY if they are strictly inside `packages/` directory structure
+            if echo "$file" | grep -qE '^packages/[^/]+/'; then
+              IS_ALLOWED=true
+            fi
+
+            if [ "$IS_ALLOWED" = "false" ]; then
+              CORE_FILES="$CORE_FILES\n$file"
+              ONLY_ALLOWED=false
+            fi
+          done <<< "$CHANGED_FILES"
+
+          if [ "$ONLY_ALLOWED" = "false" ]; then
+            echo "needs_review=true" >> $GITHUB_OUTPUT
+            {
+              echo "core_files<<CORE_EOF"
+              echo -e "$CORE_FILES"
+              echo "CORE_EOF"
+            } >> $GITHUB_OUTPUT
+          else
+            echo "needs_review=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Add review label
+        if: steps.detect.outputs.needs_review == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: '🔍 requires-human-review'
+              });
+            } catch (e) {
+              if (e.status === 404) {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: '🔍 requires-human-review',
+                  color: 'e4e669',
+                  description: 'Bu PR pack dişinda dosyalar değiştiriyor (HITL gerekli)'
+                });
+              }
+            }
+
+            await github.rest.issues.addLabels({
+               issue_number: context.issue.number,
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               labels: ['🔍 requires-human-review']
+            });
+
+      - name: Comment on core changes
+        if: steps.detect.outputs.needs_review == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const coreFiles = `${{ steps.detect.outputs.core_files }}`;
+
+            const comments = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+
+            const alreadyCommented = comments.data.some(c =>
+              c.user.login === 'github-actions[bot]' &&
+              c.body.includes('🛡️ Human In The Loop (HITL) Onayı Gerekli')
+            );
+
+            if (alreadyCommented) {
+              console.log('Zaten yorum yapildi.');
+              return;
+            }
+
+            let body = `## 🛡️ Human In The Loop (HITL) Onayı Gerekli\n\n`;
+            body += `Bu Pull Request, ait olduğu paket dizini (\`packages/<pack-name>/\`) dışında dosyalar modifiye etmiştir. `;
+            body += `Özellikle ana dizindeki \`tests\` ve \`fixtures\` güncellemeleri yöneticiler tarafından **HITL onayı** gerektirmektedir.\n\n`;
+            body += `### İncelenmesi Gereken Dosyalar:\n\`\`\`\n${coreFiles.trim()}\n\`\`\`\n\n`;
+            body += `---\n\n`;
+            body += `**Beklenen Katkı (PR) Davranışı:**\n`;
+            body += `- Paket geliştiricisi yalnızca yazdığı pack (\`packages/...\`) içine müdahale etmelidir.\n`;
+            body += `Lütfen uygun değilse PR'ınızı düzenleyin veya yetkilinin incelemesini bekleyin.`;
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
