@@ -246,7 +246,10 @@ CLI + API çalışıyor, her modül test edildi. Thin shell kurulur.
 - [ ] Outputs paneli: modül kartları → tetikleme → dosya indirme
 - [ ] context-shield session map → sessionStorage (sayfa kapanınca sıfır)
 
+> **Design Requirement:** context-ui geliştirilirken `DESIGN.md` kanonik UI tasarım dilimizdir. Agent'lar otomatik arayüz geliştirmelerinde (örn. layout ve bileşen üretiminde) **Google Stitch** ve **MCP**'yi (Antigravity üzerinden) varsayılan olarak kullanmalı ve `create_design_system` komutlarıyla `DESIGN.md` standartlarını Stitch'e öğretmelidir.
+
 **Tamamlanma kriteri:** Tarayıcıdan PDF yükle → Q&A yap → visual abstract indir akışı CLI'a bağımlılık olmadan çalışır.
+
 
 ---
 

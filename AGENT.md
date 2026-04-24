@@ -305,3 +305,11 @@ All E2E UI tests reside in the root `tests/e2e/` directory.
    ```
 4. **LLM Vision Debugging (Safe Failure):**
    The central `playwright.config.js` enforces taking screenshots upon test failure (`screenshot: 'only-on-failure'`). These screenshots are automatically placed in `test-results/`. If your UI is failing, upload these screenshots into your AI agent (Claude/Antigravity) so it can use Vision models to debug layout and render issues natively.
+
+### 11. UI Design & Development Methodology
+
+> **Important:** All UI development must strictly adhere to the project's design system.
+
+1. **Design System:** The canonical reference for the project's design language is `DESIGN.md`. It contains the typography, color palettes, spacing, and shape tokens.
+2. **Google Stitch & MCP:** By default, UI development and design generation should be executed using **Google Stitch** via **MCP (Model Context Protocol)** natively within **Antigravity**. 
+3. **Agentic Workflow:** When starting a UI task, the agent must parse `DESIGN.md` and configure the Google Stitch design system (using `create_design_system` & `update_design_system` MCP tools) to enforce these exact variables. This ensures absolute visual consistency across all tools in the `context-med` suite.
