@@ -154,16 +154,27 @@ npm run test:cli
 
 #### Test Categories (by priority)
 
-| # | Category | What to Test | Priority |
-|---|----------|-------------|----------|
-| 1 | **Smoke** | `--help` displays usage, `--version` shows semver | P0 |
-| 2 | **Happy Path** | Valid input → correct output file with valid schema | P0 |
-| 3 | **Error Path** | Missing `--input`, nonexistent file, corrupt config | P0 |
-| 4 | **Edge Case** | Empty file input, Unicode content, very large file | P1 |
-| 5 | **Dry Run** | `--dry-run` does NOT write files | P1 |
-| 6 | **source_quote** | All numerical results have non-empty `source_quote` | P1 |
-| 7 | **Ratchet** | New output ≥ baseline quality (no regression) | P2 |
-| 8 | **Integration** | Full pipeline: ingest → compile → generate → eval | P2 |
+| # | Category | What to Test | Priority | Location |
+|---|----------|-------------|----------|----------|
+| 1 | **Smoke** | `--help` usage, missing flags, nonexistent files | P0 | Local `smoke.test.js` |
+| 2 | **Happy Path** | Valid input → correct output file with valid schema | P0 | Local `smoke.test.js` |
+| 3 | **Error Path** | Corrupt config (`Exit 1`), schema violation (`Exit 2`) | P0 | Local `smoke.test.js` |
+| 4 | **Dry/Edge** | `--dry-run` does not write files, large files | P1 | Local `smoke.test.js` |
+| 5 | **Ratchet** | New output ≥ baseline quality (no regression) | P2 | Local `eval.test.js` |
+| 6 | **Integration**| Full pipeline: `gate → wiki → module` orchestration | P0 | `context-core/tests/cli/integration.test.js` |
+
+#### Running E2E Integration Tests (Hackathon Scope)
+
+The `context-core` package orchestrates all other modules. To verify that your newly implemented CLI plays well with others, run the master integration suite:
+
+```bash
+cd packages/context-core
+npm run test:cli
+```
+
+This will trigger `tests/cli/integration.test.js`, which asserts that:
+1. The `chain` command correctly invokes the sequence.
+2. `Exit 2` errors from your package correctly bubble up and fail the whole pipeline securely.
 
 #### Test File Naming
 
@@ -272,3 +283,25 @@ const BIN = path.resolve(__dirname, '../../bin/cli.js');
 3. **Ratchet Evaluation** — Once an `eval` baseline is set, new versions must match or exceed its quality score. Regressions are hard failures.
 4. **Deterministic Output** — Given the same input + config, the CLI must produce identical output (excluding timestamps).
 5. **Zero PII in Logs** — CLI verbose/debug output must never contain patient-identifiable information.
+
+### 10. E2E UI Testing (Playwright)
+
+For modules containing user interfaces (`context-ui`, `pixel-office`, etc.), **Playwright Test** is the standardized framework. Playwright is already enforced natively by `context-va` for visual abstract PNG rendering, making it the superior shared dependency for this monorepo.
+
+All E2E UI tests reside in the root `tests/e2e/` directory.
+
+#### Hackathon Requirements for UI Teams
+1. **Target the Unified E2E Folder:**
+   When you build your Vue/React dashboard or canvas, write your `.spec.js` files inside `tests/e2e/`. Base templates (e.g., `dashboard.spec.js`) are provided.
+2. **Use `data-testid` Standards:**
+   Do not tie Playwright tests to CSS classes. Assign standard `data-testid` attributes to critical elements.
+   *Right:* `await page.getByTestId('submit-btn').click();`
+   *Wrong:* `await page.locator('.btn-blue').click();`
+3. **Execution Pipeline:**
+   Before running the E2E suite, ensure the target package dev server is active:
+   ```bash
+   npm run serve -w @context-med/context-ui # Start your server
+   npx playwright test
+   ```
+4. **LLM Vision Debugging (Safe Failure):**
+   The central `playwright.config.js` enforces taking screenshots upon test failure (`screenshot: 'only-on-failure'`). These screenshots are automatically placed in `test-results/`. If your UI is failing, upload these screenshots into your AI agent (Claude/Antigravity) so it can use Vision models to debug layout and render issues natively.
