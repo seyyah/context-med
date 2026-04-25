@@ -1,0 +1,159 @@
+{
+  "quiz": {
+    "source": "../../fixtures/wiki/cardiovascular/atrial-fibrillation.md",
+    "generated_at": "2026-04-25T11:05:22.494Z",
+    "difficulty": "medium",
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "difficulty": "medium",
+        "stem": "___ (AF) is the most common sustained cardiac arrhythmia, affecting approximately 2-4% of the adult population. Prevalence increases significantly with age, reaching 5-8% in individuals over 65 years.",
+        "options": [
+          "Low sensitivity",
+          "High false-positive rate",
+          "Not validated in clinical trials",
+          "Atrial fibrillation"
+        ],
+        "answer": "Atrial fibrillation",
+        "source_quote": "Atrial fibrillation (AF) is the most common sustained cardiac arrhythmia, affecting approximately 2-4% of the adult population. Prevalence increases significantly with age, reaching 5-8% in individuals over 65 years.",
+        "explanation": "Atrial fibrillation (AF) is the most common sustained cardiac arrhythmia, affecting approximately 2-4% of the adult population. Prevalence increases significantly with age, reaching 5-8% in individuals over 65 years."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "difficulty": "medium",
+        "stem": "___ Present in ~60% of AF patients.",
+        "options": [
+          "Hypertension:",
+          "TIMI score",
+          "HEART score",
+          "GRACE score"
+        ],
+        "answer": "Hypertension:",
+        "source_quote": "**Hypertension:** Present in ~60% of AF patients.",
+        "explanation": "Hypertension: Present in ~60% of AF patients."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "difficulty": "medium",
+        "stem": "___ BMI >30 increases AF risk by 49%.",
+        "options": [
+          "Warfarin only",
+          "Obesity:",
+          "No treatment required",
+          "Aspirin + Clopidogrel"
+        ],
+        "answer": "Obesity:",
+        "source_quote": "**Obesity:** BMI >30 increases AF risk by 49%.",
+        "explanation": "Obesity: BMI >30 increases AF risk by 49%."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "difficulty": "medium",
+        "stem": "The ___ score is the standard tool for stroke risk stratification:",
+        "options": [
+          "High false-positive rate",
+          "Low sensitivity",
+          "CHA₂DS₂-VASc",
+          "Not validated in clinical trials"
+        ],
+        "answer": "CHA₂DS₂-VASc",
+        "source_quote": "The **CHA₂DS₂-VASc** score is the standard tool for stroke risk stratification:",
+        "explanation": "The CHA₂DS₂-VASc score is the standard tool for stroke risk stratification:"
+      },
+      {
+        "id": "q5",
+        "type": "mcq",
+        "difficulty": "medium",
+        "stem": "| ___ | 1 |",
+        "options": [
+          "High false-positive rate",
+          "Not validated in clinical trials",
+          "Low sensitivity",
+          "Hypertension"
+        ],
+        "answer": "Hypertension",
+        "source_quote": "| Hypertension | 1 |",
+        "explanation": "| Hypertension | 1 |"
+      },
+      {
+        "id": "q6",
+        "type": "mcq",
+        "difficulty": "medium",
+        "stem": "| ___/TIA history | 2 |",
+        "options": [
+          "Stroke",
+          "Not validated in clinical trials",
+          "High false-positive rate",
+          "Low sensitivity"
+        ],
+        "answer": "Stroke",
+        "source_quote": "| Stroke/TIA history | 2 |",
+        "explanation": "| Stroke/TIA history | 2 |"
+      },
+      {
+        "id": "q7",
+        "type": "mcq",
+        "difficulty": "medium",
+        "stem": "| ___ (female) | 1 |",
+        "options": [
+          "Aspirin monotherapy",
+          "Calcium channel blocker",
+          "Sex",
+          "Beta-blocker"
+        ],
+        "answer": "Sex",
+        "source_quote": "| Sex (female) | 1 |",
+        "explanation": "| Sex (female) | 1 |"
+      },
+      {
+        "id": "q8",
+        "type": "mcq",
+        "difficulty": "medium",
+        "stem": "___ (apixaban, rivaroxaban, edoxaban, dabigatran) are preferred over warfarin.",
+        "options": [
+          "Diastolic dysfunction",
+          "Systolic dysfunction",
+          "NOACs",
+          "Conduction delay"
+        ],
+        "answer": "NOACs",
+        "source_quote": "**NOACs** (apixaban, rivaroxaban, edoxaban, dabigatran) are preferred over warfarin.",
+        "explanation": "NOACs (apixaban, rivaroxaban, edoxaban, dabigatran) are preferred over warfarin."
+      },
+      {
+        "id": "q9",
+        "type": "mcq",
+        "difficulty": "medium",
+        "stem": "___ is no longer recommended for stroke prevention in AF.",
+        "options": [
+          "Diastolic dysfunction",
+          "Conduction delay",
+          "Systolic dysfunction",
+          "Aspirin alone"
+        ],
+        "answer": "Aspirin alone",
+        "source_quote": "**Aspirin alone** is no longer recommended for stroke prevention in AF.",
+        "explanation": "Aspirin alone is no longer recommended for stroke prevention in AF."
+      },
+      {
+        "id": "q10",
+        "type": "mcq",
+        "difficulty": "medium",
+        "stem": "___ strategy should be individualized.",
+        "options": [
+          "Rate vs rhythm control",
+          "Not validated in clinical trials",
+          "High false-positive rate",
+          "Low sensitivity"
+        ],
+        "answer": "Rate vs rhythm control",
+        "source_quote": "Rate vs rhythm control strategy should be individualized.",
+        "explanation": "Rate vs rhythm control strategy should be individualized."
+      }
+    ]
+  }
+}

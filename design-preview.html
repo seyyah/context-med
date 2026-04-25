@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xtatistix – Design System Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --surface:                  #ffffff;
+      --surface-dim:              #e5e5e5;
+      --surface-bright:           #ffffff;
+      --surface-container-lowest: #ffffff;
+      --surface-container-low:    #f5f6f9;
+      --surface-container:        #f5f6f9;
+      --surface-container-high:   #e5e7eb;
+      --surface-container-highest:#d4d4d8;
+      --on-surface:               #18181b;
+      --on-surface-variant:       #71717a;
+      --inverse-surface:          #262624;
+      --inverse-on-surface:       #ffffff;
+      --outline:                  #d4d4d8;
+      --outline-variant:          #e5e5e5;
+      --primary:                  #003CBD;
+      --on-primary:               #ffffff;
+      --primary-container:        #EBF2FF;
+      --on-primary-container:     #1E3A8A;
+      --inverse-primary:          #93C5FD;
+      --secondary:                #19C480;
+      --on-secondary:             #ffffff;
+      --secondary-container:      #EBF7F2;
+      --on-secondary-container:   #0A7C5C;
+      --tertiary:                 #3a3a38;
+      --on-tertiary:              #ffffff;
+      --tertiary-container:       #d4d4d8;
+      --on-tertiary-container:    #18181b;
+      --error:                    #FD2C30;
+      --on-error:                 #ffffff;
+      --error-container:          #FFF5F5;
+      --on-error-container:       #B80D10;
+      --background:               #ffffff;
+      --on-background:            #18181b;
+      --surface-variant:          #f3f4f6;
+
+      --rounded-sm:   0.25rem;
+      --rounded:      0.5rem;
+      --rounded-md:   0.375rem;
+      --rounded-lg:   0.5rem;
+      --rounded-xl:   0.75rem;
+      --rounded-3xl:  1.5rem;
+      --rounded-full: 9999px;
+
+      --space-xs:  4px;
+      --space-sm:  12px;
+      --space-md:  16px;
+      --space-lg:  24px;
+      --space-xl:  32px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--background);
+      color: var(--on-background);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 260px;
+      min-height: 100vh;
+      background: var(--primary);
+      color: var(--on-primary);
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-lg);
+      gap: var(--space-lg);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .sidebar-logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+      padding-bottom: var(--space-md);
+      border-bottom: 1px solid rgba(255,255,255,.12);
+    }
+    .sidebar-section-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255,255,255,.45);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 4px;
+    }
+    .sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: var(--rounded-lg);
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,.72);
+      cursor: pointer;
+      transition: background .15s, color .15s;
+      text-decoration: none;
+    }
+    .sidebar-item:hover { background: rgba(255,255,255,.1); color: #fff; }
+    .sidebar-item.active { background: rgba(255,255,255,.15); color: #fff; }
+    .sidebar-icon { width: 16px; height: 16px; opacity: .8; flex-shrink: 0; }
+
+    /* ── Main ── */
+    main {
+      flex: 1;
+      padding: var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+      overflow-x: hidden;
+    }
+
+    /* ── Section headers ── */
+    .section-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--on-surface);
+      line-height: 32px;
+    }
+    .section-subtitle {
+      font-size: 14px;
+      color: var(--on-surface-variant);
+      margin-top: 4px;
+    }
+    .section { display: flex; flex-direction: column; gap: var(--space-lg); }
+
+    /* ── Color palette ── */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: var(--space-md);
+    }
+    .color-chip {
+      border-radius: var(--rounded-xl);
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .color-swatch {
+      height: 72px;
+      width: 100%;
+    }
+    .color-info {
+      background: var(--surface-container-low);
+      padding: 8px 10px;
+    }
+    .color-name {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--on-surface);
+      line-height: 1.4;
+    }
+    .color-hex {
+      font-size: 11px;
+      color: var(--on-surface-variant);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Typography ── */
+    .type-stack { display: flex; flex-direction: column; gap: var(--space-md); }
+    .type-row {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-lg);
+      padding: var(--space-md);
+      background: var(--surface-container-low);
+      border-radius: var(--rounded-xl);
+      border: 1px solid var(--outline-variant);
+    }
+    .type-meta {
+      width: 160px;
+      flex-shrink: 0;
+    }
+    .type-label { font-size: 11px; font-weight: 500; color: var(--on-surface-variant); }
+    .type-spec  { font-size: 11px; color: var(--on-surface-variant); margin-top: 2px; }
+    .type-sample { flex: 1; color: var(--on-surface); }
+
+    /* ── Components ── */
+    .component-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-md);
+      align-items: flex-start;
+    }
+    .component-card {
+      background: var(--surface-container-low);
+      border: 1px solid var(--outline-variant);
+      border-radius: var(--rounded-xl);
+      padding: var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      min-width: 200px;
+    }
+    .component-card-title {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 var(--space-sm);
+      height: 34px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 16px;
+      border-radius: var(--rounded-lg);
+      transition: opacity .15s, box-shadow .15s;
+      white-space: nowrap;
+    }
+    .btn:hover { opacity: .88; }
+    .btn-primary   { background: var(--primary);           color: var(--on-primary); }
+    .btn-secondary-blue  { background: var(--primary-container); color: var(--primary); }
+    .btn-secondary-green { background: var(--secondary-container); color: var(--secondary); }
+    .btn-error     { background: var(--error);             color: var(--on-error); }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 10px;
+      border-radius: var(--rounded-lg);
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 14px;
+    }
+    .badge-blue  { background: var(--primary-container);   color: var(--primary); }
+    .badge-green { background: var(--secondary-container); color: var(--secondary); }
+    .badge-error { background: var(--error-container);     color: var(--on-error-container); }
+
+    /* Rounded showcase */
+    .rounded-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-md);
+      align-items: center;
+    }
+    .rounded-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .rounded-demo {
+      width: 60px;
+      height: 60px;
+      background: var(--primary);
+    }
+    .rounded-caption { font-size: 11px; color: var(--on-surface-variant); text-align: center; }
+
+    /* Spacing showcase */
+    .space-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-md);
+      align-items: flex-end;
+    }
+    .space-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .space-demo {
+      background: var(--primary);
+      opacity: .75;
+    }
+    .space-caption { font-size: 11px; color: var(--on-surface-variant); }
+
+    /* Data table */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      border-radius: var(--rounded-xl);
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .data-table thead tr {
+      background: var(--surface-container-high);
+    }
+    .data-table th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      border-bottom: 1px solid var(--outline);
+    }
+    .data-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--outline-variant);
+      color: var(--on-surface);
+      background: var(--surface-container-low);
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--surface-container); }
+
+    /* Metric cards */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: var(--space-md);
+    }
+    .metric-card {
+      background: var(--surface-container-low);
+      border: 1px solid var(--outline-variant);
+      border-radius: var(--rounded-3xl);
+      padding: var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .metric-label { font-size: 12px; font-weight: 500; color: var(--on-surface-variant); }
+    .metric-value { font-size: 24px; font-weight: 700; color: var(--on-surface); line-height: 32px; }
+    .metric-sub   { font-size: 11px; color: var(--secondary); font-weight: 500; }
+
+    /* Modal preview */
+    .modal-preview {
+      position: relative;
+      background: var(--surface-bright);
+      border-radius: var(--rounded-3xl);
+      box-shadow: 0 8px 32px rgba(0,0,0,.14);
+      padding: var(--space-xl);
+      max-width: 400px;
+      border: 1px solid var(--outline-variant);
+    }
+    .modal-title    { font-size: 18px; font-weight: 700; color: var(--on-surface); margin-bottom: 8px; }
+    .modal-body     { font-size: 14px; color: var(--on-surface-variant); line-height: 22px; margin-bottom: var(--space-lg); }
+    .modal-actions  { display: flex; gap: var(--space-sm); justify-content: flex-end; }
+
+    /* Dark mode card */
+    .dark-card {
+      background: var(--inverse-surface);
+      border-radius: var(--rounded-3xl);
+      padding: var(--space-xl);
+      color: var(--inverse-on-surface);
+      max-width: 400px;
+    }
+    .dark-card .metric-value { color: #fff; }
+    .dark-card .metric-label { color: rgba(255,255,255,.55); }
+    .dark-card .metric-sub   { color: var(--inverse-primary); }
+
+    /* Skeleton loader */
+    @keyframes shimmer {
+      0%   { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface-dim) 25%, var(--surface-container-high) 50%, var(--surface-dim) 75%);
+      background-size: 800px 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: var(--rounded-lg);
+    }
+    .skeleton-row { display: flex; flex-direction: column; gap: 8px; }
+
+    /* Input */
+    .input-demo {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .input-label { font-size: 12px; font-weight: 500; color: var(--on-surface-variant); }
+    .input-field {
+      height: 36px;
+      border: 1px solid var(--outline);
+      border-radius: var(--rounded-lg);
+      padding: 0 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--on-surface);
+      background: var(--surface-bright);
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .input-field:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0,60,189,.12);
+    }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--outline-variant);
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">Xtatistix</div>
+
+    <div>
+      <div class="sidebar-section-label">Genel</div>
+      <nav class="sidebar-nav">
+        <a class="sidebar-item active" href="#">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+          Dashboard
+        </a>
+        <a class="sidebar-item" href="#">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h12M2 12h8"/></svg>
+          Reports
+        </a>
+        <a class="sidebar-item" href="#">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+          Analytics
+        </a>
+      </nav>
+    </div>
+
+    <div>
+      <div class="sidebar-section-label">Yönetim</div>
+      <nav class="sidebar-nav">
+        <a class="sidebar-item" href="#">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+          Users
+        </a>
+        <a class="sidebar-item" href="#">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1l2 4 5 .7-3.5 3.4.8 4.9L8 12l-4.3 2 .8-4.9L1 5.7 6 5z"/></svg>
+          Premium
+        </a>
+        <a class="sidebar-item" href="#">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2"/></svg>
+          Settings
+        </a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main>
+
+    <!-- Header -->
+    <div>
+      <div class="section-title">Design System Preview</div>
+      <div class="section-subtitle">Xtatistix · Tüm token ve component'lerin interaktif önizlemesi</div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- ── COLORS ── -->
+    <section class="section">
+      <div>
+        <div style="font-size:20px;font-weight:700;line-height:28px;color:var(--on-surface)">Colors</div>
+        <div class="section-subtitle">Tüm renk token'ları ve hex değerleri</div>
+      </div>
+
+      <div class="color-grid">
+        <!-- Surface group -->
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#ffffff;border:1px solid #e5e5e5;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">surface</div><div class="color-hex">#f5f5f4</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#ffffff;border:1px solid #e5e5e5;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">surface-bright</div><div class="color-hex">#ffffff</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#e5e5e5;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">surface-dim</div><div class="color-hex">#e5e5e5</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#f5f6f9;border:1px solid #e5e5e5;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">surface-container-low</div><div class="color-hex">#f9fafb</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#e5e7eb;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">surface-container-high</div><div class="color-hex">#e5e7eb</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#d4d4d8;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">surface-container-highest</div><div class="color-hex">#d4d4d8</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#18181b;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">on-surface</div><div class="color-hex">#18181b</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#71717a;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">on-surface-variant</div><div class="color-hex">#71717a</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#262624;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">inverse-surface</div><div class="color-hex">#262624</div></div>
+        </div>
+        <!-- Primary group -->
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#003CBD;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">primary</div><div class="color-hex">#003CBD</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#EBF2FF;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">primary-container</div><div class="color-hex">#EBF2FF</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#003CBD;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">on-primary-container</div><div class="color-hex">#1E3A8A</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#93C5FD;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">inverse-primary</div><div class="color-hex">#93C5FD</div></div>
+        </div>
+        <!-- Secondary group -->
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#19C480;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">secondary</div><div class="color-hex">#19C480</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#EBF7F2;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">secondary-container</div><div class="color-hex">#EBF7F2</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#0A7C5C;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">on-secondary-container</div><div class="color-hex">#0A7C5C</div></div>
+        </div>
+        <!-- Error group -->
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#FD2C30;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">error</div><div class="color-hex">#FD2C30</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#FFF5F5;border:1px solid #e5e5e5;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">error-container</div><div class="color-hex">#FFF5F5</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#B80D10;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">on-error-container</div><div class="color-hex">#B80D10</div></div>
+        </div>
+        <!-- Outline -->
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#d4d4d8;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">outline</div><div class="color-hex">#d4d4d8</div></div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#e5e5e5;border:1px solid #d4d4d8;border-radius:var(--rounded-xl) var(--rounded-xl) 0 0"></div>
+          <div class="color-info"><div class="color-name">outline-variant</div><div class="color-hex">#e5e5e5</div></div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- ── FONTS ── -->
+    <section class="section">
+      <div>
+        <div style="font-size:20px;font-weight:700;line-height:28px;color:var(--on-surface)">Fonts</div>
+        <div class="section-subtitle">Birincil font ailesi · Inter</div>
+      </div>
+      <div style="background:var(--surface-container-low);border:1px solid var(--outline-variant);border-radius:var(--rounded-xl);padding:var(--space-xl);display:flex;flex-direction:column;gap:var(--space-lg);">
+        <!-- Meta row -->
+        <div style="display:flex;gap:var(--space-xl);flex-wrap:wrap;">
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--on-surface-variant);margin-bottom:4px;">Font Ailesi</div>
+            <div style="font-size:14px;font-weight:700;color:var(--on-surface);">Inter</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--on-surface-variant);margin-bottom:4px;">Kaynak</div>
+            <div style="font-size:14px;color:var(--primary);">Google Fonts</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--on-surface-variant);margin-bottom:4px;">Ağırlıklar</div>
+            <div style="display:flex;gap:6px;">
+              <span class="badge badge-blue">400</span>
+              <span class="badge badge-blue">500</span>
+              <span class="badge badge-blue">700</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--on-surface-variant);margin-bottom:4px;">Fallback</div>
+            <div style="font-size:13px;color:var(--on-surface-variant);font-family:monospace;">system-ui, -apple-system, sans-serif</div>
+          </div>
+        </div>
+        <!-- Weight showcase -->
+        <div style="border-top:1px solid var(--outline-variant);padding-top:var(--space-lg);display:flex;flex-direction:column;gap:10px;">
+          <div style="font-size:11px;font-weight:500;color:var(--on-surface-variant);margin-bottom:2px;">Weight Showcase</div>
+          <div style="font-size:28px;font-weight:400;color:var(--on-surface);line-height:1.2;">Inter Regular — 400</div>
+          <div style="font-size:28px;font-weight:500;color:var(--on-surface);line-height:1.2;">Inter Medium — 500</div>
+          <div style="font-size:28px;font-weight:700;color:var(--on-surface);line-height:1.2;">Inter Bold — 700</div>
+        </div>
+        <!-- Charset -->
+        <div style="border-top:1px solid var(--outline-variant);padding-top:var(--space-lg);">
+          <div style="font-size:11px;font-weight:500;color:var(--on-surface-variant);margin-bottom:8px;">Karakter Seti</div>
+          <div style="font-size:16px;color:var(--on-surface);line-height:2;letter-spacing:.5px;">
+            A B C D E F G H I J K L M N O P Q R S T U V W X Y Z<br/>
+            a b c d e f g h i j k l m n o p q r s t u v w x y z<br/>
+            0 1 2 3 4 5 6 7 8 9 &nbsp; ! @ # $ % & * ( ) + = — →
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- ── TYPOGRAPHY ── -->
+    <section class="section">
+      <div>
+        <div style="font-size:20px;font-weight:700;line-height:28px;color:var(--on-surface)">Typography</div>
+        <div class="section-subtitle">Inter font ailesi · tüm scale'ler</div>
+      </div>
+
+      <div class="type-stack">
+        <div class="type-row">
+          <div class="type-meta">
+            <div class="type-label">display</div>
+            <div class="type-spec">24px · 700 · 32px</div>
+          </div>
+          <div class="type-sample" style="font-size:24px;font-weight:700;line-height:32px">Xtatistix Analytics</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">
+            <div class="type-label">headline-lg</div>
+            <div class="type-spec">20px · 700 · 28px</div>
+          </div>
+          <div class="type-sample" style="font-size:20px;font-weight:700;line-height:28px">Revenue Overview</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">
+            <div class="type-label">headline-md</div>
+            <div class="type-spec">18px · 700 · 22px</div>
+          </div>
+          <div class="type-sample" style="font-size:18px;font-weight:700;line-height:22px">User Statistics</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">
+            <div class="type-label">body-lg</div>
+            <div class="type-spec">14px · 400 · 22px</div>
+          </div>
+          <div class="type-sample" style="font-size:14px;font-weight:400;line-height:22px">The system employs Inter font family, optimizing legibility for highly detailed tabular data and administrative interfaces.</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">
+            <div class="type-label">body-md</div>
+            <div class="type-spec">13px · 400 · 21px</div>
+          </div>
+          <div class="type-sample" style="font-size:13px;font-weight:400;line-height:21px">Data-dense interface with premium, focused aesthetic. Structured components for tables and dashboards.</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">
+            <div class="type-label">label-md</div>
+            <div class="type-spec">12px · 500 · 16px</div>
+          </div>
+          <div class="type-sample" style="font-size:12px;font-weight:500;line-height:16px">Save Changes · Export Report · Filter by Date</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">
+            <div class="type-label">label-sm</div>
+            <div class="type-spec">11px · 500 · 14px</div>
+          </div>
+          <div class="type-sample" style="font-size:11px;font-weight:500;line-height:14px">ACTIVE · PREMIUM · ARCHIVED</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- ── COMPONENTS ── -->
+    <section class="section">
+      <div>
+        <div style="font-size:20px;font-weight:700;line-height:28px;color:var(--on-surface)">Components</div>
+        <div class="section-subtitle">Buttons, Badges, Inputs</div>
+      </div>
+
+      <div class="component-grid">
+        <!-- Buttons -->
+        <div class="component-card">
+          <div class="component-card-title">Buttons</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn btn-primary">Primary Action</button>
+            <button class="btn btn-secondary-blue">Secondary Blue</button>
+            <button class="btn btn-secondary-green">Secondary Green</button>
+            <button class="btn btn-error">Delete</button>
+          </div>
+        </div>
+
+        <!-- Badges -->
+        <div class="component-card">
+          <div class="component-card-title">Badges</div>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+            <span class="badge badge-blue">Active</span>
+            <span class="badge badge-green">Success</span>
+            <span class="badge badge-error">Error</span>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span class="badge badge-blue">Premium</span>
+              <span class="badge badge-green">Verified</span>
+              <span class="badge badge-error">Banned</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inputs -->
+        <div class="component-card" style="min-width:260px">
+          <div class="component-card-title">Inputs</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="input-demo">
+              <label class="input-label">Search</label>
+              <input class="input-field" type="text" placeholder="Search users…" />
+            </div>
+            <div class="input-demo">
+              <label class="input-label">Email</label>
+              <input class="input-field" type="email" placeholder="admin@xtatistix.com" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- ── SHAPES ── -->
+    <section class="section">
+      <div>
+        <div style="font-size:20px;font-weight:700;line-height:28px;color:var(--on-surface)">Shapes & Rounded</div>
+        <div class="section-subtitle">Köşe yarıçapı token'ları</div>
+      </div>
+      <div class="rounded-row">
+        <div class="rounded-box">
+          <div class="rounded-demo" style="border-radius:0.25rem"></div>
+          <div class="rounded-caption">sm<br/>0.25rem</div>
+        </div>
+        <div class="rounded-box">
+          <div class="rounded-demo" style="border-radius:0.375rem"></div>
+          <div class="rounded-caption">md<br/>0.375rem</div>
+        </div>
+        <div class="rounded-box">
+          <div class="rounded-demo" style="border-radius:0.5rem"></div>
+          <div class="rounded-caption">lg<br/>0.5rem</div>
+        </div>
+        <div class="rounded-box">
+          <div class="rounded-demo" style="border-radius:0.75rem"></div>
+          <div class="rounded-caption">xl<br/>0.75rem</div>
+        </div>
+        <div class="rounded-box">
+          <div class="rounded-demo" style="border-radius:1.5rem"></div>
+          <div class="rounded-caption">3xl<br/>1.5rem</div>
+        </div>
+        <div class="rounded-box">
+          <div class="rounded-demo" style="border-radius:9999px;width:60px"></div>
+          <div class="rounded-caption">full<br/>9999px</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- ── SPACING ── -->
+    <section class="section">
+      <div>
+        <div style="font-size:20px;font-weight:700;line-height:28px;color:var(--on-surface)">Spacing</div>
+        <div class="section-subtitle">Base unit: 8px</div>
+      </div>
+      <div class="space-row">
+        <div class="space-box">
+          <div class="space-demo" style="width:4px;height:40px;border-radius:2px"></div>
+          <div class="space-caption">xs · 4px</div>
+        </div>
+        <div class="space-box">
+          <div class="space-demo" style="width:8px;height:40px;border-radius:2px"></div>
+          <div class="space-caption">base · 8px</div>
+        </div>
+        <div class="space-box">
+          <div class="space-demo" style="width:12px;height:40px;border-radius:2px"></div>
+          <div class="space-caption">sm · 12px</div>
+        </div>
+        <div class="space-box">
+          <div class="space-demo" style="width:16px;height:40px;border-radius:2px"></div>
+          <div class="space-caption">md · 16px</div>
+        </div>
+        <div class="space-box">
+          <div class="space-demo" style="width:24px;height:40px;border-radius:2px"></div>
+          <div class="space-caption">lg · 24px</div>
+        </div>
+        <div class="space-box">
+          <div class="space-demo" style="width:32px;height:40px;border-radius:2px"></div>
+          <div class="space-caption">xl · 32px</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- ── METRIC CARDS ── -->
+    <section class="section">
+      <div>
+        <div style="font-size:20px;font-weight:700;line-height:28px;color:var(--on-surface)">Dashboard Metric Cards</div>
+        <div class="section-subtitle">rounded-3xl (1.5rem) · light & dark variants</div>
+      </div>
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-label">Total Users</div>
+          <div class="metric-value">48,291</div>
+          <div class="metric-sub">↑ 12.4% this month</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Revenue</div>
+          <div class="metric-value">$184k</div>
+          <div class="metric-sub">↑ 7.2% vs last month</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Active Sessions</div>
+          <div class="metric-value">3,847</div>
+          <div class="metric-sub">↑ 2.1% today</div>
+        </div>
+        <!-- Dark card -->
+        <div class="metric-card dark-card">
+          <div class="metric-label">Premium Users</div>
+          <div class="metric-value">9,214</div>
+          <div class="metric-sub">↑ 18.6% this quarter</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- ── DATA TABLE ── -->
+    <section class="section">
+      <div>
+        <div style="font-size:20px;font-weight:700;line-height:28px;color:var(--on-surface)">Data Table</div>
+        <div class="section-subtitle">Handsontable tarzı — zebra hover, sıkı padding</div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Plan</th>
+            <th>Status</th>
+            <th>Revenue</th>
+            <th>Last Active</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Emir Karahan</td>
+            <td><span class="badge badge-blue">Pro</span></td>
+            <td><span class="badge badge-green">Active</span></td>
+            <td>$1,200</td>
+            <td>2026-04-25</td>
+          </tr>
+          <tr>
+            <td>Sara Chen</td>
+            <td><span class="badge badge-blue">Enterprise</span></td>
+            <td><span class="badge badge-green">Active</span></td>
+            <td>$8,400</td>
+            <td>2026-04-24</td>
+          </tr>
+          <tr>
+            <td>Marcus Webb</td>
+            <td><span class="badge badge-blue">Starter</span></td>
+            <td><span class="badge badge-error">Inactive</span></td>
+            <td>$0</td>
+            <td>2026-03-10</td>
+          </tr>
+          <tr>
+            <td>Lena Müller</td>
+            <td><span class="badge badge-blue">Pro</span></td>
+            <td><span class="badge badge-green">Active</span></td>
+            <td>$2,100</td>
+            <td>2026-04-25</td>
+          </tr>
+          <tr>
+            <td>James Park</td>
+            <td><span class="badge badge-blue">Enterprise</span></td>
+            <td><span class="badge badge-green">Active</span></td>
+            <td>$12,000</td>
+            <td>2026-04-23</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- ── MODAL ── -->
+    <section class="section">
+      <div>
+        <div style="font-size:20px;font-weight:700;line-height:28px;color:var(--on-surface)">Modal Preview</div>
+        <div class="section-subtitle">shadow-lg · rounded-3xl · surface-bright</div>
+      </div>
+      <div class="modal-preview">
+        <div class="modal-title">Delete User Account?</div>
+        <div class="modal-body">This action cannot be undone. All data associated with this account will be permanently removed from our servers.</div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary-blue">Cancel</button>
+          <button class="btn btn-error">Delete</button>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- ── SKELETON ── -->
+    <section class="section">
+      <div>
+        <div style="font-size:20px;font-weight:700;line-height:28px;color:var(--on-surface)">Skeleton Loader</div>
+        <div class="section-subtitle">Shimmer animasyonu — yükleme durumu</div>
+      </div>
+      <div style="background:var(--surface-container-low);border:1px solid var(--outline-variant);border-radius:var(--rounded-xl);padding:var(--space-lg);max-width:400px">
+        <div class="skeleton-row">
+          <div class="skeleton" style="height:20px;width:60%"></div>
+          <div class="skeleton" style="height:14px;width:90%"></div>
+          <div class="skeleton" style="height:14px;width:75%"></div>
+          <div class="skeleton" style="height:14px;width:80%"></div>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <div class="skeleton" style="height:32px;width:90px;border-radius:var(--rounded-lg)"></div>
+            <div class="skeleton" style="height:32px;width:70px;border-radius:var(--rounded-lg)"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div style="height:40px"></div>
+
+  </main>
+</body>
+</html>
