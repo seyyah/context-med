@@ -414,7 +414,7 @@
             uploadBtn.style.borderColor = '#ef4444'; // Red
             uploadBtn.style.color = '#ef4444';
             setTimeout(() => {
-              alert(\`[Exit Code 2] Error: Validation failed — schema mismatch or hallucination detected.\\n\\n"\${fileName}" dosyası IMRAD yapısına ve klinik P-değeri şemasına uymuyor. İşlem güvenlik denetleyicisi (Ethics Checker) tarafından reddedildi.\`);
+              alert(`[Exit Code 2] Error: Validation failed — schema mismatch or hallucination detected.\n\n"${fileName}" dosyası IMRAD yapısına ve klinik P-değeri şemasına uymuyor. İşlem güvenlik denetleyicisi (Ethics Checker) tarafından reddedildi.`);
               uploadBtn.innerHTML = originalText;
               uploadBtn.style.borderColor = 'var(--text-muted)';
               uploadBtn.style.color = 'var(--text-primary)';
@@ -433,7 +433,7 @@
           uploadBtn.style.color = 'var(--brand-green-text)';
           
           setTimeout(() => {
-            alert(\`✅ "\${fileName}" başarıyla okundu.\\nLLM ajanları PDF içeriğini IMRAD JSON formatına çevirdi ve Deck Navigator güncellendi!\`);
+            alert(`✅ "${fileName}" başarıyla okundu.\nLLM ajanları PDF içeriğini IMRAD JSON formatına çevirdi ve Deck Navigator güncellendi!`);
             
             // EKRANIN İÇERİĞİNİ YENİ PDF'E GÖRE DEĞİŞTİRME SİMÜLASYONU
             document.querySelector('.canvas-title').innerText = "Overall Survival (OS) Analysis";
