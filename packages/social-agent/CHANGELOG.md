@@ -5,6 +5,33 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.3.0] - 2026-04-25
+
+### Contributors
+
+- Akbulut55
+
+### Added
+
+- Added optional Gemini-backed workspace generation through server-side `GEMINI_API_KEY` configuration.
+- Added package-local `.env.example` for local demo API configuration.
+- Added explicit platform adaptation metadata to draft outputs for LinkedIn and X.
+- Added visible workspace result panels for plan, drafts, moderation, and review queue outputs.
+- Added client-side routing for sidebar and internal demo links.
+
+### Changed
+
+- Updated the workspace UI to show live Gemini versus local fallback generation status.
+- Reworked draft rendering so Workspace shows final platform-ready LinkedIn and X outputs above operational metadata.
+- Moved final output metadata into consistent collapsed adaptation details for both LinkedIn and X cards.
+- Improved deterministic LinkedIn/X draft bodies from plain summaries into platform-ready post structures.
+- Added draft repair guardrails for generic Gemini launch language before final platform outputs are shown.
+- Updated Gemini workspace prompting to require platform-specific rewriting instead of shortened copies.
+- Fixed the demo shell scroll behavior so long Workspace output remains reachable below the fold.
+- Improved sidebar active-route styling so demo navigation behaves like an application shell.
+- Reworked workspace output from compact tables into a clearer run summary, stage flow, and result cards.
+- Bumped package metadata to `0.3.0`.
+
 ## [social-agent-v0.2.4] - 2026-04-25
 
 ### Contributors

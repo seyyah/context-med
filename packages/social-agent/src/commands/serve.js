@@ -4,7 +4,8 @@ const fs = require('fs');
 const http = require('http');
 const path = require('path');
 const { createCliError } = require('../index');
-const { createSocialAgentDemo } = require('../api');
+const { createSocialAgentDemoPayload } = require('../api');
+const { loadPackageEnv } = require('../env');
 
 const MAX_DEMO_BODY_BYTES = 64 * 1024;
 
@@ -116,7 +117,7 @@ async function serveDemoApi(request, response) {
   }
 
   const options = request.method === 'POST' ? await readJsonBody(request) : {};
-  const payload = createSocialAgentDemo(options);
+  const payload = await createSocialAgentDemoPayload(options);
   response.writeHead(200, {
     'content-type': 'application/json; charset=utf-8',
     'cache-control': 'no-store'
@@ -131,6 +132,8 @@ async function serveDemoApi(request, response) {
 }
 
 async function runServe(options) {
+  loadPackageEnv();
+
   const port = Number.parseInt(options.port, 10);
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
     throw createCliError(`Invalid port: ${options.port}`, 1);

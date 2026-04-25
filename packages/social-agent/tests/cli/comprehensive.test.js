@@ -156,6 +156,24 @@ describe('social-agent CLI comprehensive behavior', () => {
     expect(x).toBeTruthy();
     expect(linkedIn.body).not.toBe(x.body);
     expect(linkedIn.body.length).toBeGreaterThan(x.body.length);
+    expect(linkedIn.body).toMatch(/should not read like another product announcement/i);
+    expect(linkedIn.body).toMatch(/review/i);
+    expect(linkedIn.body).toMatch(/- turn source material into platform-ready copy/);
+    expect(linkedIn.body).toMatch(/Which review step creates the most friction/i);
+    expect(linkedIn.body).not.toMatch(/LinkedIn version|Source basis|should explain|generic announcement|excited to announce/i);
+    expect(x.body).toMatch(/\?$/);
+    expect(x.body).not.toMatch(/LinkedIn|Source basis|paragraph/i);
+    expect(linkedIn.adaptation).toMatchObject({
+      strategy: 'professional_narrative'
+    });
+    expect(x.adaptation).toMatchObject({
+      strategy: 'concise_conversation_starter',
+      length_target: 'single post under 240 characters'
+    });
+    expect(linkedIn.adaptation.rewrite_reason).toMatch(/LinkedIn/i);
+    expect(x.adaptation.rewrite_reason).toMatch(/X/i);
+    expect(linkedIn.adaptation.strategy).not.toBe(x.adaptation.strategy);
+    expect(x.body.length).toBeLessThanOrEqual(240);
     expect(linkedIn.source_quote.length).toBeGreaterThan(10);
     expect(x.source_quote.length).toBeGreaterThan(10);
   });
@@ -260,10 +278,177 @@ describe('social-agent CLI comprehensive behavior', () => {
     expect(payload.settings).toMatchObject({
       deterministic_mode: true,
       llm_api_calls: false,
+      generation_provider: 'local',
       direct_publishing: false
+    });
+    expect(payload.generation).toMatchObject({
+      mode: 'deterministic',
+      provider: 'local',
+      status: 'fallback',
+      llm_api_calls: false
     });
     expect(payload.source.text).toMatch(/Context-Med social launch briefing/);
     expect(payload.source.comments.length).toBeGreaterThanOrEqual(4);
+  });
+
+  test('package API supports async demo payload generation with deterministic fallback', async () => {
+    const socialAgent = require('@context-med/social-agent');
+    const payload = await socialAgent.createSocialAgentDemoPayload({
+      mode: 'deterministic',
+      source: '# Async Demo Brief\n\nReview-gated social workflow for care operations.',
+      comments: ['How is this reviewed before posting?']
+    });
+
+    expect(payload.summary.topic).toBe('Async Demo Brief');
+    expect(payload.generation).toMatchObject({
+      mode: 'deterministic',
+      status: 'fallback',
+      llm_api_calls: false
+    });
+    expect(payload.settings.llm_api_calls).toBe(false);
+    expect(payload.review_queue.length).toBeGreaterThan(0);
+  });
+
+  test('package API maps Gemini structured output into the demo payload', async () => {
+    const socialAgent = require('@context-med/social-agent');
+    const previousKey = process.env.GEMINI_API_KEY;
+    const previousMode = process.env.SOCIAL_AGENT_LLM_MODE;
+    const previousFetch = global.fetch;
+
+    process.env.GEMINI_API_KEY = 'test-key';
+    delete process.env.SOCIAL_AGENT_LLM_MODE;
+    global.fetch = jest.fn(() => Promise.resolve({
+      ok: true,
+      text: () => Promise.resolve(JSON.stringify({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    topic: 'Gemini Workspace Launch',
+                    summary: 'A Gemini generated social operations package with review gates.',
+                    content_pillar: 'product',
+                    risk_level: 'medium',
+                    plan_items: [
+                      {
+                        platform: 'linkedin',
+                        suggested_day: 'monday',
+                        topic: 'Gemini launch workflow',
+                        format: 'professional post',
+                        cta: 'Invite operations teams to review the workflow.',
+                        content_pillar: 'product',
+                        risk_level: 'medium',
+                        status: 'needs_review',
+                        source_quote: 'Review-gated social workflow for care operations.'
+                      },
+                      {
+                        platform: 'x',
+                        suggested_day: 'tuesday',
+                        topic: 'Review gates before publishing',
+                        format: 'short post',
+                        cta: 'Ask one operational review question.',
+                        content_pillar: 'community',
+                        risk_level: 'low',
+                        status: 'draft',
+                        source_quote: 'Review-gated social workflow for care operations.'
+                      }
+                    ],
+                    drafts: [
+                      {
+                        platform: 'linkedin',
+                        hook: 'Revolutionizing patient intake: Our new dashboard is here to empower care coordination teams.',
+                        body: 'At Context-Med, we understand the complexities of patient intake. This new dashboard is designed to empower care coordination teams with unparalleled operational visibility faster than ever.',
+                        cta: 'What would your team review first?',
+                        risk_level: 'medium',
+                        status: 'needs_review',
+                        source_quote: 'Review-gated social workflow for care operations.',
+                        adaptation: {
+                          strategy: 'professional_narrative',
+                          tone: 'clear, accountable, operational',
+                          length_target: '2-3 short paragraphs',
+                          rewrite_reason: 'LinkedIn needs the operational implication and review boundary.',
+                          platform_constraints: ['professional takeaway', 'review boundary']
+                        }
+                      },
+                      {
+                        platform: 'x',
+                        hook: 'Big news for care teams!',
+                        body: 'Big news for care teams! Context-Med has launched a revolutionary dashboard designed to empower everyone with faster routing.',
+                        cta: 'Review first.',
+                        risk_level: 'low',
+                        status: 'draft',
+                        source_quote: 'Review-gated social workflow for care operations.',
+                        adaptation: {
+                          strategy: 'concise_conversation_starter',
+                          tone: 'direct, specific, low-jargon',
+                          length_target: 'single post under 240 characters',
+                          rewrite_reason: 'X needs a compressed prompt instead of a LinkedIn-style explanation.',
+                          platform_constraints: ['one idea only', 'focused question']
+                        }
+                      }
+                    ],
+                    moderation_reports: [
+                      {
+                        classification: 'question',
+                        risk_level: 'medium',
+                        recommended_action: 'reply',
+                        reply_draft: 'Thanks for the question. We would route this through review before posting.',
+                        source_quote: 'How is this reviewed before posting?'
+                      }
+                    ]
+                  })
+                }
+              ]
+            }
+          }
+        ]
+      }))
+    }));
+
+    try {
+      const payload = await socialAgent.createSocialAgentDemoPayload({
+        source: '# Gemini Demo Brief\n\nReview-gated social workflow for care operations.',
+        comments: ['How is this reviewed before posting?']
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch.mock.calls[0][1].headers['x-goog-api-key']).toBe('test-key');
+      expect(payload.generation).toMatchObject({
+        mode: 'gemini',
+        provider: 'google-gemini',
+        status: 'live',
+        llm_api_calls: true
+      });
+      expect(payload.settings.llm_api_calls).toBe(true);
+      expect(payload.summary.topic).toBe('Gemini Workspace Launch');
+      expect(payload.summary.generated_summary).toMatch(/Gemini generated/);
+      expect(payload.plan.items[0].topic).toBe('Gemini launch workflow');
+      expect(payload.drafts.drafts[0].body).toMatch(/should not read like another product announcement/);
+      expect(payload.drafts.drafts[0].body).not.toMatch(/Revolutionizing|empower|unparalleled|faster than ever/i);
+      expect(payload.drafts.drafts[0].quality_flags).toContain('generic_launch_language_repaired');
+      expect(payload.drafts.drafts[0].adaptation.strategy).toBe('professional_narrative');
+      expect(payload.drafts.drafts[1].body).toMatch(/\?$/);
+      expect(payload.drafts.drafts[1].body).not.toMatch(/Big news|revolutionary|empower/i);
+      expect(payload.drafts.drafts[1].quality_flags).toContain('generic_launch_language_repaired');
+      expect(payload.drafts.drafts[1].adaptation.strategy).toBe('concise_conversation_starter');
+      expect(payload.moderation.reports[0].recommended_action).toBe('reply');
+      expect(payload.review_queue.length).toBeGreaterThan(0);
+    } finally {
+      if (previousKey == null) {
+        delete process.env.GEMINI_API_KEY;
+      } else {
+        process.env.GEMINI_API_KEY = previousKey;
+      }
+
+      if (previousMode == null) {
+        delete process.env.SOCIAL_AGENT_LLM_MODE;
+      } else {
+        process.env.SOCIAL_AGENT_LLM_MODE = previousMode;
+      }
+
+      global.fetch = previousFetch;
+    }
   });
 
   test('demo builder script writes package-generated JSON', () => {
@@ -323,6 +508,7 @@ describe('social-agent CLI comprehensive behavior', () => {
     const context = {
       window: {
         location: { pathname: '/workspace' },
+        addEventListener() {},
         localStorage: {
           getItem() { return null; },
           setItem() {},
@@ -330,6 +516,14 @@ describe('social-agent CLI comprehensive behavior', () => {
         }
       },
       document: {
+        body: {
+          classList: {
+            classes: [],
+            add(name) {
+              this.classes.push(name);
+            }
+          }
+        },
         querySelector(selector) {
           return selector === 'main' ? main : null;
         },
@@ -353,12 +547,103 @@ describe('social-agent CLI comprehensive behavior', () => {
     expect(main.innerHTML).toMatch(/Generate Demo Output/);
     expect(main.innerHTML).toMatch(/Source context/);
     expect(main.innerHTML).toMatch(/Community comments/);
+    expect(main.innerHTML).toMatch(/Generated output/);
+    expect(main.innerHTML).toMatch(/Run complete/);
+    expect(main.innerHTML).toMatch(/Local fallback/);
+    expect(main.innerHTML).toMatch(/Final platform outputs/);
+    expect(main.innerHTML).toMatch(/Final LINKEDIN output/);
+    expect(main.innerHTML).toMatch(/Final X output/);
+    expect(main.innerHTML).toMatch(/Adaptation details/);
+    expect(main.innerHTML).toMatch(/sa-adaptation-details/);
+    expect(main.innerHTML).toMatch(/Adaptation/);
+    expect(main.innerHTML).toMatch(/professional_narrative/);
+    expect(main.innerHTML).toMatch(/Plan created/);
+    expect(main.innerHTML).toMatch(/Drafts created/);
+    expect(main.innerHTML).toMatch(/Plan output/);
+    expect(main.innerHTML).toMatch(/Draft output/);
+    expect(main.innerHTML).toMatch(/Moderation output/);
+    expect(main.innerHTML).toMatch(/Review queue output/);
+    expect(context.document.body.classList.classes).toContain('sa-demo-shell');
+  });
+
+  test('browser demo asset wires sidebar routes despite icon labels', async () => {
+    const socialAgent = require('@context-med/social-agent');
+    const asset = fs.readFileSync(DEMO_ASSET, 'utf8');
+    const main = { innerHTML: '' };
+    const listeners = {};
+    const navLink = {
+      textContent: 'event_note Plan',
+      dataset: {},
+      href: '',
+      attributes: {},
+      setAttribute(name, value) {
+        this.attributes[name] = value;
+      },
+      getAttribute(name) {
+        return name === 'href' ? this.href : this.attributes[name];
+      },
+      addEventListener(name, handler) {
+        listeners[name] = handler;
+      }
+    };
+    const context = {
+      window: {
+        location: { pathname: '/workspace' },
+        history: {
+          pushState(_state, _title, url) {
+            context.window.location.pathname = url;
+          }
+        },
+        localStorage: {
+          getItem() { return null; },
+          setItem() {},
+          removeItem() {}
+        },
+        addEventListener() {}
+      },
+      document: {
+        querySelector(selector) {
+          return selector === 'main' ? main : null;
+        },
+        querySelectorAll(selector) {
+          if (selector === 'nav a' || selector === 'a[href^="/"]') {
+            return [navLink];
+          }
+          return [];
+        }
+      },
+      fetch() {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(socialAgent.createSocialAgentDemo())
+        });
+      }
+    };
+
+    vm.createContext(context);
+    vm.runInContext(asset, context);
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(navLink.href).toBe('/plan');
+    expect(navLink.dataset.route).toBe('plan');
+    expect(navLink.attributes['aria-current']).toBe('false');
+    expect(typeof listeners.click).toBe('function');
+
+    listeners.click({ preventDefault() {} });
+    expect(context.window.location.pathname).toBe('/plan');
+    expect(main.innerHTML).toMatch(/Generated Weekly Plan/);
   });
 
   test('serve exposes accepted demo screens with extensionless routes', async () => {
     const port = 3300 + Math.floor(Math.random() * 300);
     const child = spawn(process.execPath, [CLI, 'serve', '--port', String(port), '--quiet'], {
       cwd: PKG_ROOT,
+      env: {
+        ...process.env,
+        GEMINI_API_KEY: '',
+        GOOGLE_API_KEY: '',
+        SOCIAL_AGENT_LLM_MODE: 'deterministic'
+      },
       stdio: ['ignore', 'pipe', 'pipe']
     });
 
@@ -381,6 +666,10 @@ describe('social-agent CLI comprehensive behavior', () => {
         type: 'social_agent_demo',
         package: {
           name: '@context-med/social-agent'
+        },
+        generation: {
+          status: 'fallback',
+          llm_api_calls: false
         }
       });
 
@@ -406,8 +695,31 @@ describe('social-agent CLI comprehensive behavior', () => {
       expect(demoAsset.body).toMatch(/data-workspace-form/);
       expect(demoAsset.body).toMatch(/copy-json/);
       expect(demoAsset.body).toMatch(/download-json/);
+      expect(demoAsset.body).toMatch(/navigateTo/);
+      expect(demoAsset.body).toMatch(/pushState/);
+      expect(demoAsset.body).toMatch(/aria-current/);
+      expect(demoAsset.body).toMatch(/sa-demo-shell/);
       expect(demoAsset.body).toMatch(/Generated Weekly Plan/);
+      expect(demoAsset.body).toMatch(/Generated output/);
+      expect(demoAsset.body).toMatch(/Run complete/);
+      expect(demoAsset.body).toMatch(/Gemini live/);
+      expect(demoAsset.body).toMatch(/Local fallback/);
+      expect(demoAsset.body).toMatch(/finalPostCard/);
+      expect(demoAsset.body).toMatch(/Adaptation details/);
+      expect(demoAsset.body).toMatch(/sa-adaptation-details/);
+      expect(demoAsset.body).toMatch(/Final platform outputs/);
+      expect(demoAsset.body).toMatch(/Plan created/);
       expect(demoAsset.body).toMatch(/Review Queue/);
+
+      const demoStyles = await requestText(`http://127.0.0.1:${port}/assets/social-agent-demo.css`);
+      expect(demoStyles.statusCode).toBe(200);
+      expect(demoStyles.body).toMatch(/nav a\[aria-current="false"\]/);
+      expect(demoStyles.body).toMatch(/body\.sa-demo-shell main/);
+      expect(demoStyles.body).toMatch(/overflow-y: auto/);
+      expect(demoStyles.body).toMatch(/sa-adaptation-details/);
+      expect(demoStyles.body).toMatch(/sa-run-summary/);
+      expect(demoStyles.body).toMatch(/sa-run-card--live/);
+      expect(demoStyles.body).toMatch(/sa-output-card/);
 
       const directScreen = await requestText(`http://127.0.0.1:${port}/screens/overview.html`);
       expect(directScreen.statusCode).toBe(200);

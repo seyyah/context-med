@@ -42,8 +42,8 @@
       .replace(/'/g, '&#39;');
   }
 
-  function routeName() {
-    const parts = window.location.pathname
+  function routeFromPathname(pathname) {
+    const parts = pathname
       .replace(/^\/+/, '')
       .replace(/\/+$/, '')
       .replace(/\.html$/, '')
@@ -55,6 +55,10 @@
     }
 
     return parts[0] || 'overview';
+  }
+
+  function routeName() {
+    return routeFromPathname(window.location.pathname);
   }
 
   function normalizeStatus(value) {
@@ -287,6 +291,7 @@
 
   function renderOverview(data) {
     const summary = data.summary;
+    const generation = generationInfo(data);
     const queueRows = data.review_queue.slice(0, 5).map((item) => [
       `<strong>${escapeHtml(item.id)}</strong>`,
       escapeHtml(item.source),
@@ -309,6 +314,7 @@
         card('Drafts', escapeHtml(summary.drafts), 'Platform-specific copy variants ready for review.', false),
         card('Moderation reports', escapeHtml(summary.moderation_reports), 'Community inputs classified by risk and action.', false),
         card('Review queue', escapeHtml(summary.review_queue_items), 'Items requiring approval or escalation.', true),
+        card('Generation', escapeHtml(generation.label), generation.body, false),
         '</section>',
         commandBar(['npm run demo:build', 'npm start', 'node bin/cli.js plan --input <file> --output out/plan.json']),
         panel('Current review queue', table(['ID', 'Source', 'Channel', 'Risk', 'Status'], queueRows))
@@ -323,11 +329,11 @@
       '<div class="sa-form__grid">',
       '<label class="sa-field sa-field--wide">',
       '<span>Source context</span>',
-      `<textarea class="sa-textarea" name="source" rows="9">${escapeHtml(request.source)}</textarea>`,
+      `<textarea class="sa-textarea sa-textarea--source" name="source" rows="6">${escapeHtml(request.source)}</textarea>`,
       '</label>',
       '<label class="sa-field">',
       '<span>Community comments</span>',
-      `<textarea class="sa-textarea" name="comments" rows="9">${escapeHtml(request.comments.join('\n'))}</textarea>`,
+      `<textarea class="sa-textarea sa-textarea--comments" name="comments" rows="6">${escapeHtml(request.comments.join('\n'))}</textarea>`,
       '</label>',
       '<label class="sa-field">',
       '<span>Language</span>',
@@ -342,6 +348,179 @@
       '<button class="sa-link-button" type="button" data-action="reset-demo">' + icon('restart_alt') + 'Reset Demo</button>',
       '</div>',
       '</form>'
+    ].join('');
+  }
+
+  function previewText(value, maxLength) {
+    const text = String(value || '').replace(/\s+/g, ' ').trim();
+    if (text.length <= maxLength) {
+      return text;
+    }
+    return `${text.slice(0, maxLength - 3).trim()}...`;
+  }
+
+  function runCard(label, value, suffix, body, level) {
+    const modifier = level ? ` sa-run-card--${level}` : '';
+    return [
+      `<article class="sa-run-card${modifier}">`,
+      `<p class="sa-label">${escapeHtml(label)}</p>`,
+      `<p class="sa-run-value">${escapeHtml(value)}${suffix ? `<small>${escapeHtml(suffix)}</small>` : ''}</p>`,
+      body ? `<p class="sa-body">${escapeHtml(body)}</p>` : '',
+      '</article>'
+    ].join('');
+  }
+
+  function generationInfo(data) {
+    const generation = data.generation || {};
+    const live = generation.status === 'live' || generation.mode === 'gemini';
+
+    return {
+      label: live ? 'Gemini live' : 'Local fallback',
+      suffix: generation.model && generation.model !== 'none' ? generation.model : generation.provider || 'local',
+      body: generation.fallback_reason || generation.message || 'Generation metadata is unavailable.',
+      level: live ? 'live' : 'warning'
+    };
+  }
+
+  function adaptationList(draft) {
+    const adaptation = draft.adaptation || {};
+    const constraints = Array.isArray(adaptation.platform_constraints)
+      ? adaptation.platform_constraints.join('; ')
+      : '';
+
+    return [
+      `<li>${icon('alt_route')}<span><strong>Adaptation:</strong> ${escapeHtml(adaptation.strategy || 'platform rewrite')}</span></li>`,
+      `<li>${icon('notes')}<span><strong>Reason:</strong> ${escapeHtml(adaptation.rewrite_reason || 'Platform-specific rewrite.')}</span></li>`,
+      `<li>${icon('tune')}<span><strong>Tone:</strong> ${escapeHtml(adaptation.tone || 'platform appropriate')}</span></li>`,
+      `<li>${icon('compress')}<span><strong>Length:</strong> ${escapeHtml(adaptation.length_target || 'platform specific')}</span></li>`,
+      constraints ? `<li>${icon('rule')}<span><strong>Constraints:</strong> ${escapeHtml(constraints)}</span></li>` : '',
+      `<li>${icon('campaign')}<span><strong>CTA:</strong> ${escapeHtml(draft.cta || 'Review before posting.')}</span></li>`,
+      `<li>${icon('source')}<span><strong>Source:</strong> ${escapeHtml(draft.source_quote || 'Source quote unavailable.')}</span></li>`
+    ].join('');
+  }
+
+  function outputCard(title, body, meta, riskLevel) {
+    const risky = riskLevel === 'high' || riskLevel === 'medium';
+    return [
+      `<article class="sa-output-card${risky ? ' sa-output-card--risk' : ''}">`,
+      `<h4 class="sa-output-card__title">${escapeHtml(title)}</h4>`,
+      `<p class="sa-body">${escapeHtml(body)}</p>`,
+      meta && meta.length ? `<div class="sa-output-meta">${meta.join('')}</div>` : '',
+      '</article>'
+    ].join('');
+  }
+
+  function finalPostCard(draft) {
+    return [
+      '<article class="sa-final-post">',
+      '<div class="sa-final-post__head">',
+      `<p class="sa-label">Final ${escapeHtml(draft.platform.toUpperCase())} output</p>`,
+      `<div class="sa-output-meta">${status(draft.risk_level)}${status(draft.status)}</div>`,
+      '</div>',
+      `<h4 class="sa-output-card__title">${escapeHtml(draft.hook)}</h4>`,
+      `<p class="sa-final-copy">${escapeHtml(draft.body)}</p>`,
+      '<details class="sa-adaptation-details">',
+      `<summary>${icon('tune')}<span>Adaptation details</span></summary>`,
+      `<ul class="sa-list">${adaptationList(draft)}</ul>`,
+      '</details>',
+      '</article>'
+    ].join('');
+  }
+
+  function stageCard(title, count, body, route, iconName) {
+    return [
+      '<article class="sa-stage">',
+      '<div class="sa-stage__head">',
+      `<h4 class="sa-stage__title">${escapeHtml(title)}</h4>`,
+      status(count),
+      '</div>',
+      `<p class="sa-body">${escapeHtml(body)}</p>`,
+      `<div class="sa-actions mt-3">${button(route, 'Open', iconName, 'secondary')}</div>`,
+      '</article>'
+    ].join('');
+  }
+
+  function workspaceResults(data) {
+    const generation = generationInfo(data);
+    const highRiskReports = data.moderation.reports.filter((report) => report.risk_level === 'high');
+    const firstPlan = data.plan.items[0];
+    const firstDraft = data.drafts.drafts[0];
+    const firstModeration = data.moderation.reports[0];
+    const firstReview = data.review_queue[0];
+    const resultSummary = data.summary.generated_summary || `The system generated ${data.plan.items.length} plan items, ${data.drafts.drafts.length} platform drafts, ${data.moderation.reports.length} moderation reports, and ${data.review_queue.length} review queue decisions from the current input.`;
+
+    const planCards = data.plan.items.slice(0, 4).map((item) => outputCard(
+      `${item.platform.toUpperCase()} / ${item.suggested_day}`,
+      `${item.topic}. ${item.cta}`,
+      [status(item.risk_level), status(item.status), status(item.approval_required ? 'needs_review' : 'ready')],
+      item.risk_level
+    )).join('');
+
+    const draftCards = data.drafts.drafts.map((draft) => outputCard(
+      `${draft.platform.toUpperCase()} draft`,
+      `${draft.hook}: ${previewText(draft.body, 220)}`,
+      [status(draft.risk_level), status(draft.status)],
+      draft.risk_level
+    )).join('');
+    const finalDrafts = data.drafts.drafts.map(finalPostCard).join('');
+
+    const moderationCards = data.moderation.reports.map((report) => outputCard(
+      `${report.classification} -> ${report.recommended_action}`,
+      report.reply_draft || report.source_quote,
+      [status(report.risk_level), status(report.recommended_action)],
+      report.risk_level
+    )).join('');
+
+    const reviewCards = data.review_queue.slice(0, 6).map((item) => outputCard(
+      `${item.source} / ${item.platform}`,
+      item.source_quote,
+      [status(item.risk_level), status(item.status), status(item.recommended_action)],
+      item.risk_level
+    )).join('');
+
+    return [
+      '<section class="sa-results">',
+      '<div class="sa-results__header">',
+      '<div>',
+      '<p class="sa-label">Generated output</p>',
+      `<h3 class="sa-section-title">Run complete: ${escapeHtml(data.summary.topic)}</h3>`,
+      `<p class="sa-body">${escapeHtml(resultSummary)}</p>`,
+      '</div>',
+      '<div class="sa-actions">',
+      button('/plan', 'Plan', 'event_note', 'secondary'),
+      button('/drafts', 'Drafts', 'drafts', 'secondary'),
+      button('/moderation', 'Moderation', 'gavel', 'secondary'),
+      button('/review-queue', 'Review Queue', 'queue_play_next', 'secondary'),
+      '</div>',
+      '</div>',
+      '<section class="sa-run-summary">',
+      runCard('Provider', generation.label, generation.suffix, generation.body, generation.level),
+      runCard('Plan', String(data.plan.items.length), 'items', firstPlan ? firstPlan.topic : 'No plan items generated.', ''),
+      runCard('Drafts', String(data.drafts.drafts.length), 'drafts', firstDraft ? firstDraft.hook : 'No draft output generated.', ''),
+      runCard('Moderation', String(data.moderation.reports.length), 'reports', highRiskReports.length ? `${highRiskReports.length} high-risk report needs escalation.` : 'No high-risk reports in this run.', highRiskReports.length ? 'danger' : ''),
+      runCard('Review queue', String(data.review_queue.length), 'items', firstReview ? firstReview.source_quote : 'No review items produced.', data.review_queue.length ? 'warning' : ''),
+      '</section>',
+      '<section class="sa-final-output">',
+      '<div>',
+      '<p class="sa-label">Platform adaptation</p>',
+      '<h3 class="sa-section-title">Final platform outputs</h3>',
+      '<p class="sa-body">The same source input is rewritten into platform-native copy instead of being copied across channels.</p>',
+      '</div>',
+      `<div class="sa-final-output__grid">${finalDrafts}</div>`,
+      '</section>',
+      '<section class="sa-stage-list">',
+      stageCard('Plan created', `${data.plan.items.length} ready`, firstPlan ? `${firstPlan.platform} ${firstPlan.suggested_day}: ${firstPlan.topic}` : 'No plan output.', '/plan', 'event_note'),
+      stageCard('Drafts created', `${data.drafts.drafts.length} ready`, firstDraft ? `${firstDraft.platform}: ${firstDraft.hook}` : 'No draft output.', '/drafts', 'drafts'),
+      stageCard('Moderation classified', `${data.moderation.reports.length} checked`, firstModeration ? `${firstModeration.classification} -> ${firstModeration.recommended_action}` : 'No moderation output.', '/moderation', 'gavel'),
+      stageCard('Review queue built', `${data.review_queue.length} queued`, firstReview ? `${firstReview.source}: ${firstReview.status}` : 'No review queue output.', '/review-queue', 'queue_play_next'),
+      '</section>',
+      '<div class="sa-results__grid">',
+      panel('Plan output', `<section class="sa-workspace-grid">${planCards}</section>`),
+      panel('Draft output', `<section class="sa-workspace-grid">${draftCards}</section>`),
+      panel('Moderation output', `<section class="sa-workspace-grid">${moderationCards}</section>`),
+      panel('Review queue output', `<section class="sa-workspace-grid">${reviewCards}</section>`),
+      '</div>',
+      '</section>'
     ].join('');
   }
 
@@ -361,18 +540,21 @@
       ].join(''),
       [
         panel('Live input', workspaceForm(data)),
-        commandBar(commands),
+        workspaceResults(data),
         '<section class="sa-grid sa-grid--wide">',
         card('Source topic', escapeHtml(data.summary.topic), data.source.preview, true),
         card('Content pillar', escapeHtml(data.summary.content_pillar), 'Derived from the source context by the package domain helpers.', false),
         card('Risk posture', status(data.summary.risk_level), 'The same risk metadata drives plan, drafts, and review queue.', false),
         '</section>',
+        commandBar(commands),
         panel('Package contract', `<pre class="sa-code">${escapeHtml(JSON.stringify({
           type: data.type,
           schema_version: data.schema_version,
           package: data.package,
+          generation: data.generation,
           settings: data.settings
-        }, null, 2))}</pre>`)
+        }, null, 2))}</pre>`),
+        '<div class="sa-page-spacer" aria-hidden="true"></div>'
       ].join('')
     );
   }
@@ -434,15 +616,7 @@
   }
 
   function renderDrafts(data) {
-    const drafts = data.drafts.drafts.map((draft) => [
-      '<article class="sa-card sa-card--accent">',
-      `<p class="sa-label">${escapeHtml(draft.platform)}</p>`,
-      `<h3 class="sa-value">${escapeHtml(draft.hook)}</h3>`,
-      `<p class="sa-body">${escapeHtml(draft.body)}</p>`,
-      `<ul class="sa-list"><li>${icon('campaign')}<span>${escapeHtml(draft.cta)}</span></li><li>${icon('source')}<span>${escapeHtml(draft.source_quote)}</span></li></ul>`,
-      `<div class="sa-actions mt-3">${status(draft.risk_level)}${status(draft.status)}</div>`,
-      '</article>'
-    ].join('')).join('');
+    const drafts = data.drafts.drafts.map(finalPostCard).join('');
 
     return layout(
       'Drafts',
@@ -453,7 +627,7 @@
       ].join(''),
       [
         commandBar(['node bin/cli.js draft --input <path> --output out/drafts.json']),
-        `<section class="sa-grid sa-grid--wide">${drafts}</section>`
+        `<section class="sa-final-output__grid">${drafts}</section>`
       ].join('')
     );
   }
@@ -549,6 +723,8 @@
   }
 
   function renderSettings(data) {
+    const generation = generationInfo(data);
+
     return layout(
       'Settings',
       'MVP settings are explicit so the standalone demo cannot be mistaken for an external automation integration.',
@@ -556,8 +732,9 @@
       [
         '<section class="sa-grid">',
         card('Platforms', escapeHtml(data.settings.platforms.join(', ')), 'First supported social channels.', true),
-        card('Deterministic mode', status(String(data.settings.deterministic_mode)), 'Same input produces the same output.', false),
-        card('LLM API calls', status(String(data.settings.llm_api_calls)), 'Deferred until explicitly added.', false),
+        card('Generation mode', escapeHtml(generation.label), generation.body, true),
+        card('Deterministic mode', status(String(data.settings.deterministic_mode)), data.settings.deterministic_mode ? 'Same input produces the same local output.' : 'Workspace output is generated by the configured Gemini model.', false),
+        card('LLM API calls', status(String(data.settings.llm_api_calls)), data.settings.llm_api_calls ? `Provider: ${generation.suffix}` : 'Set GEMINI_API_KEY to enable live workspace generation.', false),
         card('Direct publishing', status(String(data.settings.direct_publishing)), 'Disabled by design in the MVP.', false),
         '</section>',
         panel('Package metadata', `<pre class="sa-code">${escapeHtml(JSON.stringify(data.package, null, 2))}</pre>`)
@@ -594,14 +771,40 @@
   function wireNavigation(activeRoute) {
     document.querySelectorAll('nav a').forEach((link) => {
       const text = link.textContent.replace(/\s+/g, ' ').trim().toLowerCase();
-      const route = Object.keys(NAV_LABELS).find((name) => NAV_LABELS[name].toLowerCase() === text);
+      const route = Object.keys(NAV_LABELS).find((name) => text.includes(NAV_LABELS[name].toLowerCase()));
       if (!route) {
         return;
       }
 
       link.href = ROUTES[route];
+      link.dataset.route = route;
       link.setAttribute('aria-current', route === activeRoute ? 'page' : 'false');
     });
+  }
+
+  function routeForLink(link) {
+    if (link.dataset.route) {
+      return link.dataset.route;
+    }
+
+    const href = link.getAttribute('href') || '';
+    if (!href.startsWith('/') || href.startsWith('/api/')) {
+      return '';
+    }
+
+    return routeFromPathname(href);
+  }
+
+  function navigateTo(route) {
+    if (!currentData || !ROUTES[route]) {
+      return;
+    }
+
+    if (window.history && window.history.pushState && window.location.pathname !== ROUTES[route]) {
+      window.history.pushState({ route }, '', ROUTES[route]);
+    }
+
+    render(currentData);
   }
 
   async function copyText(text) {
@@ -680,6 +883,20 @@
     });
   }
 
+  function bindRouteLinks() {
+    document.querySelectorAll('a[href^="/"]').forEach((link) => {
+      const route = routeForLink(link);
+      if (!route || !ROUTES[route]) {
+        return;
+      }
+
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        navigateTo(route);
+      });
+    });
+  }
+
   function bindWorkspaceForm() {
     const form = document.querySelector('[data-workspace-form]');
     if (!form) {
@@ -699,7 +916,7 @@
         storageSet(request);
         currentData = nextData;
         render(nextData);
-        setMessage('Demo output regenerated.', 'success');
+        setMessage(generationInfo(nextData).label === 'Gemini live' ? 'Gemini output regenerated.' : 'Demo output regenerated with local fallback.', 'success');
       } catch (error) {
         setMessage(error.message, 'error');
       }
@@ -720,6 +937,7 @@
 
   function bindInteractions(route) {
     bindActions();
+    bindRouteLinks();
 
     if (route === 'workspace') {
       bindWorkspaceForm();
@@ -735,6 +953,10 @@
     const main = document.querySelector('main');
     currentData = data;
     wireNavigation(route);
+
+    if (document.body && document.body.classList) {
+      document.body.classList.add('sa-demo-shell');
+    }
 
     if (!main) {
       return;
@@ -757,4 +979,12 @@
         );
       }
     });
+
+  if (window.addEventListener) {
+    window.addEventListener('popstate', () => {
+      if (currentData) {
+        render(currentData);
+      }
+    });
+  }
 }());

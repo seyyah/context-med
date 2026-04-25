@@ -381,6 +381,8 @@ social-agent serve --port 3000
 - `npm run demo:build` writes comprehensive demo JSON from the npm package API.
 - Plan, drafts, moderation, and review queue views map to CLI/domain outputs.
 - Workspace supports editing source context and comments for local demo output.
+- Workspace shows visible generated plan, draft, moderation, and review queue results.
+- Sidebar navigation routes between demo views without relying on placeholder anchors.
 - Package views support local JSON copy/download actions.
 - UI follows the accepted Stitch visual flow.
 

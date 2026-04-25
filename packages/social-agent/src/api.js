@@ -5,13 +5,21 @@ const { buildDraftPayload } = require('./commands/draft');
 const { buildModerationPayload } = require('./commands/moderate');
 const { buildPlanPayload } = require('./commands/plan');
 const {
+  PLATFORMS,
   SCHEMA_VERSION,
   approvalRequired,
   assertLanguage,
+  cleanText,
   contentPillar,
   riskLevel,
   sourceQuote
 } = require('./index');
+const {
+  cleanGeminiError,
+  generateWorkspaceWithGemini,
+  getGeminiApiKey,
+  getGeminiModel
+} = require('./gemini');
 
 const DEFAULT_DEMO_SOURCE = [
   '# Context-Med social launch briefing',
@@ -104,6 +112,364 @@ function createDemoSummary(source, plan, draftPackage, moderationReports, review
   };
 }
 
+function createLocalGeneration(message, fallbackReason) {
+  const generation = {
+    mode: 'deterministic',
+    provider: 'local',
+    model: 'none',
+    status: 'fallback',
+    llm_api_calls: false,
+    message: message || 'Local deterministic output is being used.'
+  };
+
+  if (fallbackReason) {
+    generation.fallback_reason = fallbackReason;
+  }
+
+  return generation;
+}
+
+function createGeminiGeneration(model) {
+  return {
+    mode: 'gemini',
+    provider: 'google-gemini',
+    model,
+    status: 'live',
+    llm_api_calls: true,
+    message: 'Workspace output was generated with Gemini from the current source and comments.'
+  };
+}
+
+function withGenerationMetadata(payload, generation) {
+  return {
+    ...payload,
+    generation,
+    settings: {
+      ...payload.settings,
+      deterministic_mode: generation.mode !== 'gemini',
+      llm_api_calls: generation.llm_api_calls,
+      generation_provider: generation.provider,
+      generation_model: generation.model,
+      generation_status: generation.status
+    }
+  };
+}
+
+function shouldUseGemini(options) {
+  const requestedMode = String(options.mode || options.generationMode || '').toLowerCase();
+  const environmentMode = String(process.env.SOCIAL_AGENT_LLM_MODE || '').toLowerCase();
+
+  if (options.llm === false || requestedMode === 'deterministic' || environmentMode === 'deterministic') {
+    return false;
+  }
+
+  return Boolean(getGeminiApiKey());
+}
+
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function normalizePlatform(value, fallback) {
+  const normalized = String(value || '').toLowerCase().trim();
+  return PLATFORMS.includes(normalized) ? normalized : fallback;
+}
+
+function normalizeRisk(value, fallback) {
+  const normalized = String(value || '').toLowerCase().trim();
+  if (['low', 'medium', 'high'].includes(normalized)) {
+    return normalized;
+  }
+  return fallback || 'medium';
+}
+
+function normalizeStatus(value, fallback) {
+  const normalized = String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9_ -]/g, '')
+    .replace(/\s+/g, '_');
+
+  if (['draft', 'ready', 'needs_review', 'approved', 'escalated'].includes(normalized)) {
+    return normalized;
+  }
+
+  return fallback || 'draft';
+}
+
+function normalizeAction(value, fallback) {
+  const normalized = String(value || '').toLowerCase().trim();
+  if (['reply', 'ignore', 'escalate', 'review'].includes(normalized)) {
+    return normalized === 'review' ? 'reply' : normalized;
+  }
+  return fallback || 'reply';
+}
+
+function needsDraftRepair(platform, hook, body) {
+  const combined = `${hook || ''}\n${body || ''}`.toLowerCase();
+  const genericLaunchPatterns = [
+    'revolutionizing',
+    'big news',
+    'excited to announce',
+    'designed to empower',
+    'unparalleled',
+    'game-changing',
+    'faster than ever',
+    'at context-med, we understand',
+    'our new dashboard is here',
+    'new patient intake dashboard alert'
+  ];
+
+  if (genericLaunchPatterns.some((pattern) => combined.includes(pattern))) {
+    return true;
+  }
+
+  if (platform === 'linkedin') {
+    const hasStructure = body.includes('\n\n') || body.includes('- ');
+    const hasReviewBoundary = /review|approval|escalation|human/i.test(body);
+    return !hasStructure || !hasReviewBoundary;
+  }
+
+  if (platform === 'x') {
+    return body.length > 260 || !body.includes('?') || /paragraph|linkedin version/i.test(combined);
+  }
+
+  return false;
+}
+
+function createRepairedDraft(platform, topic, fallback) {
+  const title = cleanText(topic || fallback.hook || fallback.topic || 'Social workflow update', 90);
+
+  if (platform === 'x') {
+    return {
+      hook: cleanText(title, 100),
+      body: cleanText(`${title}: source-backed copy, visible review gates, and human escalation for sensitive replies. What should be checked before posting?`, 240),
+      cta: 'What should be checked before posting?'
+    };
+  }
+
+  return {
+    hook: `${title}: safer social operations, not louder launch copy`,
+    body: [
+      `${title} should not read like another product announcement.`,
+      `For care operations teams, the useful story is the workflow change: source context stays attached, sensitive replies stay out of public automation, and review status is visible before anything is published.`,
+      `What this helps teams do:`,
+      `- turn source material into platform-ready copy`,
+      `- keep review gates close to the draft`,
+      `- route crisis, privacy, or unclear medical questions to a human`,
+      `- avoid unsupported clinical claims in public content`,
+      `The goal is not more posts. It is safer social operations with a clearer approval path.`,
+      `Which review step creates the most friction for your team today?`
+    ].join('\n\n'),
+    cta: 'Which review step creates the most friction for your team today?'
+  };
+}
+
+function normalizeStringArray(value, fallback) {
+  const items = asArray(value)
+    .map((item) => cleanText(item, 120))
+    .filter(Boolean);
+
+  return items.length ? items : fallback;
+}
+
+function normalizeAdaptation(platform, generatedAdaptation, fallbackAdaptation = {}) {
+  const generated = generatedAdaptation && typeof generatedAdaptation === 'object'
+    ? generatedAdaptation
+    : {};
+
+  const defaultAdaptation = fallbackAdaptation.strategy
+    ? fallbackAdaptation
+    : {
+      strategy: platform === 'x' ? 'concise_conversation_starter' : 'professional_narrative',
+      tone: platform === 'x' ? 'direct, specific, low-jargon' : 'clear, accountable, operational',
+      length_target: platform === 'x' ? 'single post under 240 characters' : '2-3 short paragraphs',
+      rewrite_reason: platform === 'x'
+        ? 'X needs a compressed point of view and one focused prompt.'
+        : 'LinkedIn needs context, credibility, and practical implications.',
+      platform_constraints: platform === 'x'
+        ? ['one idea only', 'short enough to scan quickly', 'end with a concrete question or review cue']
+        : ['open with a professional takeaway', 'explain the operational implication', 'name the review or approval boundary']
+    };
+
+  return {
+    strategy: textOrFallback(generated.strategy, defaultAdaptation.strategy, 80),
+    tone: textOrFallback(generated.tone, defaultAdaptation.tone, 120),
+    length_target: textOrFallback(generated.length_target, defaultAdaptation.length_target, 120),
+    rewrite_reason: textOrFallback(generated.rewrite_reason, defaultAdaptation.rewrite_reason, 240),
+    platform_constraints: normalizeStringArray(generated.platform_constraints, defaultAdaptation.platform_constraints)
+  };
+}
+
+function textOrFallback(value, fallback, maxLength) {
+  return cleanText(value, maxLength) || fallback;
+}
+
+function ensureMinimumItems(generatedItems, fallbackItems, minimum) {
+  if (!generatedItems.length) {
+    return fallbackItems;
+  }
+
+  const items = [...generatedItems];
+  fallbackItems.forEach((item) => {
+    if (items.length < minimum) {
+      items.push(item);
+    }
+  });
+
+  return items;
+}
+
+function createGeneratedPlan(fallbackPlan, generated, source) {
+  const topic = textOrFallback(generated.topic, fallbackPlan.topic, 100);
+  const generatedItems = ensureMinimumItems(asArray(generated.plan_items), fallbackPlan.items, 4);
+  const items = generatedItems.slice(0, 6).map((item, index) => {
+    const fallback = fallbackPlan.items[index % fallbackPlan.items.length];
+    const platform = normalizePlatform(item.platform, fallback.platform);
+    const level = normalizeRisk(item.risk_level, fallback.risk_level);
+    const itemStatus = normalizeStatus(item.status, approvalRequired(level) ? 'needs_review' : 'draft');
+
+    return {
+      id: `plan-${platform}-${String(index + 1).padStart(2, '0')}`,
+      platform,
+      suggested_day: textOrFallback(item.suggested_day, fallback.suggested_day, 30).toLowerCase(),
+      content_pillar: textOrFallback(item.content_pillar, fallback.content_pillar || contentPillar(source), 40),
+      topic: textOrFallback(item.topic, fallback.topic || topic, 120),
+      format: textOrFallback(item.format, fallback.format || 'social post', 50),
+      cta: textOrFallback(item.cta, fallback.cta || 'Route through review before publishing.', 180),
+      risk_level: level,
+      approval_required: approvalRequired(level) || itemStatus === 'needs_review',
+      source_quote: textOrFallback(item.source_quote, fallback.source_quote || sourceQuote(source), 240),
+      status: itemStatus
+    };
+  });
+
+  return {
+    ...fallbackPlan,
+    topic,
+    items,
+    risk_level: normalizeRisk(generated.risk_level, fallbackPlan.risk_level),
+    approval_required: items.some((item) => item.approval_required),
+    provenance: {
+      ...fallbackPlan.provenance,
+      mode: 'gemini',
+      generated_by: 'social-agent-gemini'
+    }
+  };
+}
+
+function createGeneratedDraftPackage(fallbackDraftPackage, generated, source) {
+  const generatedDrafts = ensureMinimumItems(asArray(generated.drafts), fallbackDraftPackage.drafts, 2);
+  const drafts = generatedDrafts.slice(0, 4).map((draft, index) => {
+    const fallback = fallbackDraftPackage.drafts[index % fallbackDraftPackage.drafts.length];
+    const platform = normalizePlatform(draft.platform, fallback.platform);
+    const level = normalizeRisk(draft.risk_level, fallback.risk_level);
+    const draftStatus = normalizeStatus(draft.status, approvalRequired(level) ? 'needs_review' : 'draft');
+    const generatedHook = textOrFallback(draft.hook, fallback.hook, 120);
+    const generatedBody = textOrFallback(draft.body, fallback.body, 1200);
+    const repaired = needsDraftRepair(platform, generatedHook, generatedBody)
+      ? createRepairedDraft(platform, generated.topic || fallbackDraftPackage.topic, fallback)
+      : null;
+
+    return {
+      id: `draft-${platform}-${String(index + 1).padStart(2, '0')}`,
+      platform,
+      hook: repaired ? repaired.hook : generatedHook,
+      body: repaired ? repaired.body : generatedBody,
+      cta: repaired ? repaired.cta : textOrFallback(draft.cta, fallback.cta, 180),
+      risk_level: level,
+      approval_required: approvalRequired(level) || draftStatus === 'needs_review',
+      source_quote: textOrFallback(draft.source_quote, fallback.source_quote || sourceQuote(source), 240),
+      status: draftStatus,
+      adaptation: normalizeAdaptation(platform, draft.adaptation, fallback.adaptation),
+      quality_flags: repaired ? ['generic_launch_language_repaired'] : []
+    };
+  });
+
+  return {
+    ...fallbackDraftPackage,
+    topic: textOrFallback(generated.topic, fallbackDraftPackage.topic, 100),
+    drafts,
+    provenance: {
+      ...fallbackDraftPackage.provenance,
+      mode: 'gemini',
+      generated_by: 'social-agent-gemini'
+    }
+  };
+}
+
+function createGeneratedModerationReports(fallbackReports, generated) {
+  const generatedReports = ensureMinimumItems(asArray(generated.moderation_reports), fallbackReports, fallbackReports.length);
+  const fallbackReport = {
+    type: 'moderation_report',
+    schema_version: SCHEMA_VERSION,
+    language: 'en',
+    classification: 'question',
+    risk_level: 'medium',
+    recommended_action: 'reply',
+    approval_required: true,
+    reply_draft: 'Thanks for the question. This needs a reviewed response before it is published.',
+    source_quote: 'Community comment provided in the workspace.',
+    provenance: {
+      input: 'demo/social-agent-source.md#comment',
+      command: 'moderate',
+      mode: 'deterministic',
+      generated_by: 'social-agent'
+    }
+  };
+
+  return generatedReports.slice(0, Math.max(1, fallbackReports.length)).map((report, index) => {
+    const fallback = fallbackReports[index % fallbackReports.length] || fallbackReport;
+    const level = normalizeRisk(report.risk_level, fallback.risk_level);
+    const action = normalizeAction(report.recommended_action, fallback.recommended_action);
+
+    return {
+      ...fallback,
+      classification: textOrFallback(report.classification, fallback.classification, 50).toLowerCase(),
+      risk_level: level,
+      recommended_action: action,
+      approval_required: approvalRequired(level) || action !== 'ignore',
+      reply_draft: action === 'ignore' ? '' : textOrFallback(report.reply_draft, fallback.reply_draft, 320),
+      source_quote: textOrFallback(report.source_quote, fallback.source_quote, 240),
+      provenance: {
+        ...fallback.provenance,
+        mode: 'gemini',
+        generated_by: 'social-agent-gemini'
+      }
+    };
+  });
+}
+
+function createGeminiDemoPayload(fallbackPayload, generated, model) {
+  const source = fallbackPayload.source.text;
+  const plan = createGeneratedPlan(fallbackPayload.plan, generated, source);
+  const draftPackage = createGeneratedDraftPackage(fallbackPayload.drafts, generated, source);
+  const moderationReports = createGeneratedModerationReports(fallbackPayload.moderation.reports, generated);
+  const reviewQueue = createReviewQueue(plan, draftPackage, moderationReports);
+  const summary = {
+    ...createDemoSummary(source, plan, draftPackage, moderationReports, reviewQueue),
+    content_pillar: textOrFallback(generated.content_pillar, contentPillar(source), 40),
+    risk_level: plan.risk_level,
+    approval_required: plan.approval_required || draftPackage.drafts.some((draft) => draft.approval_required),
+    generated_summary: textOrFallback(generated.summary, 'Gemini generated a review-ready social operations package.', 320)
+  };
+
+  return withGenerationMetadata({
+    ...fallbackPayload,
+    summary,
+    plan,
+    drafts: draftPackage,
+    moderation: {
+      ...fallbackPayload.moderation,
+      reports: moderationReports
+    },
+    review_queue: reviewQueue,
+    packages: fallbackPayload.packages.map((item) => ({
+      ...item,
+      approval_required: reviewQueue.length > 0
+    }))
+  }, createGeminiGeneration(model));
+}
+
 function createSocialAgentDemo(options = {}) {
   const language = assertLanguage(options.language || 'en');
   const inputPath = options.inputPath || 'demo/social-agent-source.md';
@@ -120,7 +486,7 @@ function createSocialAgentDemo(options = {}) {
   ));
   const reviewQueue = createReviewQueue(plan, draftPackage, moderationReports);
 
-  return {
+  return withGenerationMetadata({
     type: 'social_agent_demo',
     schema_version: SCHEMA_VERSION,
     package: {
@@ -163,7 +529,32 @@ function createSocialAgentDemo(options = {}) {
       llm_api_calls: false,
       direct_publishing: false
     }
-  };
+  }, createLocalGeneration());
+}
+
+async function createSocialAgentDemoPayload(options = {}) {
+  const fallbackPayload = createSocialAgentDemo(options);
+
+  if (!shouldUseGemini(options)) {
+    return fallbackPayload;
+  }
+
+  const model = getGeminiModel();
+  try {
+    const generated = await generateWorkspaceWithGemini({
+      apiKey: getGeminiApiKey(),
+      model,
+      source: fallbackPayload.source.text,
+      comments: fallbackPayload.source.comments,
+      language: fallbackPayload.language
+    });
+    return createGeminiDemoPayload(fallbackPayload, generated, model);
+  } catch (error) {
+    return withGenerationMetadata(
+      fallbackPayload,
+      createLocalGeneration('Gemini request failed. Local deterministic output is being used.', cleanGeminiError(error))
+    );
+  }
 }
 
 module.exports = {
@@ -172,5 +563,6 @@ module.exports = {
   buildDraftPayload,
   buildModerationPayload,
   buildPlanPayload,
-  createSocialAgentDemo
+  createSocialAgentDemo,
+  createSocialAgentDemoPayload
 };
