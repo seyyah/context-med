@@ -59,8 +59,12 @@ jobs:
           WORKFLOW_CHANGED=$(echo "$CHANGED_FILES" | grep -c '^\.github/workflows/' || echo "0")
 
           # Check for other core files (not in packages/)
-          CORE_FILES=$(echo "$CHANGED_FILES" | grep -v '^packages/' | grep -v '^CHANGELOG\.md$' | grep -v '^\.github/workflows/' || echo "")
-          CORE_COUNT=$(echo "$CORE_FILES" | grep -c '.' || echo "0")
+          CORE_FILES=$(echo "$CHANGED_FILES" | grep -v '^packages/' | grep -v '^CHANGELOG\.md$' | grep -v '^\.github/workflows/' || true)
+          if [ -z "$CORE_FILES" ]; then
+            CORE_COUNT=0
+          else
+            CORE_COUNT=$(echo "$CORE_FILES" | wc -l)
+          fi
 
           echo "changelog_changed=$CHANGELOG_CHANGED" >> $GITHUB_OUTPUT
           echo "workflow_changed=$WORKFLOW_CHANGED" >> $GITHUB_OUTPUT
