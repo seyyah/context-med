@@ -2,7 +2,7 @@
  * social-agent CLI Smoke Tests
  */
 const path = require('path');
-const { execCli, getBinPath, FIXTURES, setupOutputDir, teardownOutputDir, expectFileExists } = require('../../../tests/helpers/cli-test-utils');
+const { execCli, getBinPath, FIXTURES, setupOutputDir, teardownOutputDir, expectFileExists } = require('../../../../tests/helpers/cli-test-utils');
 
 const PKG = 'social-agent';
 const BIN = getBinPath(PKG);

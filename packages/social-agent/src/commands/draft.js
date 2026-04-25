@@ -1,8 +1,10 @@
 'use strict';
 
 const {
+  SCHEMA_VERSION,
   approvalRequired,
   assertJsonFormat,
+  assertLanguage,
   buildProvenance,
   cleanText,
   extractTitle,
@@ -28,6 +30,7 @@ function buildDraftPayload(inputPath, content, options = {}) {
 
   return {
     type: 'social_draft_package',
+    schema_version: SCHEMA_VERSION,
     language: options.language || 'en',
     topic: title,
     drafts: [
@@ -60,6 +63,7 @@ function buildDraftPayload(inputPath, content, options = {}) {
 
 async function runDraft(options) {
   assertJsonFormat(options.format);
+  options.language = assertLanguage(options.language);
   const input = readInputFile(options.input);
   const payload = buildDraftPayload(input.path, input.content, options);
   writeJsonOutput(options.output, payload, options);

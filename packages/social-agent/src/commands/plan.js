@@ -2,8 +2,10 @@
 
 const {
   PLATFORMS,
+  SCHEMA_VERSION,
   approvalRequired,
   assertJsonFormat,
+  assertLanguage,
   buildProvenance,
   contentPillar,
   extractTitle,
@@ -76,6 +78,7 @@ function buildPlanPayload(inputPath, content, options = {}) {
 
   return {
     type: 'social_calendar',
+    schema_version: SCHEMA_VERSION,
     language: options.language || 'en',
     platforms: PLATFORMS,
     topic: title,
@@ -88,6 +91,7 @@ function buildPlanPayload(inputPath, content, options = {}) {
 
 async function runPlan(options) {
   assertJsonFormat(options.format);
+  options.language = assertLanguage(options.language);
   const input = readInputFile(options.input);
   const payload = buildPlanPayload(input.path, input.content, options);
   writeJsonOutput(options.output, payload, options);

@@ -1,8 +1,10 @@
 'use strict';
 
 const {
+  SCHEMA_VERSION,
   approvalRequired,
   assertJsonFormat,
+  assertLanguage,
   buildProvenance,
   cleanText,
   readInputFile,
@@ -77,6 +79,7 @@ function buildModerationPayload(inputPath, content, options = {}) {
 
   return {
     type: 'moderation_report',
+    schema_version: SCHEMA_VERSION,
     language: options.language || 'en',
     classification,
     risk_level: level,
@@ -90,6 +93,7 @@ function buildModerationPayload(inputPath, content, options = {}) {
 
 async function runModerate(options) {
   assertJsonFormat(options.format);
+  options.language = assertLanguage(options.language);
   const input = readInputFile(options.input);
   const payload = buildModerationPayload(input.path, input.content, options);
   writeJsonOutput(options.output, payload, options);

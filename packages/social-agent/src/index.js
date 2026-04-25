@@ -4,7 +4,9 @@ const fs = require('fs');
 const path = require('path');
 
 const SUPPORTED_FORMATS = new Set(['json']);
+const SUPPORTED_LANGUAGES = new Set(['en', 'tr']);
 const PLATFORMS = ['linkedin', 'x'];
+const SCHEMA_VERSION = 'social-agent.v1';
 
 function createCliError(message, exitCode = 1) {
   const error = new Error(message);
@@ -16,6 +18,14 @@ function assertJsonFormat(format) {
   const normalized = String(format || 'json').toLowerCase();
   if (!SUPPORTED_FORMATS.has(normalized)) {
     throw createCliError(`Unsupported format: ${format}. Only json is supported in the MVP.`, 1);
+  }
+  return normalized;
+}
+
+function assertLanguage(language) {
+  const normalized = String(language || 'en').toLowerCase();
+  if (!SUPPORTED_LANGUAGES.has(normalized)) {
+    throw createCliError(`Unsupported language: ${language}. Supported languages: en, tr.`, 1);
   }
   return normalized;
 }
@@ -86,7 +96,24 @@ function firstMeaningfulLine(content) {
       const stringValue = line.match(/:\s*"([^"]+)"/);
       return stringValue ? stringValue[1] : line;
     })
-    .find((line) => line && !line.startsWith('---') && !/^[{}\[\],]+$/.test(line)) || '';
+    .find(isUsefulLine) || '';
+}
+
+function firstMeaningfulSourceLine(content) {
+  const jsonValue = firstJsonSourceValue(content);
+  if (jsonValue) {
+    return jsonValue;
+  }
+
+  return content
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .map((line) => line.replace(/^[-*]\s+/, '').trim())
+    .find((line) => isUsefulLine(line) && !line.startsWith('#')) || firstMeaningfulLine(content);
+}
+
+function isUsefulLine(line) {
+  return Boolean(line && !line.startsWith('---') && !/^[{}\[\],]+$/.test(line));
 }
 
 function firstJsonStringValue(content) {
@@ -98,14 +125,23 @@ function firstJsonStringValue(content) {
   }
 }
 
-function findPreferredString(value) {
+function firstJsonSourceValue(content) {
+  try {
+    const parsed = JSON.parse(content);
+    return findPreferredString(parsed, ['background', 'objective', 'main_finding', 'summary', 'title', 'name']);
+  } catch (_error) {
+    return '';
+  }
+}
+
+function findPreferredString(value, preferredKeys = ['title', 'background', 'objective', 'main_finding', 'summary', 'name']) {
   if (typeof value === 'string') {
     return value;
   }
 
   if (Array.isArray(value)) {
     for (const item of value) {
-      const found = findPreferredString(item);
+      const found = findPreferredString(item, preferredKeys);
       if (found) {
         return found;
       }
@@ -114,16 +150,15 @@ function findPreferredString(value) {
   }
 
   if (value && typeof value === 'object') {
-    const preferredKeys = ['title', 'background', 'objective', 'main_finding', 'summary', 'name'];
     for (const key of preferredKeys) {
-      const found = findPreferredString(value[key]);
+      const found = findPreferredString(value[key], preferredKeys);
       if (found) {
         return found;
       }
     }
 
     for (const item of Object.values(value)) {
-      const found = findPreferredString(item);
+      const found = findPreferredString(item, preferredKeys);
       if (found) {
         return found;
       }
@@ -143,7 +178,7 @@ function extractTitle(content) {
 }
 
 function sourceQuote(content) {
-  const line = firstMeaningfulLine(content);
+  const line = firstMeaningfulSourceLine(content);
   return cleanText(line, 240) || 'Source content provided by the user.';
 }
 
@@ -231,8 +266,10 @@ function buildProvenance(inputPath, command) {
 
 module.exports = {
   PLATFORMS,
+  SCHEMA_VERSION,
   approvalRequired,
   assertJsonFormat,
+  assertLanguage,
   buildProvenance,
   cleanText,
   contentPillar,

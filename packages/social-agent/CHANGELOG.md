@@ -5,6 +5,23 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.2.1] - 2026-04-25
+
+### Contributors
+
+- Akbulut55
+
+### Added
+
+- Added comprehensive CLI coverage for schema, validation, dry-run, moderation, and demo server routes.
+
+### Changed
+
+- Added `schema_version` metadata to CLI JSON payloads.
+- Improved `source_quote` extraction for Markdown and JSON inputs.
+- Added language validation for `en` and `tr`.
+- Improved demo server route handling for extensionless URLs such as `/plan`.
+
 ## [social-agent-v0.2.0] - 2026-04-25
 
 ### Contributors

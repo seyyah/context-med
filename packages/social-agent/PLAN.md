@@ -18,16 +18,17 @@ Allowed work area:
 - `packages/social-agent/bin/`
 - `packages/social-agent/src/`
 - `packages/social-agent/demo/`
+- `packages/social-agent/tests/` for new package-local tests only
 
 Read-only for now:
 
-- `packages/social-agent/tests/`
+- `packages/social-agent/tests/cli/smoke.test.js`
 - Root `tests/`
 - Root `fixtures/`
 - Other `packages/*`
 - Root config and workflow files
 
-If test infrastructure requires a change under `tests/`, that is a separate approval decision. For now, implementation must work around this boundary.
+New package-local test files may be added under `packages/social-agent/tests/`. Existing `smoke.test.js` remains locked unless explicitly approved.
 
 ---
 
@@ -39,7 +40,8 @@ If test infrastructure requires a change under `tests/`, that is a separate appr
 - Root `README.md1`: Context-Med product context.
 - Local `IDEA.md`: canonical product concept for `social-agent`.
 - Local `demo/`: accepted Stitch UI reference screens.
-- Local `tests/cli/smoke.test.js`: read-only smoke behavior reference.
+- Local `tests/cli/smoke.test.js`: locked smoke behavior reference.
+- Local comprehensive tests: package-local test files may be added without editing smoke.
 
 ---
 
@@ -156,6 +158,7 @@ packages/social-agent/
   tests/
     cli/
       smoke.test.js
+      comprehensive.test.js
 ```
 
 Rules:
@@ -164,7 +167,8 @@ Rules:
 - `src/commands/*` exposes CLI commands.
 - `src/ui/` is the working standalone UI implementation for now.
 - `demo/` remains the accepted Stitch reference.
-- `tests/` is read-only for now.
+- Existing `smoke.test.js` is locked.
+- New package-local tests may be added for comprehensive CLI coverage.
 
 ---
 
@@ -188,7 +192,8 @@ Rules:
 - `node bin/cli.js --version` works.
 - Help output lists `plan`, `draft`, `moderate`, and `serve`.
 - No root files are changed.
-- `tests/` is not changed.
+- `smoke.test.js` is not changed.
+- New package-local tests may be added separately.
 
 ---
 
@@ -437,7 +442,7 @@ Expected smoke behaviors:
 - `plan` happy path
 - `moderate` happy path
 
-Note: `tests/` is read-only for now. If the current test import path or root helper setup blocks execution, that is tracked as a test-infrastructure issue and requires separate approval.
+Note: `smoke.test.js` is locked for now. New package-local test files can be added to expand CLI coverage.
 
 ---
 
@@ -450,7 +455,7 @@ Note: `tests/` is read-only for now. If the current test import path or root hel
 5. Implement deterministic JSON output.
 6. Add local `serve` command.
 7. Build `src/ui/` using accepted `demo/` screens as reference.
-8. Verify commands without changing `tests/`.
+8. Verify commands without editing the locked smoke test.
 
 ---
 
@@ -477,5 +482,6 @@ The following decisions are locked before implementation starts:
 - MVP mode: deterministic, no LLM/API.
 - UI source: accepted Stitch screens under `demo/`.
 - Working UI path for now: `src/ui/`.
-- `tests/` remains read-only.
+- `smoke.test.js` remains locked.
+- New package-local tests may be added.
 - PR scope remains inside `packages/social-agent/`.

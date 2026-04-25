@@ -19,17 +19,35 @@ const CONTENT_TYPES = {
 function resolveDemoPath(requestUrl, rootDir) {
   const url = new URL(requestUrl, 'http://localhost');
   const pathname = decodeURIComponent(url.pathname);
-  const relative = pathname === '/' ? 'overview.html' : pathname.replace(/^\/+/, '');
+  const relative = normalizeDemoRoute(pathname);
   const resolved = path.resolve(rootDir, relative);
 
-  if (!resolved.startsWith(rootDir)) {
+  const backtrack = path.relative(rootDir, resolved);
+  if (backtrack.startsWith('..') || path.isAbsolute(backtrack)) {
     throw createCliError('Invalid path.', 1);
   }
 
   return resolved;
 }
 
-function serveFile(response, filePath) {
+function normalizeDemoRoute(pathname) {
+  if (pathname === '/' || pathname === '') {
+    return 'overview.html';
+  }
+
+  const trimmed = pathname.replace(/^\/+/, '').replace(/\/+$/, '');
+  if (!trimmed) {
+    return 'overview.html';
+  }
+
+  if (path.extname(trimmed)) {
+    return trimmed;
+  }
+
+  return `${trimmed}.html`;
+}
+
+function serveFile(request, response, filePath) {
   if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
     response.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
     response.end('Not found');
@@ -40,6 +58,12 @@ function serveFile(response, filePath) {
   response.writeHead(200, {
     'content-type': CONTENT_TYPES[ext] || 'application/octet-stream'
   });
+
+  if (request.method === 'HEAD') {
+    response.end();
+    return;
+  }
+
   fs.createReadStream(filePath).pipe(response);
 }
 
@@ -58,8 +82,14 @@ async function runServe(options) {
 
   const server = http.createServer((request, response) => {
     try {
+      if (!['GET', 'HEAD'].includes(request.method)) {
+        response.writeHead(405, { 'content-type': 'text/plain; charset=utf-8' });
+        response.end('Method not allowed');
+        return;
+      }
+
       const filePath = resolveDemoPath(request.url, rootDir);
-      serveFile(response, filePath);
+      serveFile(request, response, filePath);
     } catch (error) {
       response.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' });
       response.end(error.message);
