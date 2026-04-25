@@ -5,6 +5,16 @@ Format: [Keep a Changelog](https://keepachangelog.com) — [Semantic Versioning]
 
 ## [Unreleased]
 
+## [istabot-nokta-v0.1.0] — 2026-04-25
+
+### Katkıda Bulunan
+- Hüseyin Baran Işık
+
+### İyileştirmeler
+- 📦 istabot-nokta paketi güncellendi.
+- Merge remote-tracking branch 'upstream/main' into feat/context-cert-implementation
+
+
 ## [social-agent-v0.1.0] — 2026-04-24
 
 ### Katkıda Bulunan
