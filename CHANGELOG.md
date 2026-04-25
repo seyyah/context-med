@@ -5,6 +5,16 @@ Format: [Keep a Changelog](https://keepachangelog.com) — [Semantic Versioning]
 
 ## [Unreleased]
 
+## [context-shield-v0.1.0] — 2026-04-25
+
+### Katkıda Bulunan
+- Begum Handan Demir
+
+### İyileştirmeler
+- 📦 context-shield paketi güncellendi.
+- feat(shield): phase 1 core engine and dashboard demo 1
+
+
 ## [social-agent-v0.1.0] — 2026-04-24
 
 ### Katkıda Bulunan
