@@ -18,8 +18,17 @@ export function loadSpec(specPath: string): ExperimentSpec {
     process.exit(1);
   }
   const spec = parsed as ExperimentSpec;
-  if (!spec.id || !spec.description || !spec.query || !Array.isArray(spec.expected_keywords)) {
+  if (
+    typeof spec.id !== 'string' || !spec.id ||
+    typeof spec.description !== 'string' || !spec.description ||
+    typeof spec.query !== 'string' || !spec.query ||
+    !Array.isArray(spec.expected_keywords)
+  ) {
     process.stderr.write(`Spec missing required fields (id, description, query, expected_keywords): ${specPath}\n`);
+    process.exit(2);
+  }
+  if (spec.expected_keywords.length === 0) {
+    process.stderr.write(`expected_keywords must not be empty: ${specPath}\n`);
     process.exit(2);
   }
   return spec;
