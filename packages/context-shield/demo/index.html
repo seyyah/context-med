@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context Shield | Core Engine Demo</title>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#003CBD',
+                        secondary: '#19C480',
+                        'primary-container': '#EBF2FF',
+                        'soft-bg': '#f5f6f9',
+                        'on-surface': '#18181b',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        '3xl': '1.5rem',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f5f6f9;
+            color: #18181b;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .token-badge {
+            background-color: #003CBD;
+            color: white;
+            padding: 0 4px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 700;
+            font-family: monospace;
+            margin: 0 2px;
+        }
+
+        @keyframes pulse-slow {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen font-sans antialiased text-on-surface">
+    <!-- Header -->
+    <header class="py-8 px-6 max-w-7xl mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="bg-primary p-2.5 rounded-xl shadow-lg shadow-blue-200">
+                <i data-lucide="shield-check" class="text-white w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-primary uppercase">Context Shield</h1>
+                <p class="text-sm font-medium text-slate-500">Core Engine Virtualization Layer</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div
+                class="px-4 py-1.5 bg-primary-container rounded-full flex items-center gap-2 border border-blue-100 shadow-sm">
+                <span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                <span class="text-xs font-bold text-primary uppercase tracking-widest">Live Engine</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 pb-20">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Panel 1: Ingest Area -->
+            <div id="panel-ingest" class="flex flex-col gap-6">
+                <div class="bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex-1 flex flex-col items-center justify-center text-center group cursor-pointer transition-all hover:border-primary/20 hover:shadow-xl"
+                    onclick="simulateUpload()">
+                    <div id="upload-status-icon"
+                        class="w-20 h-20 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 transition-all group-hover:scale-110 group-hover:bg-primary-container">
+                        <i data-lucide="cloud-upload" class="text-slate-400 w-10 h-10 group-hover:text-primary"></i>
+                    </div>
+                    <div id="upload-status-text">
+                        <h2 class="text-xl font-bold mb-2 text-primary">Ingest Panel</h2>
+                        <p class="text-sm text-slate-500 mb-6 px-4">Dosya sürükleyin veya tarama başlatmak için tıklayın
+                        </p>
+                        <div
+                            class="inline-flex items-center px-6 py-3 bg-primary text-white text-sm font-bold rounded-lg shadow-md hover:bg-blue-700 transition-colors">
+                            YENİ TARAMA BAŞLAT
+                        </div>
+                    </div>
+                    <div id="upload-spinner" class="hidden">
+                        <div class="flex flex-col items-center">
+                            <i data-lucide="refresh-cw" class="text-primary w-12 h-12 animate-spin mb-4"></i>
+                            <p class="text-sm font-bold text-primary animate-pulse-slow tracking-widest uppercase">PII
+                                Scanning...</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Zero Trust Verification Card (Hidden Initially) -->
+                <div id="trust-card"
+                    class="hidden bg-emerald-50 border border-emerald-100 p-6 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div class="bg-secondary p-2.5 rounded-xl shadow-lg shadow-emerald-200/50">
+                        <i data-lucide="check-circle" class="text-white w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-emerald-900 font-bold text-sm uppercase tracking-wide">Erişim Onaylandı</h4>
+                        <p class="text-emerald-700 text-xs font-medium">Sıfır Güven (Zero-Trust) Doğrulandı</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 2: Chat & Live Masking -->
+            <div id="panel-masking" class="lg:col-span-1">
+                <div
+                    class="bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 h-full flex flex-col">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-blue-50 rounded-lg">
+                            <i data-lucide="message-square" class="text-primary w-5 h-5"></i>
+                        </div>
+                        <h2 class="text-xl font-bold">Klinik Giriş & Maskeleme</h2>
+                    </div>
+
+                    <div class="flex-1 flex flex-col gap-6">
+                        <div class="flex flex-col gap-2">
+                            <label
+                                class="text-xs font-bold text-slate-400 uppercase ml-1 flex items-center justify-between">
+                                Raw Input
+                                <span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded">UTF-8</span>
+                            </label>
+                            <textarea id="raw-input"
+                                class="w-full h-40 p-5 bg-slate-50 border border-slate-100 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm leading-relaxed"
+                                placeholder="Örn: Ahmet Yılmaz'ın tahlilleri 35287784 nolu TC'ye aittir..."
+                                spellcheck="false"></textarea>
+                        </div>
+
+                        <div class="flex flex-col gap-2">
+                            <label class="text-xs font-bold text-slate-400 uppercase ml-1">Live Engine Preview</label>
+                            <div id="mask-preview"
+                                class="w-full h-40 p-5 bg-primary/5 border border-primary/20 rounded-lg text-sm leading-relaxed text-slate-700 overflow-y-auto whitespace-pre-wrap italic">
+                                Bekleniyor...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 3: Secure Vault -->
+            <div id="panel-vault" class="lg:col-span-1">
+                <div
+                    class="bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 h-full flex flex-col">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-blue-50 rounded-lg">
+                                <i data-lucide="database" class="text-primary w-5 h-5"></i>
+                            </div>
+                            <h2 class="text-xl font-bold">Secure Vault</h2>
+                        </div>
+                        <span
+                            class="px-3 py-1 bg-primary-container text-primary text-[10px] font-black rounded-lg border border-primary/10 uppercase tracking-widest shadow-sm">
+                            Session Map
+                        </span>
+                    </div>
+
+                    <div class="flex-1 overflow-x-auto scrollbar-hide">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr
+                                    class="text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-50">
+                                    <th class="pb-4 pl-2 font-black">Orijinal Veri</th>
+                                    <th class="pb-4 pr-2 font-black text-right">Sentetik Token</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vault-tbody" class="text-sm font-medium">
+                                <tr class="text-slate-300 italic group">
+                                    <td class="py-12 text-center" colspan="2">
+                                        <div class="flex flex-col items-center gap-2 opacity-40">
+                                            <i data-lucide="lock" class="w-8 h-8"></i>
+                                            <span class="text-xs font-medium">Kasa henüz boş</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer
+        class="max-w-7xl mx-auto px-6 py-10 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-400 text-xs">
+        <div class="flex items-center gap-2 font-medium">
+            <span class="w-2 h-2 bg-secondary rounded-full animate-pulse shadow-sm shadow-emerald-400"></span>
+            <span>Uptime: 99.9% | Xtatistix Core v1.2</span>
+        </div>
+        <p class="font-medium uppercase tracking-widest">&copy; 2026 Context Shield Engine</p>
+    </footer>
+
+    <script>
+        // ----------------------------------------------------
+        // INITIALIZATION
+        // ----------------------------------------------------
+        lucide.createIcons();
+        const rawInput = document.getElementById('raw-input');
+
+        // ----------------------------------------------------
+        // CORE ENGINE LOGIC
+        // ----------------------------------------------------
+        const PII_MAP = new Map();
+        let counts = { PERSON: 0, TC: 0, PHONE: 0, EMAIL: 0 };
+
+        // Optimized Patterns for Demo
+        const PATTERNS = {
+            // Extended TC pattern for test purposes (11 digits)
+            TC: /\b[0-9]{11}\b/g,
+            EMAIL: /\b[A-Za-z0-9._%+-]+@[\w.-]+\.[A-Za-z]{2,}\b/g,
+            PHONE: /\b(0?5[0-9]{2}[-.\s]??[0-9]{3}[-.\s]??[0-9]{2}[-.\s]??[0-9]{2}|0?5[0-9]{9})\b/g,
+            // Matches names with Turkish char support and optional suffixes
+            PERSON: /(?<!\w)([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)*)(?=['’]?[a-zçğıöşü]*|$|\s|[.,!?;:])/gu
+        };
+
+        const EXCLUDE_LIST = ["Hasta", "Doktor", "Klinik", "Tarih", "Tanı", "Rapor", "Bulgu", "Dosya", "Kimlik", "Erişim", "Giriş", "Panel"];
+
+        function runMasking(text) {
+            PII_MAP.clear();
+            counts = { PERSON: 0, TC: 0, PHONE: 0, EMAIL: 0 };
+
+            let result = text;
+
+            // Step 1: Detect Emails
+            result = result.replace(PATTERNS.EMAIL, (match) => {
+                const token = getOrCreateToken(match, 'EMAIL', 'EPOSTA');
+                return `<span class="token-badge">${token}</span>`;
+            });
+
+            // Step 2: Detect Phones
+            result = result.replace(PATTERNS.PHONE, (match) => {
+                const token = getOrCreateToken(match, 'PHONE', 'TELEFON');
+                return `<span class="token-badge">${token}</span>`;
+            });
+
+            // Step 3: Detect TC / ID
+            result = result.replace(PATTERNS.TC, (match) => {
+                const token = getOrCreateToken(match, 'TC', 'TC');
+                return `<span class="token-badge">${token}</span>`;
+            });
+
+            // Step 4: Detect Names
+            result = result.replace(PATTERNS.PERSON, (match) => {
+                if (EXCLUDE_LIST.includes(match)) return match;
+                const token = getOrCreateToken(match, 'PERSON', 'KİŞİ');
+                return `<span class="token-badge">${token}</span>`;
+            });
+
+            return result;
+        }
+
+        function getOrCreateToken(value, type, label) {
+            if (PII_MAP.has(value)) {
+                return PII_MAP.get(value);
+            }
+            counts[type]++;
+            const token = `[${label}_${counts[type]}]`;
+            PII_MAP.set(value, token);
+            return token;
+        }
+
+        function updateVault() {
+            const tbody = document.getElementById('vault-tbody');
+            if (PII_MAP.size === 0) {
+                tbody.innerHTML = `
+                    <tr class="text-slate-300 italic group">
+                        <td class="py-12 text-center" colspan="2">
+                            <div class="flex flex-col items-center gap-2 opacity-40">
+                                <i data-lucide="lock" class="w-8 h-8"></i>
+                                <span class="text-xs font-medium">Kasa henüz boş</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            let html = '';
+            PII_MAP.forEach((token, original) => {
+                html += `
+                    <tr class="group hover:bg-slate-50 transition-all duration-300 animate-in fade-in slide-in-from-right-2">
+                        <td class="py-4 pl-2 border-b border-slate-50 text-slate-500 font-semibold">${original}</td>
+                        <td class="py-4 pr-2 border-b border-slate-50 text-right">
+                            <span class="px-2 py-1 bg-primary text-white text-[10px] font-black rounded border border-primary shadow-sm uppercase">
+                                ${token}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // ----------------------------------------------------
+        // UI HANDLERS
+        // ----------------------------------------------------
+        function handleInput() {
+            const value = rawInput.value;
+            const preview = document.getElementById('mask-preview');
+
+            if (!value.trim()) {
+                preview.innerHTML = 'Bekleniyor...';
+                preview.style.opacity = '0.5';
+                PII_MAP.clear();
+                updateVault();
+                return;
+            }
+
+            preview.style.opacity = '1';
+            const maskedHtml = runMasking(value);
+            preview.innerHTML = maskedHtml;
+            updateVault();
+        }
+
+        function simulateUpload() {
+            const icon = document.getElementById('upload-status-icon');
+            const text = document.getElementById('upload-status-text');
+            const spinner = document.getElementById('upload-spinner');
+            const trustCard = document.getElementById('trust-card');
+
+            icon.classList.add('hidden');
+            text.classList.add('hidden');
+            spinner.classList.remove('hidden');
+            trustCard.classList.add('hidden');
+
+            setTimeout(() => {
+                spinner.classList.add('hidden');
+                icon.classList.remove('hidden');
+                text.classList.remove('hidden');
+                trustCard.classList.remove('hidden');
+
+                icon.innerHTML = '<i data-lucide="check-circle" class="text-secondary w-12 h-12"></i>';
+                icon.className = 'w-20 h-20 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner';
+                lucide.createIcons();
+            }, 1800);
+        }
+
+        // Attach Event Listeners (Fixing the reported issues)
+        rawInput.addEventListener('input', handleInput);
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "context-med",
+  "private": true,
+  "description": "Monorepo for context-med pipeline",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "npm test --workspaces",
+    "test:cert": "npm test -w @context-med/context-cert"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}

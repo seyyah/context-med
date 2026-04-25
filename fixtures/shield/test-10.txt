@@ -1,0 +1,11 @@
+Cihaz Seri No: 884-221-99
+Sıcaklık: 24.5 C
+Nem: %45
+Hata Kodu: 0x12 (Bellek Hatası)
+Sürüm: v2.3.1
+Son Bakım: 01.01.2026
+Teknisyen Notu: Cihaz kalibrasyonu başarılı.
+Yedek Parça: Optik okuyucu.
+Fiyat: 1200 TL.
+Adet: 2.
+Toplam: 2400 TL.

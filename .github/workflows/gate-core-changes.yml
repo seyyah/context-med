@@ -1,11 +1,12 @@
 name: "Gate: Human Review Required"
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [main]
 
 permissions:
   pull-requests: write
+  issues: write
   contents: read
 
 jobs:
@@ -15,15 +16,17 @@ jobs:
       - name: Checkout PR
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Fetch base branch
-        run: git fetch origin ${{ github.base_ref }}
+        run: git fetch origin ${{ github.event.pull_request.base.ref }}
 
       - name: Detect core file changes
         id: detect
         run: |
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}...HEAD)
           echo "Changed files:"
           echo "$CHANGED_FILES"
 
@@ -88,7 +91,7 @@ jobs:
             }
 
             await github.rest.issues.addLabels({
-               issue_number: context.issue.number,
+               issue_number: ${{ github.event.pull_request.number }},
                owner: context.repo.owner,
                repo: context.repo.repo,
                labels: ['🔍 requires-human-review']
@@ -103,7 +106,7 @@ jobs:
             const coreFiles = `${{ steps.detect.outputs.core_files }}`;
 
             const comments = await github.rest.issues.listComments({
-              issue_number: context.issue.number,
+              issue_number: ${{ github.event.pull_request.number }},
               owner: context.repo.owner,
               repo: context.repo.repo
             });
@@ -128,7 +131,7 @@ jobs:
             body += `Lütfen uygun değilse PR'ınızı düzenleyin veya yetkilinin incelemesini bekleyin.`;
 
             await github.rest.issues.createComment({
-              issue_number: context.issue.number,
+              issue_number: ${{ github.event.pull_request.number }},
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: body

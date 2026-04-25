@@ -1,0 +1,5 @@
+node_modules/
+temp/
+coverage/
+.nyc_output/
+demo/output/

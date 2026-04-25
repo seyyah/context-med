@@ -1,0 +1,14 @@
+{
+  "name": "context-narrate",
+  "version": "0.1.0",
+  "description": "CLI tool for context-narrate",
+  "main": "bin/cli.js",
+  "bin": {
+    "context-narrate": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "jest tests/cli"
+  },
+  "author": "",
+  "license": "ISC"
+}
