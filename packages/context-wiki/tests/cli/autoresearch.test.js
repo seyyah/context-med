@@ -26,3 +26,27 @@ describe('autoresearch — fixture', () => {
     expect(Array.isArray(parsed.expected_keywords)).toBe(true);
   });
 });
+
+describe('autoresearch — scorer', () => {
+  test('autoresearch run with valid spec exits 0 (dry-run)', () => {
+    const specPath = path.join(__dirname, '../../../../fixtures/experiments/sample-experiment.json');
+    const wikiDir = path.join(__dirname, '../../../../fixtures/wiki');
+    const r = execCli(BIN, [
+      'autoresearch', 'run',
+      '--spec', specPath,
+      '--wiki-dir', wikiDir,
+      '--dry-run',
+    ]);
+    expect(r.exitCode).toBe(0);
+    expect(r.stdout + r.stderr).toMatch(/score|experiment|passed|failed/i);
+  });
+
+  test('autoresearch run with missing spec exits 1', () => {
+    const r = execCli(BIN, [
+      'autoresearch', 'run',
+      '--spec', 'nonexistent.json',
+      '--wiki-dir', 'wiki',
+    ]);
+    expect(r.exitCode).toBe(1);
+  });
+});
