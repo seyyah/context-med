@@ -1,12 +1,12 @@
 ---
 name: Xtatistix
 colors:
-  surface: "#f5f5f4"
+  surface: "#ffffff"
   surface-dim: "#e5e5e5"
   surface-bright: "#ffffff"
   surface-container-lowest: "#ffffff"
-  surface-container-low: "#f9fafb"
-  surface-container: "#f5f5f4"
+  surface-container-low: "#f5f6f9"
+  surface-container: "#f5f6f9"
   surface-container-high: "#e5e7eb"
   surface-container-highest: "#d4d4d8"
   on-surface: "#18181b"
@@ -33,9 +33,17 @@ colors:
   on-error: "#ffffff"
   error-container: "#FFF5F5"
   on-error-container: "#B80D10"
-  background: "#f5f5f4"
+  background: "#ffffff"
   on-background: "#18181b"
   surface-variant: "#f3f4f6"
+fonts:
+  primary:
+    name: "Inter"
+    source: "https://fonts.google.com/specimen/Inter"
+    weights: [400, 500, 700]
+    styles: ["normal"]
+    fallback: "system-ui, -apple-system, sans-serif"
+    usage: "Tüm UI metinleri — başlıklar, body, label, badge, buton"
 typography:
   display:
     fontFamily: "Inter"
