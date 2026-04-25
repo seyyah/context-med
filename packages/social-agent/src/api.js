@@ -130,7 +130,9 @@ function createSocialAgentDemo(options = {}) {
     language,
     source: {
       input: inputPath,
-      preview: sourceQuote(source)
+      preview: sourceQuote(source),
+      text: source,
+      comments
     },
     summary: createDemoSummary(source, plan, draftPackage, moderationReports, reviewQueue),
     plan,

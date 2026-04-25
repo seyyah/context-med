@@ -6,6 +6,8 @@ const path = require('path');
 const { createCliError } = require('../index');
 const { createSocialAgentDemo } = require('../api');
 
+const MAX_DEMO_BODY_BYTES = 64 * 1024;
+
 const CONTENT_TYPES = {
   '.css': 'text/css; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
@@ -78,8 +80,43 @@ function serveFile(request, response, filePath) {
   fs.createReadStream(filePath).pipe(response);
 }
 
-function serveDemoApi(request, response) {
-  const payload = createSocialAgentDemo();
+function readJsonBody(request) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+
+    request.setEncoding('utf8');
+    request.on('data', (chunk) => {
+      body += chunk;
+      if (Buffer.byteLength(body, 'utf8') > MAX_DEMO_BODY_BYTES) {
+        reject(createCliError('Demo request body is too large.', 1));
+        request.destroy();
+      }
+    });
+    request.on('end', () => {
+      if (!body.trim()) {
+        resolve({});
+        return;
+      }
+
+      try {
+        resolve(JSON.parse(body));
+      } catch (_error) {
+        reject(createCliError('Invalid JSON request body.', 1));
+      }
+    });
+    request.on('error', reject);
+  });
+}
+
+async function serveDemoApi(request, response) {
+  if (!['GET', 'HEAD', 'POST'].includes(request.method)) {
+    response.writeHead(405, { 'content-type': 'text/plain; charset=utf-8' });
+    response.end('Method not allowed');
+    return;
+  }
+
+  const options = request.method === 'POST' ? await readJsonBody(request) : {};
+  const payload = createSocialAgentDemo(options);
   response.writeHead(200, {
     'content-type': 'application/json; charset=utf-8',
     'cache-control': 'no-store'
@@ -107,17 +144,17 @@ async function runServe(options) {
     throw createCliError(`Demo entry not found: ${path.join(screensDir, 'overview.html')}`, 1);
   }
 
-  const server = http.createServer((request, response) => {
+  const server = http.createServer(async (request, response) => {
     try {
-      if (!['GET', 'HEAD'].includes(request.method)) {
-        response.writeHead(405, { 'content-type': 'text/plain; charset=utf-8' });
-        response.end('Method not allowed');
+      const url = new URL(request.url, 'http://localhost');
+      if (url.pathname === '/api/demo') {
+        await serveDemoApi(request, response);
         return;
       }
 
-      const url = new URL(request.url, 'http://localhost');
-      if (url.pathname === '/api/demo') {
-        serveDemoApi(request, response);
+      if (!['GET', 'HEAD'].includes(request.method)) {
+        response.writeHead(405, { 'content-type': 'text/plain; charset=utf-8' });
+        response.end('Method not allowed');
         return;
       }
 

@@ -1,6 +1,8 @@
 (function () {
   'use strict';
 
+  const DEMO_STORAGE_KEY = 'social-agent-demo-request-v1';
+
   const ROUTES = {
     overview: '/',
     workspace: '/workspace',
@@ -23,6 +25,12 @@
     packages: 'Packages',
     writeback: 'Writeback',
     settings: 'Settings'
+  };
+
+  let currentData = null;
+  let planFilter = {
+    platform: 'all',
+    status: 'all'
   };
 
   function escapeHtml(value) {
@@ -72,6 +80,11 @@
   function button(href, label, iconName, variant) {
     const className = variant === 'primary' ? 'sa-button' : 'sa-link-button';
     return `<a class="${className}" href="${escapeHtml(href)}">${iconName ? icon(iconName) : ''}${escapeHtml(label)}</a>`;
+  }
+
+  function actionButton(action, label, iconName, variant) {
+    const className = variant === 'primary' ? 'sa-button' : 'sa-link-button';
+    return `<button class="${className}" type="button" data-action="${escapeHtml(action)}">${iconName ? icon(iconName) : ''}${escapeHtml(label)}</button>`;
   }
 
   function hero(title, subtitle, actions) {
@@ -125,6 +138,10 @@
     ].join('');
   }
 
+  function messageSlot() {
+    return '<p class="sa-message" data-demo-message aria-live="polite"></p>';
+  }
+
   function commandBar(commands) {
     return [
       '<section class="sa-command-bar">',
@@ -134,7 +151,11 @@
       commands.map(command).join(''),
       '</div>',
       '</div>',
+      '<div class="sa-actions">',
+      actionButton('copy-json', 'Copy JSON', 'content_copy', 'secondary'),
+      actionButton('download-json', 'Download JSON', 'download', 'secondary'),
       button('/api/demo', 'Open JSON', 'data_object', 'secondary'),
+      '</div>',
       '</section>'
     ].join('');
   }
@@ -143,9 +164,125 @@
     return [
       '<div class="sa-view" data-social-agent-app="true">',
       hero(title, subtitle, actions),
+      messageSlot(),
       body,
       '</div>'
     ].join('');
+  }
+
+  function storageGet() {
+    try {
+      if (!window.localStorage) {
+        return null;
+      }
+
+      const raw = window.localStorage.getItem(DEMO_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function storageSet(value) {
+    try {
+      window.localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(value));
+    } catch (_error) {
+      // Local storage can be disabled in private or embedded browser contexts.
+    }
+  }
+
+  function storageClear() {
+    try {
+      window.localStorage.removeItem(DEMO_STORAGE_KEY);
+    } catch (_error) {
+      // Local storage can be disabled in private or embedded browser contexts.
+    }
+  }
+
+  function currentRequestFromData(data) {
+    return {
+      source: data.source && data.source.text ? data.source.text : data.source.preview,
+      comments: data.source && Array.isArray(data.source.comments)
+        ? data.source.comments
+        : data.moderation.reports.map((report) => report.source_quote),
+      language: data.language || 'en'
+    };
+  }
+
+  function commentsFromTextarea(value) {
+    return String(value || '')
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }
+
+  function requestFromWorkspaceForm(form) {
+    return {
+      source: form.elements.source.value.trim(),
+      comments: commentsFromTextarea(form.elements.comments.value),
+      language: form.elements.language.value || 'en'
+    };
+  }
+
+  async function fetchDemoData(options) {
+    if (!options) {
+      const stored = storageGet();
+      if (stored && stored.source) {
+        return fetchDemoData(stored);
+      }
+
+      const response = await fetch('/api/demo', { headers: { accept: 'application/json' } });
+      if (!response.ok) {
+        throw new Error(`Demo API returned ${response.status}`);
+      }
+      return response.json();
+    }
+
+    const response = await fetch('/api/demo', {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify(options)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Demo API returned ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  function payloadForRoute(route, data) {
+    if (route === 'workspace') {
+      return data;
+    }
+    if (route === 'plan') {
+      return data.plan;
+    }
+    if (route === 'drafts') {
+      return data.drafts;
+    }
+    if (route === 'moderation') {
+      return data.moderation;
+    }
+    if (route === 'review-queue') {
+      return data.review_queue;
+    }
+    if (route === 'packages') {
+      return data.packages;
+    }
+    if (route === 'writeback') {
+      return data.writeback;
+    }
+    if (route === 'settings') {
+      return data.settings;
+    }
+    return {
+      summary: data.summary,
+      package: data.package
+    };
   }
 
   function renderOverview(data) {
@@ -162,7 +299,8 @@
       'Operational Overview',
       summary.source_quote,
       [
-        button('/plan', 'Open Plan', 'event_note', 'primary'),
+        button('/workspace', 'Edit Source', 'edit_note', 'primary'),
+        button('/plan', 'Open Plan', 'event_note', 'secondary'),
         button('/review-queue', 'Review Queue', 'fact_check', 'secondary')
       ].join(''),
       [
@@ -178,6 +316,35 @@
     );
   }
 
+  function workspaceForm(data) {
+    const request = currentRequestFromData(data);
+    return [
+      '<form class="sa-form" data-workspace-form>',
+      '<div class="sa-form__grid">',
+      '<label class="sa-field sa-field--wide">',
+      '<span>Source context</span>',
+      `<textarea class="sa-textarea" name="source" rows="9">${escapeHtml(request.source)}</textarea>`,
+      '</label>',
+      '<label class="sa-field">',
+      '<span>Community comments</span>',
+      `<textarea class="sa-textarea" name="comments" rows="9">${escapeHtml(request.comments.join('\n'))}</textarea>`,
+      '</label>',
+      '<label class="sa-field">',
+      '<span>Language</span>',
+      '<select class="sa-select" name="language">',
+      `<option value="en"${request.language === 'en' ? ' selected' : ''}>English</option>`,
+      `<option value="tr"${request.language === 'tr' ? ' selected' : ''}>Turkish</option>`,
+      '</select>',
+      '</label>',
+      '</div>',
+      '<div class="sa-form__actions">',
+      '<button class="sa-button" type="submit">' + icon('refresh') + 'Generate Demo Output</button>',
+      '<button class="sa-link-button" type="button" data-action="reset-demo">' + icon('restart_alt') + 'Reset Demo</button>',
+      '</div>',
+      '</form>'
+    ].join('');
+  }
+
   function renderWorkspace(data) {
     const commands = [
       'node bin/cli.js plan --input demo/social-agent-source.md --output out/plan.json',
@@ -187,9 +354,13 @@
 
     return layout(
       'Workspace',
-      'The workspace shows the source context, CLI commands, and deterministic package outputs used by every screen.',
-      button('/api/demo', 'Inspect Payload', 'data_object', 'primary'),
+      'Edit source context and community comments, then regenerate the same package payload used by every screen.',
       [
+        actionButton('copy-json', 'Copy JSON', 'content_copy', 'secondary'),
+        actionButton('download-json', 'Download JSON', 'download', 'secondary')
+      ].join(''),
+      [
+        panel('Live input', workspaceForm(data)),
         commandBar(commands),
         '<section class="sa-grid sa-grid--wide">',
         card('Source topic', escapeHtml(data.summary.topic), data.source.preview, true),
@@ -206,8 +377,39 @@
     );
   }
 
+  function option(value, label, selectedValue) {
+    return `<option value="${escapeHtml(value)}"${value === selectedValue ? ' selected' : ''}>${escapeHtml(label)}</option>`;
+  }
+
+  function planFilters(data) {
+    const statuses = Array.from(new Set(data.plan.items.map((item) => item.status)));
+    return [
+      '<section class="sa-filter-bar">',
+      '<label class="sa-field sa-field--compact"><span>Platform</span>',
+      '<select class="sa-select" data-plan-filter="platform">',
+      option('all', 'All platforms', planFilter.platform),
+      data.plan.platforms.map((platform) => option(platform, platform, planFilter.platform)).join(''),
+      '</select></label>',
+      '<label class="sa-field sa-field--compact"><span>Status</span>',
+      '<select class="sa-select" data-plan-filter="status">',
+      option('all', 'All statuses', planFilter.status),
+      statuses.map((itemStatus) => option(itemStatus, itemStatus.replace(/_/g, ' '), planFilter.status)).join(''),
+      '</select></label>',
+      '<div class="sa-actions">',
+      actionButton('reset-plan-filters', 'Reset Filters', 'filter_alt_off', 'secondary'),
+      '</div>',
+      '</section>'
+    ].join('');
+  }
+
   function renderPlan(data) {
-    const rows = data.plan.items.map((item) => [
+    const visibleItems = data.plan.items.filter((item) => {
+      const platformMatches = planFilter.platform === 'all' || item.platform === planFilter.platform;
+      const statusMatches = planFilter.status === 'all' || item.status === planFilter.status;
+      return platformMatches && statusMatches;
+    });
+
+    const rows = visibleItems.map((item) => [
       escapeHtml(item.suggested_day),
       escapeHtml(item.platform),
       `<strong>${escapeHtml(item.topic)}</strong><p class="sa-body">${escapeHtml(item.cta)}</p>`,
@@ -220,11 +422,12 @@
       'Generated Weekly Plan',
       `Generated from "${data.plan.topic}" with ${data.plan.platforms.join(' and ')} as the first supported platforms.`,
       [
-        button('/drafts', 'Open Drafts', 'drafts', 'primary'),
-        button('/api/demo', 'JSON Payload', 'data_object', 'secondary')
+        button('/workspace', 'Edit Source', 'edit_note', 'secondary'),
+        button('/drafts', 'Open Drafts', 'drafts', 'primary')
       ].join(''),
       [
         commandBar(['node bin/cli.js plan --input <path> --output out/plan.json', 'node bin/cli.js plan --input <path> --output out/plan.json --dry-run']),
+        planFilters(data),
         panel('Plan items', table(['Day', 'Platform', 'Topic and CTA', 'Pillar', 'Risk', 'Status'], rows))
       ].join('')
     );
@@ -244,7 +447,10 @@
     return layout(
       'Drafts',
       'Platform-specific draft variants generated from the same source quote, with review metadata preserved.',
-      button('/review-queue', 'Review Drafts', 'fact_check', 'primary'),
+      [
+        button('/workspace', 'Edit Source', 'edit_note', 'secondary'),
+        button('/review-queue', 'Review Drafts', 'fact_check', 'primary')
+      ].join(''),
       [
         commandBar(['node bin/cli.js draft --input <path> --output out/drafts.json']),
         `<section class="sa-grid sa-grid--wide">${drafts}</section>`
@@ -264,7 +470,10 @@
     return layout(
       'Moderation',
       'Community text is classified locally and high-risk cases are escalated instead of auto-published.',
-      button('/review-queue', 'Open Queue', 'queue_play_next', 'primary'),
+      [
+        button('/workspace', 'Edit Comments', 'edit_note', 'secondary'),
+        button('/review-queue', 'Open Queue', 'queue_play_next', 'primary')
+      ].join(''),
       [
         commandBar(['node bin/cli.js moderate --input comments.txt --output out/moderation.json']),
         panel('Moderation reports', table(['Class', 'Risk', 'Action', 'Source text', 'Reply draft'], rows))
@@ -286,7 +495,10 @@
     return layout(
       'Review Queue',
       'Approval and escalation work is collected from plans, drafts, and moderation reports.',
-      button('/packages', 'Package Approved Work', 'inventory_2', 'primary'),
+      [
+        button('/workspace', 'Edit Inputs', 'edit_note', 'secondary'),
+        button('/packages', 'Package Approved Work', 'inventory_2', 'primary')
+      ].join(''),
       panel('Review items', table(['ID', 'Source', 'Channel', 'Risk', 'Action', 'Status', 'Source quote'], rows))
     );
   }
@@ -304,7 +516,8 @@
       'Packages',
       'Export-ready JSON package assembled from the same package API used by the CLI and demo screens.',
       [
-        button('/api/demo', 'Open Package JSON', 'data_object', 'primary'),
+        actionButton('download-json', 'Download Package', 'download', 'primary'),
+        actionButton('copy-json', 'Copy Package', 'content_copy', 'secondary'),
         button('/writeback', 'Writeback Status', 'save_as', 'secondary')
       ].join(''),
       [
@@ -368,6 +581,16 @@
     return (renderers[route] || renderOverview)(data);
   }
 
+  function setMessage(text, tone) {
+    const slot = document.querySelector('[data-demo-message]');
+    if (!slot) {
+      return;
+    }
+
+    slot.textContent = text || '';
+    slot.dataset.tone = tone || 'neutral';
+  }
+
   function wireNavigation(activeRoute) {
     document.querySelectorAll('nav a').forEach((link) => {
       const text = link.textContent.replace(/\s+/g, ' ').trim().toLowerCase();
@@ -381,9 +604,136 @@
     });
   }
 
+  async function copyText(text) {
+    if (window.navigator && window.navigator.clipboard) {
+      await window.navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.opacity = '0';
+    document.body.appendChild(field);
+    field.select();
+    document.execCommand('copy');
+    document.body.removeChild(field);
+  }
+
+  function downloadText(filename, text) {
+    const blob = new Blob([text], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleAction(action) {
+    if (!currentData) {
+      return;
+    }
+
+    const route = routeName();
+    const payload = payloadForRoute(route, currentData);
+    const serialized = `${JSON.stringify(payload, null, 2)}\n`;
+
+    if (action === 'copy-json') {
+      await copyText(serialized);
+      setMessage('JSON copied.', 'success');
+      return;
+    }
+
+    if (action === 'download-json') {
+      downloadText(`social-agent-${route}.json`, serialized);
+      setMessage('JSON download prepared.', 'success');
+      return;
+    }
+
+    if (action === 'reset-demo') {
+      storageClear();
+      currentData = await fetchDemoData(null);
+      render(currentData);
+      setMessage('Demo inputs reset.', 'success');
+      return;
+    }
+
+    if (action === 'reset-plan-filters') {
+      planFilter = { platform: 'all', status: 'all' };
+      render(currentData);
+    }
+  }
+
+  function bindActions() {
+    document.querySelectorAll('[data-action]').forEach((element) => {
+      element.addEventListener('click', async () => {
+        try {
+          await handleAction(element.dataset.action);
+        } catch (error) {
+          setMessage(error.message, 'error');
+        }
+      });
+    });
+  }
+
+  function bindWorkspaceForm() {
+    const form = document.querySelector('[data-workspace-form]');
+    if (!form) {
+      return;
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const request = requestFromWorkspaceForm(form);
+      if (!request.source) {
+        setMessage('Source context is required.', 'error');
+        return;
+      }
+
+      try {
+        const nextData = await fetchDemoData(request);
+        storageSet(request);
+        currentData = nextData;
+        render(nextData);
+        setMessage('Demo output regenerated.', 'success');
+      } catch (error) {
+        setMessage(error.message, 'error');
+      }
+    });
+  }
+
+  function bindPlanFilters() {
+    document.querySelectorAll('[data-plan-filter]').forEach((control) => {
+      control.addEventListener('change', () => {
+        planFilter = {
+          ...planFilter,
+          [control.dataset.planFilter]: control.value
+        };
+        render(currentData);
+      });
+    });
+  }
+
+  function bindInteractions(route) {
+    bindActions();
+
+    if (route === 'workspace') {
+      bindWorkspaceForm();
+    }
+
+    if (route === 'plan') {
+      bindPlanFilters();
+    }
+  }
+
   function render(data) {
     const route = routeName();
     const main = document.querySelector('main');
+    currentData = data;
     wireNavigation(route);
 
     if (!main) {
@@ -391,17 +741,20 @@
     }
 
     main.innerHTML = renderRoute(route, data);
+    bindInteractions(route);
   }
 
-  fetch('/api/demo', { headers: { accept: 'application/json' } })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Demo API returned ${response.status}`);
-      }
-      return response.json();
-    })
+  fetchDemoData()
     .then(render)
-    .catch(() => {
-      // Static file previews can run without the local demo API.
+    .catch((error) => {
+      const main = document.querySelector('main');
+      if (main) {
+        main.innerHTML = layout(
+          'Demo Error',
+          error.message,
+          '',
+          '<div class="sa-empty">The demo API could not be loaded.</div>'
+        );
+      }
     });
 }());

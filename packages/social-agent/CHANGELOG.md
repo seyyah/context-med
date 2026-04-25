@@ -5,6 +5,23 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.2.4] - 2026-04-25
+
+### Contributors
+
+- Akbulut55
+
+### Added
+
+- Added interactive demo workspace inputs for regenerating package output from custom source context and comments.
+- Added JSON copy/download actions and plan filtering controls to the demo UI.
+- Added `POST /api/demo` for custom package-backed demo payload generation.
+
+### Changed
+
+- Extended comprehensive tests for interactive demo controls and custom demo API requests.
+- Bumped package metadata to `0.2.4`.
+
 ## [social-agent-v0.2.3] - 2026-04-25
 
 ### Contributors

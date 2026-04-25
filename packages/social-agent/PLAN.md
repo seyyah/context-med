@@ -377,8 +377,11 @@ social-agent serve --port 3000
 - Overview screen loads.
 - Navigation reaches all accepted screens.
 - `/api/demo` returns a package-generated demo payload.
+- `/api/demo` accepts custom source/comment payloads for interactive demo regeneration.
 - `npm run demo:build` writes comprehensive demo JSON from the npm package API.
 - Plan, drafts, moderation, and review queue views map to CLI/domain outputs.
+- Workspace supports editing source context and comments for local demo output.
+- Package views support local JSON copy/download actions.
 - UI follows the accepted Stitch visual flow.
 
 ---

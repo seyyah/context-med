@@ -40,9 +40,13 @@ function writeTempFile(dir, name, content) {
   return filePath;
 }
 
-function requestText(url, method = 'GET') {
+function requestText(url, options = 'GET') {
+  const requestOptions = typeof options === 'string' ? { method: options } : options;
   return new Promise((resolve, reject) => {
-    const request = http.request(url, { method }, (response) => {
+    const request = http.request(url, {
+      method: requestOptions.method || 'GET',
+      headers: requestOptions.headers || {}
+    }, (response) => {
       let body = '';
       response.setEncoding('utf8');
       response.on('data', (chunk) => {
@@ -54,6 +58,9 @@ function requestText(url, method = 'GET') {
     });
 
     request.on('error', reject);
+    if (requestOptions.body) {
+      request.write(requestOptions.body);
+    }
     request.end();
   });
 }
@@ -255,6 +262,8 @@ describe('social-agent CLI comprehensive behavior', () => {
       llm_api_calls: false,
       direct_publishing: false
     });
+    expect(payload.source.text).toMatch(/Context-Med social launch briefing/);
+    expect(payload.source.comments.length).toBeGreaterThanOrEqual(4);
   });
 
   test('demo builder script writes package-generated JSON', () => {
@@ -307,6 +316,45 @@ describe('social-agent CLI comprehensive behavior', () => {
     expect(main.innerHTML).toMatch(/node bin\/cli\.js plan/);
   });
 
+  test('browser demo asset renders workspace controls for custom input', async () => {
+    const socialAgent = require('@context-med/social-agent');
+    const asset = fs.readFileSync(DEMO_ASSET, 'utf8');
+    const main = { innerHTML: '' };
+    const context = {
+      window: {
+        location: { pathname: '/workspace' },
+        localStorage: {
+          getItem() { return null; },
+          setItem() {},
+          removeItem() {}
+        }
+      },
+      document: {
+        querySelector(selector) {
+          return selector === 'main' ? main : null;
+        },
+        querySelectorAll() {
+          return [];
+        }
+      },
+      fetch() {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(socialAgent.createSocialAgentDemo())
+        });
+      }
+    };
+
+    vm.createContext(context);
+    vm.runInContext(asset, context);
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(main.innerHTML).toMatch(/data-workspace-form/);
+    expect(main.innerHTML).toMatch(/Generate Demo Output/);
+    expect(main.innerHTML).toMatch(/Source context/);
+    expect(main.innerHTML).toMatch(/Community comments/);
+  });
+
   test('serve exposes accepted demo screens with extensionless routes', async () => {
     const port = 3300 + Math.floor(Math.random() * 300);
     const child = spawn(process.execPath, [CLI, 'serve', '--port', String(port), '--quiet'], {
@@ -336,11 +384,28 @@ describe('social-agent CLI comprehensive behavior', () => {
         }
       });
 
+      const customDemo = await requestText(`http://127.0.0.1:${port}/api/demo`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          source: '# Custom Social Briefing\n\nA launch update with review gates and community response planning.',
+          comments: ['Can this be published?', 'This looks like a privacy breach crisis.'],
+          language: 'en'
+        })
+      });
+      const customPayload = JSON.parse(customDemo.body);
+      expect(customDemo.statusCode).toBe(200);
+      expect(customPayload.summary.topic).toBe('Custom Social Briefing');
+      expect(customPayload.moderation.reports.length).toBe(2);
+
       const demoAsset = await requestText(`http://127.0.0.1:${port}/assets/social-agent-demo.js`);
       expect(demoAsset.statusCode).toBe(200);
       expect(demoAsset.body).toMatch(/api\/demo/);
       expect(demoAsset.body).toMatch(/data-social-agent-app/);
       expect(demoAsset.body).toMatch(/main\.innerHTML = renderRoute/);
+      expect(demoAsset.body).toMatch(/data-workspace-form/);
+      expect(demoAsset.body).toMatch(/copy-json/);
+      expect(demoAsset.body).toMatch(/download-json/);
       expect(demoAsset.body).toMatch(/Generated Weekly Plan/);
       expect(demoAsset.body).toMatch(/Review Queue/);
 
