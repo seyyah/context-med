@@ -57,7 +57,7 @@ jobs:
           if [ -f "package.json" ]; then
             echo "Node.js package detected."
             npm install
-            npm test > test_output.txt || true
+            npm test > test_output.txt 2>&1 || true
             
             # Extract scores from Jest output
             PASS_COUNT=$(grep -oP '\d+(?= passed)' test_output.txt | tail -n 1 || echo "0")
