@@ -1,11 +1,12 @@
 name: "CI Eval & Gamification"
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [main]
 
 permissions:
   pull-requests: write
+  issues: write
   contents: read
 
 jobs:
@@ -16,7 +17,9 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -34,12 +37,12 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Fetch base branch
-        run: git fetch origin ${{ github.base_ref }}
+        run: git fetch origin ${{ github.event.pull_request.base.ref }}
 
       - name: Detect target pack
         id: pack
         run: |
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}...HEAD)
           # Get the primary package being touched
           TARGET_PACK=$(echo "$CHANGED_FILES" | grep '^packages/' | cut -d '/' -f 2 | sort | uniq | head -n 1)
           echo "target=$TARGET_PACK" >> $GITHUB_OUTPUT
@@ -47,7 +50,7 @@ jobs:
       - name: Check for unwanted changes
         id: unwanted
         run: |
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}...HEAD)
 
           # Check for CHANGELOG.md changes
           CHANGELOG_CHANGED=0
