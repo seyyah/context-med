@@ -14,7 +14,7 @@ afterAll(() => teardownOutputDir(PKG));
 
 describe('autoresearch — fixture', () => {
   test('sample-experiment.json exists and is valid JSON', () => {
-    const fixturePath = path.join(__dirname, '../../../fixtures/experiments/sample-experiment.json');
+    const fixturePath = path.join(__dirname, '../../../../fixtures/experiments/sample-experiment.json');
     expect(fs.existsSync(fixturePath)).toBe(true);
     const raw = fs.readFileSync(fixturePath, 'utf8');
     let parsed;
