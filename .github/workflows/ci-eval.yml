@@ -23,6 +23,11 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
@@ -42,35 +47,78 @@ jobs:
           TARGET_PACK=$(echo "$CHANGED_FILES" | grep '^packages/' | cut -d '/' -f 2 | sort | uniq | head -n 1)
           echo "target=$TARGET_PACK" >> $GITHUB_OUTPUT
 
-      - name: Run Pytest
+      - name: Run Tests
         if: steps.pack.outputs.target != ''
         id: test
         continue-on-error: true # Let it fail but we still calculate score and comment
         run: |
           PACK_DIR="packages/${{ steps.pack.outputs.target }}"
           echo "Running tests for $PACK_DIR"
-          
+
           # Go to pack dir and run test
           cd $PACK_DIR || exit 0
-          
-          # If we have a local src we install it
-          if [ -f "pyproject.toml" ]; then pip install -e .; fi
-          
-          pytest tests/ --junitxml=pytest.xml > pytest_output.txt || true
-          
-          # Basic gamification point extraction (Count passes/fails from text)
-          PASS_COUNT=$(grep -oP '\d+(?= passed)' pytest_output.txt || echo "0")
-          FAIL_COUNT=$(grep -oP '\d+(?= failed)' pytest_output.txt || echo "0")
-          
+
+          # Detect project type and run appropriate tests
+          PASS_COUNT=0
+          FAIL_COUNT=0
+
+          # Check if it's a Node.js/JavaScript project
+          if [ -f "package.json" ]; then
+            echo "📦 Detected Node.js project (package.json found)"
+
+            # Install dependencies
+            npm install || true
+
+            # Check if Jest is configured
+            if grep -q '"jest"' package.json || [ -f "jest.config.js" ]; then
+              echo "🧪 Running Jest tests..."
+              npm test -- --json --outputFile=jest_output.json || true
+
+              # Parse Jest JSON output
+              if [ -f "jest_output.json" ]; then
+                PASS_COUNT=$(jq -r '.numPassedTests // 0' jest_output.json 2>/dev/null || echo "0")
+                FAIL_COUNT=$(jq -r '.numFailedTests // 0' jest_output.json 2>/dev/null || echo "0")
+                echo "✅ Passed: $PASS_COUNT, ❌ Failed: $FAIL_COUNT"
+              else
+                # Fallback: try to parse from stdout
+                npm test > test_output.txt 2>&1 || true
+                PASS_COUNT=$(grep -oP '\d+(?= passed)' test_output.txt || echo "0")
+                FAIL_COUNT=$(grep -oP '\d+(?= failed)' test_output.txt || echo "0")
+              fi
+            else
+              echo "⚠️ No test framework detected in package.json"
+            fi
+
+          # Check if it's a Python project
+          elif [ -f "pyproject.toml" ] || [ -f "setup.py" ] || ls tests/test_*.py 2>/dev/null || ls tests/*_test.py 2>/dev/null; then
+            echo "🐍 Detected Python project"
+
+            # If we have a local src we install it
+            if [ -f "pyproject.toml" ]; then
+              pip install -e . || true
+            fi
+
+            echo "🧪 Running pytest..."
+            pytest tests/ --junitxml=pytest.xml > pytest_output.txt 2>&1 || true
+
+            # Basic gamification point extraction (Count passes/fails from text)
+            PASS_COUNT=$(grep -oP '\d+(?= passed)' pytest_output.txt || echo "0")
+            FAIL_COUNT=$(grep -oP '\d+(?= failed)' pytest_output.txt || echo "0")
+            echo "✅ Passed: $PASS_COUNT, ❌ Failed: $FAIL_COUNT"
+
+          else
+            echo "⚠️ Could not detect project type (no package.json, pyproject.toml, or Python tests found)"
+          fi
+
           # GitHub Outputs
           echo "passed=$PASS_COUNT" >> $GITHUB_OUTPUT
           echo "failed=$FAIL_COUNT" >> $GITHUB_OUTPUT
-          
+
           # Basic score formula (10 per pass, -5 per fail)
           SCORE=$(( PASS_COUNT * 10 - FAIL_COUNT * 5 ))
           if [ $SCORE -lt 0 ]; then SCORE=0; fi
           echo "score=$SCORE" >> $GITHUB_OUTPUT
-          
+
           # For step success check
           if [ "$FAIL_COUNT" != "0" ]; then
              echo "conclusion=failure" >> $GITHUB_OUTPUT
