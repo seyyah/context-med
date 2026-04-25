@@ -8,6 +8,7 @@ const { createSocialAgentDemoPayload } = require('../api');
 const { loadPackageEnv } = require('../env');
 
 const MAX_DEMO_BODY_BYTES = 64 * 1024;
+let lastDemoOptions = null;
 
 const CONTENT_TYPES = {
   '.css': 'text/css; charset=utf-8',
@@ -116,7 +117,18 @@ async function serveDemoApi(request, response) {
     return;
   }
 
-  const options = request.method === 'POST' ? await readJsonBody(request) : {};
+  let options = lastDemoOptions || {};
+  if (request.method === 'POST') {
+    const bodyOptions = await readJsonBody(request);
+    if (bodyOptions.reset === true) {
+      lastDemoOptions = null;
+      options = {};
+    } else {
+      lastDemoOptions = bodyOptions;
+      options = bodyOptions;
+    }
+  }
+
   const payload = await createSocialAgentDemoPayload(options);
   response.writeHead(200, {
     'content-type': 'application/json; charset=utf-8',

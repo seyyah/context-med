@@ -40,6 +40,20 @@ const WORKSPACE_RESPONSE_SCHEMA = {
           risk_level: { type: 'string' },
           status: { type: 'string' },
           source_quote: { type: 'string' },
+          hashtags: {
+            type: 'array',
+            items: { type: 'string' }
+          },
+          hashtag_policy: {
+            type: 'object',
+            properties: {
+              required: { type: 'boolean' },
+              max: { type: 'integer' },
+              placement: { type: 'string' },
+              reason: { type: 'string' }
+            },
+            required: ['required', 'max', 'placement', 'reason']
+          },
           adaptation: {
             type: 'object',
             properties: {
@@ -55,7 +69,7 @@ const WORKSPACE_RESPONSE_SCHEMA = {
             required: ['strategy', 'tone', 'length_target', 'rewrite_reason', 'platform_constraints']
           }
         },
-        required: ['platform', 'hook', 'body', 'cta', 'risk_level', 'status', 'source_quote', 'adaptation']
+        required: ['platform', 'hook', 'body', 'cta', 'risk_level', 'status', 'source_quote', 'hashtags', 'hashtag_policy', 'adaptation']
       }
     },
     moderation_reports: {
@@ -94,7 +108,9 @@ function buildWorkspacePrompt({ source, comments, language }) {
     '- Platform adaptation is mandatory: rewrite the same core idea for each platform; do not copy one platform draft and shorten it.',
     '- LinkedIn draft: write a polished platform-ready post, not a paragraph summary. Use a strong first-line hook, short paragraphs, optional bullets, a clear operational implication, a human-review boundary, and a concrete CTA question.',
     '- X draft: one concise platform-ready post, direct point of view, one focused question or review cue, and at most two relevant hashtags only if useful.',
+    '- Hashtags are optional but expected when they help discovery: LinkedIn may use 2-3 relevant hashtags as the final line; X may use at most 2 and must stay under 280 characters.',
     '- draft.body must be the final platform-ready social post text, not instructions about how to write one.',
+    '- Include hashtags and hashtag_policy for every draft. If hashtags are used, they must also appear in draft.body.',
     '- Do not put meta phrases like "LinkedIn version", "X version", "should explain", "designed to empower", "excited to announce", or "Source basis" inside draft.body.',
     '- Avoid generic launch language. Make the post feel like a real social post a social/media operator would approve.',
     '- For every draft, include adaptation.strategy, adaptation.tone, adaptation.length_target, adaptation.rewrite_reason, and adaptation.platform_constraints.',

@@ -1,7 +1,12 @@
 'use strict';
 
 const pkg = require('../package.json');
-const { buildDraftPayload } = require('./commands/draft');
+const {
+  appendHashtags,
+  buildDraftPayload,
+  hashtagPolicyFor,
+  hashtagsFor
+} = require('./commands/draft');
 const { buildModerationPayload } = require('./commands/moderate');
 const { buildPlanPayload } = require('./commands/plan');
 const {
@@ -35,6 +40,7 @@ const DEFAULT_DEMO_COMMENTS = [
   'Great breakdown. The review queue idea is helpful for our operations team.',
   'spam buy now crypto offer'
 ];
+const PLAN_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 
 function normalizeDemoComment(comment) {
   if (typeof comment === 'string') {
@@ -72,7 +78,8 @@ function createReviewQueue(plan, draftPackage, moderationReports) {
       risk_level: draft.risk_level,
       recommended_action: 'review',
       status: 'needs_review',
-      source_quote: draft.source_quote
+      source_quote: draft.source_quote,
+      current_copy: draft.body
     }));
 
   const moderationItems = moderationReports
@@ -236,20 +243,27 @@ function needsDraftRepair(platform, hook, body) {
   return false;
 }
 
-function createRepairedDraft(platform, topic, fallback) {
+function createRepairedDraft(platform, topic, fallback, source) {
   const title = cleanText(topic || fallback.hook || fallback.topic || 'Social workflow update', 90);
+  const hashtags = hashtagsFor(`${source || ''}\n${title}`, platform);
 
   if (platform === 'x') {
     return {
       hook: cleanText(title, 100),
-      body: cleanText(`${title}: source-backed copy, visible review gates, and human escalation for sensitive replies. What should be checked before posting?`, 240),
-      cta: 'What should be checked before posting?'
+      body: appendHashtags(
+        cleanText(`${title}: source-backed copy, visible review gates, human escalation. What should be checked before posting?`, 230),
+        hashtags,
+        'x'
+      ),
+      cta: 'What should be checked before posting?',
+      hashtags,
+      hashtag_policy: hashtagPolicyFor('x')
     };
   }
 
   return {
     hook: `${title}: safer social operations, not louder launch copy`,
-    body: [
+    body: appendHashtags([
       `${title} should not read like another product announcement.`,
       `For care operations teams, the useful story is the workflow change: source context stays attached, sensitive replies stay out of public automation, and review status is visible before anything is published.`,
       `What this helps teams do:`,
@@ -259,8 +273,10 @@ function createRepairedDraft(platform, topic, fallback) {
       `- avoid unsupported clinical claims in public content`,
       `The goal is not more posts. It is safer social operations with a clearer approval path.`,
       `Which review step creates the most friction for your team today?`
-    ].join('\n\n'),
-    cta: 'Which review step creates the most friction for your team today?'
+    ].join('\n\n'), hashtags, 'linkedin'),
+    cta: 'Which review step creates the most friction for your team today?',
+    hashtags,
+    hashtag_policy: hashtagPolicyFor('linkedin')
   };
 }
 
@@ -270,6 +286,43 @@ function normalizeStringArray(value, fallback) {
     .filter(Boolean);
 
   return items.length ? items : fallback;
+}
+
+function normalizeHashtags(value, fallback, source, platform) {
+  const provided = normalizeStringArray(value, []);
+  const normalized = provided
+    .map((tag) => {
+      const compact = tag.replace(/\s+/g, '');
+      return compact.startsWith('#') ? compact : `#${compact}`;
+    })
+    .filter((tag) => /^#[A-Za-z][A-Za-z0-9]*$/.test(tag));
+  const selected = normalized.length
+    ? normalized
+    : (fallback && fallback.length ? fallback : hashtagsFor(source, platform));
+  return Array.from(new Set(selected)).slice(0, platform === 'x' ? 2 : 3);
+}
+
+function normalizeHashtagPolicy(platform, generatedPolicy, fallbackPolicy) {
+  const generated = generatedPolicy && typeof generatedPolicy === 'object' ? generatedPolicy : {};
+  const fallback = fallbackPolicy && typeof fallbackPolicy === 'object'
+    ? fallbackPolicy
+    : hashtagPolicyFor(platform);
+  const max = Number.parseInt(generated.max || generated.max_count || fallback.max, 10);
+
+  return {
+    required: Boolean(generated.required || fallback.required),
+    max: Number.isInteger(max) && max >= 0 ? Math.min(max, platform === 'x' ? 2 : 3) : fallback.max,
+    placement: textOrFallback(generated.placement, fallback.placement, 40),
+    reason: textOrFallback(generated.reason || generated.rationale, fallback.reason, 220)
+  };
+}
+
+function bodyWithHashtags(body, hashtags, platform) {
+  if (!hashtags || !hashtags.length || hashtags.some((tag) => body.includes(tag))) {
+    return body;
+  }
+
+  return appendHashtags(body, hashtags, platform);
 }
 
 function normalizeAdaptation(platform, generatedAdaptation, fallbackAdaptation = {}) {
@@ -319,19 +372,46 @@ function ensureMinimumItems(generatedItems, fallbackItems, minimum) {
   return items;
 }
 
+function assignPlanDay(platform, requestedDay, usedDaysByPlatform, index) {
+  const normalizedDay = String(requestedDay || '').toLowerCase();
+  const fallbackDay = PLAN_DAYS[index % PLAN_DAYS.length];
+  const day = PLAN_DAYS.includes(normalizedDay) ? normalizedDay : fallbackDay;
+  const usedDays = usedDaysByPlatform.get(platform) || new Set();
+
+  if (!usedDays.has(day)) {
+    usedDays.add(day);
+    usedDaysByPlatform.set(platform, usedDays);
+    return day;
+  }
+
+  const startIndex = PLAN_DAYS.indexOf(day);
+  for (let offset = 1; offset < PLAN_DAYS.length; offset += 1) {
+    const candidate = PLAN_DAYS[(startIndex + offset) % PLAN_DAYS.length];
+    if (!usedDays.has(candidate)) {
+      usedDays.add(candidate);
+      usedDaysByPlatform.set(platform, usedDays);
+      return candidate;
+    }
+  }
+
+  return day;
+}
+
 function createGeneratedPlan(fallbackPlan, generated, source) {
   const topic = textOrFallback(generated.topic, fallbackPlan.topic, 100);
   const generatedItems = ensureMinimumItems(asArray(generated.plan_items), fallbackPlan.items, 4);
+  const usedDaysByPlatform = new Map();
   const items = generatedItems.slice(0, 6).map((item, index) => {
     const fallback = fallbackPlan.items[index % fallbackPlan.items.length];
     const platform = normalizePlatform(item.platform, fallback.platform);
     const level = normalizeRisk(item.risk_level, fallback.risk_level);
     const itemStatus = normalizeStatus(item.status, approvalRequired(level) ? 'needs_review' : 'draft');
+    const requestedDay = textOrFallback(item.suggested_day, fallback.suggested_day, 30).toLowerCase();
 
     return {
       id: `plan-${platform}-${String(index + 1).padStart(2, '0')}`,
       platform,
-      suggested_day: textOrFallback(item.suggested_day, fallback.suggested_day, 30).toLowerCase(),
+      suggested_day: assignPlanDay(platform, requestedDay, usedDaysByPlatform, index),
       content_pillar: textOrFallback(item.content_pillar, fallback.content_pillar || contentPillar(source), 40),
       topic: textOrFallback(item.topic, fallback.topic || topic, 120),
       format: textOrFallback(item.format, fallback.format || 'social post', 50),
@@ -367,20 +447,28 @@ function createGeneratedDraftPackage(fallbackDraftPackage, generated, source) {
     const generatedHook = textOrFallback(draft.hook, fallback.hook, 120);
     const generatedBody = textOrFallback(draft.body, fallback.body, 1200);
     const repaired = needsDraftRepair(platform, generatedHook, generatedBody)
-      ? createRepairedDraft(platform, generated.topic || fallbackDraftPackage.topic, fallback)
+      ? createRepairedDraft(platform, generated.topic || fallbackDraftPackage.topic, fallback, source)
       : null;
+    const hashtags = repaired
+      ? repaired.hashtags
+      : normalizeHashtags(draft.hashtags, fallback.hashtags, source, platform);
+    const hashtagPolicy = repaired
+      ? repaired.hashtag_policy
+      : normalizeHashtagPolicy(platform, draft.hashtag_policy, fallback.hashtag_policy);
 
     return {
       id: `draft-${platform}-${String(index + 1).padStart(2, '0')}`,
       platform,
       hook: repaired ? repaired.hook : generatedHook,
-      body: repaired ? repaired.body : generatedBody,
+      body: repaired ? repaired.body : bodyWithHashtags(generatedBody, hashtags, platform),
       cta: repaired ? repaired.cta : textOrFallback(draft.cta, fallback.cta, 180),
       risk_level: level,
       approval_required: approvalRequired(level) || draftStatus === 'needs_review',
       source_quote: textOrFallback(draft.source_quote, fallback.source_quote || sourceQuote(source), 240),
       status: draftStatus,
       adaptation: normalizeAdaptation(platform, draft.adaptation, fallback.adaptation),
+      hashtags,
+      hashtag_policy: hashtagPolicy,
       quality_flags: repaired ? ['generic_launch_language_repaired'] : []
     };
   });

@@ -120,6 +120,24 @@ nav a[aria-current="false"]:hover {
   color: #202a3a;
 }
 
+.sa-icon-action {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #cbd3e1;
+  border-radius: 8px;
+  color: #202a3a;
+  display: inline-flex;
+  height: 30px;
+  justify-content: center;
+  padding: 0;
+  width: 30px;
+}
+
+.sa-icon-action:hover {
+  border-color: #002989;
+  color: #002989;
+}
+
 .sa-command-bar {
   align-items: center;
   display: flex;
@@ -140,12 +158,18 @@ nav a[aria-current="false"]:hover {
 
 .sa-filter-bar,
 .sa-form,
-.sa-results {
+.sa-results,
+.sa-callout {
   background: #ffffff;
   border: 1px solid #d9dde7;
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   padding: 14px;
+}
+
+.sa-callout {
+  background: #f8fafc;
+  border-left: 4px solid #002989;
 }
 
 .sa-filter-bar {
@@ -291,6 +315,59 @@ nav a[aria-current="false"]:hover {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.sa-plan-board,
+.sa-triage-grid,
+.sa-review-board {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.sa-plan-card,
+.sa-triage-card,
+.sa-review-card {
+  background: #ffffff;
+  border: 1px solid #d9dde7;
+  border-left: 4px solid #002989;
+  border-radius: 8px;
+  min-width: 0;
+  padding: 14px;
+}
+
+.sa-review-card--needs_review,
+.sa-review-card--changes_requested {
+  border-left-color: #d97706;
+}
+
+.sa-review-card--approved {
+  border-left-color: #0f8f4f;
+}
+
+.sa-review-card--escalated {
+  border-left-color: #dc2626;
+}
+
+.sa-plan-card__head {
+  align-items: flex-start;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.sa-triage-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sa-triage-item {
+  background: #f8fafc;
+  border: 1px solid #e0e6ef;
+  border-radius: 8px;
+  padding: 10px;
+}
+
 .sa-final-output {
   background: #f8fafc;
   border: 1px solid #d9dde7;
@@ -330,6 +407,23 @@ nav a[aria-current="false"]:hover {
   margin: 12px 0 0;
   padding: 12px;
   white-space: pre-wrap;
+}
+
+.sa-draft-editor {
+  font: 500 14px/1.6 Inter, system-ui, sans-serif;
+  margin-top: 12px;
+  min-height: 260px;
+}
+
+.sa-draft-actions {
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+.sa-editor-note {
+  color: #536179;
+  font: 600 12px/1.5 Inter, system-ui, sans-serif;
+  margin: 8px 0 0;
 }
 
 .sa-adaptation-details {
@@ -401,7 +495,7 @@ nav a[aria-current="false"]:hover {
 
 .sa-textarea--source,
 .sa-textarea--comments {
-  min-height: 116px;
+  min-height: 260px;
 }
 
 .sa-select {
@@ -497,6 +591,10 @@ nav a[aria-current="false"]:hover {
   padding: 0;
 }
 
+.sa-list--compact {
+  gap: 6px;
+}
+
 .sa-list li {
   align-items: flex-start;
   background: #f8fafc;
@@ -526,7 +624,9 @@ nav a[aria-current="false"]:hover {
 
 .sa-status--medium,
 .sa-status--reply,
-.sa-status--review {
+.sa-status--review,
+.sa-status--revise,
+.sa-status--changes_requested {
   background: #fff0c2;
   color: #7c4a03;
 }
@@ -535,6 +635,7 @@ nav a[aria-current="false"]:hover {
 .sa-status--ready,
 .sa-status--draft,
 .sa-status--ignore,
+.sa-status--approved,
 .sa-status--disabled,
 .sa-status--false {
   background: #dff5e6;
@@ -616,7 +717,8 @@ nav a[aria-current="false"]:hover {
   .sa-command-bar,
   .sa-form,
   .sa-filter-bar,
-  .sa-results {
+  .sa-results,
+  .sa-callout {
     padding: 14px;
   }
 

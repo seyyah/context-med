@@ -160,20 +160,34 @@ describe('social-agent CLI comprehensive behavior', () => {
     expect(linkedIn.body).toMatch(/review/i);
     expect(linkedIn.body).toMatch(/- turn source material into platform-ready copy/);
     expect(linkedIn.body).toMatch(/Which review step creates the most friction/i);
+    expect(linkedIn.body).toMatch(/#\w+/);
     expect(linkedIn.body).not.toMatch(/LinkedIn version|Source basis|should explain|generic announcement|excited to announce/i);
-    expect(x.body).toMatch(/\?$/);
+    expect(x.body).toMatch(/\?/);
+    expect(x.body).toMatch(/#\w+/);
     expect(x.body).not.toMatch(/LinkedIn|Source basis|paragraph/i);
+    expect(linkedIn.hashtags.length).toBeGreaterThan(0);
+    expect(linkedIn.hashtag_policy).toMatchObject({
+      required: false,
+      max: 3,
+      placement: 'final_line'
+    });
+    expect(x.hashtags.length).toBeGreaterThan(0);
+    expect(x.hashtag_policy).toMatchObject({
+      required: false,
+      max: 2,
+      placement: 'inline_end'
+    });
     expect(linkedIn.adaptation).toMatchObject({
       strategy: 'professional_narrative'
     });
     expect(x.adaptation).toMatchObject({
       strategy: 'concise_conversation_starter',
-      length_target: 'single post under 240 characters'
+      length_target: 'single post under 280 characters'
     });
     expect(linkedIn.adaptation.rewrite_reason).toMatch(/LinkedIn/i);
     expect(x.adaptation.rewrite_reason).toMatch(/X/i);
     expect(linkedIn.adaptation.strategy).not.toBe(x.adaptation.strategy);
-    expect(x.body.length).toBeLessThanOrEqual(240);
+    expect(x.body.length).toBeLessThanOrEqual(280);
     expect(linkedIn.source_quote.length).toBeGreaterThan(10);
     expect(x.source_quote.length).toBeGreaterThan(10);
   });
@@ -275,6 +289,7 @@ describe('social-agent CLI comprehensive behavior', () => {
     expect(payload.drafts.drafts.length).toBeGreaterThanOrEqual(2);
     expect(payload.moderation.reports.length).toBeGreaterThanOrEqual(4);
     expect(payload.review_queue.length).toBeGreaterThan(0);
+    expect(payload.review_queue.filter((item) => item.source === 'draft')[0].current_copy).toEqual(expect.any(String));
     expect(payload.settings).toMatchObject({
       deterministic_mode: true,
       llm_api_calls: false,
@@ -363,6 +378,13 @@ describe('social-agent CLI comprehensive behavior', () => {
                         risk_level: 'medium',
                         status: 'needs_review',
                         source_quote: 'Review-gated social workflow for care operations.',
+                        hashtags: ['#CareOperations', '#HealthTech', '#PatientSafety'],
+                        hashtag_policy: {
+                          required: false,
+                          max: 3,
+                          placement: 'final_line',
+                          reason: 'Use a focused set of discovery hashtags after the post body.'
+                        },
                         adaptation: {
                           strategy: 'professional_narrative',
                           tone: 'clear, accountable, operational',
@@ -379,6 +401,13 @@ describe('social-agent CLI comprehensive behavior', () => {
                         risk_level: 'low',
                         status: 'draft',
                         source_quote: 'Review-gated social workflow for care operations.',
+                        hashtags: ['#CareOps', '#PatientSafety'],
+                        hashtag_policy: {
+                          required: false,
+                          max: 2,
+                          placement: 'inline_end',
+                          reason: 'Use at most two hashtags while staying under X length constraints.'
+                        },
                         adaptation: {
                           strategy: 'concise_conversation_starter',
                           tone: 'direct, specific, low-jargon',
@@ -424,14 +453,25 @@ describe('social-agent CLI comprehensive behavior', () => {
       expect(payload.summary.topic).toBe('Gemini Workspace Launch');
       expect(payload.summary.generated_summary).toMatch(/Gemini generated/);
       expect(payload.plan.items[0].topic).toBe('Gemini launch workflow');
+      const planSlots = new Set();
+      payload.plan.items.forEach((item) => {
+        const slot = `${item.platform}:${item.suggested_day}`;
+        expect(planSlots.has(slot)).toBe(false);
+        planSlots.add(slot);
+      });
       expect(payload.drafts.drafts[0].body).toMatch(/should not read like another product announcement/);
       expect(payload.drafts.drafts[0].body).not.toMatch(/Revolutionizing|empower|unparalleled|faster than ever/i);
       expect(payload.drafts.drafts[0].quality_flags).toContain('generic_launch_language_repaired');
       expect(payload.drafts.drafts[0].adaptation.strategy).toBe('professional_narrative');
-      expect(payload.drafts.drafts[1].body).toMatch(/\?$/);
+      expect(payload.drafts.drafts[0].hashtags.length).toBeGreaterThan(0);
+      expect(payload.drafts.drafts[0].body).toMatch(/#\w+/);
+      expect(payload.drafts.drafts[1].body).toMatch(/\?/);
       expect(payload.drafts.drafts[1].body).not.toMatch(/Big news|revolutionary|empower/i);
       expect(payload.drafts.drafts[1].quality_flags).toContain('generic_launch_language_repaired');
       expect(payload.drafts.drafts[1].adaptation.strategy).toBe('concise_conversation_starter');
+      expect(payload.drafts.drafts[1].hashtags.length).toBeGreaterThan(0);
+      expect(payload.drafts.drafts[1].body).toMatch(/#\w+/);
+      expect(payload.drafts.drafts[1].body.length).toBeLessThanOrEqual(280);
       expect(payload.moderation.reports[0].recommended_action).toBe('reply');
       expect(payload.review_queue.length).toBeGreaterThan(0);
     } finally {
@@ -497,6 +537,7 @@ describe('social-agent CLI comprehensive behavior', () => {
 
     expect(main.innerHTML).toMatch(/data-social-agent-app/);
     expect(main.innerHTML).toMatch(/Generated Weekly Plan/);
+    expect(main.innerHTML).toMatch(/Planning board/);
     expect(main.innerHTML).toMatch(/Plan items/);
     expect(main.innerHTML).toMatch(/node bin\/cli\.js plan/);
   });
@@ -555,6 +596,8 @@ describe('social-agent CLI comprehensive behavior', () => {
     expect(main.innerHTML).toMatch(/Final X output/);
     expect(main.innerHTML).toMatch(/Adaptation details/);
     expect(main.innerHTML).toMatch(/sa-adaptation-details/);
+    expect(main.innerHTML).toMatch(/Hashtags/);
+    expect(main.innerHTML).toMatch(/Copy final copy/);
     expect(main.innerHTML).toMatch(/Adaptation/);
     expect(main.innerHTML).toMatch(/professional_narrative/);
     expect(main.innerHTML).toMatch(/Plan created/);
@@ -634,6 +677,53 @@ describe('social-agent CLI comprehensive behavior', () => {
     expect(main.innerHTML).toMatch(/Generated Weekly Plan/);
   });
 
+  test('browser demo asset renders review queue as an approval workspace', async () => {
+    const socialAgent = require('@context-med/social-agent');
+    const asset = fs.readFileSync(DEMO_ASSET, 'utf8');
+    const main = { innerHTML: '' };
+    const context = {
+      window: {
+        location: { pathname: '/review-queue' },
+        addEventListener() {},
+        localStorage: {
+          getItem() { return null; },
+          setItem() {},
+          removeItem() {}
+        }
+      },
+      document: {
+        body: {
+          classList: {
+            add() {}
+          }
+        },
+        querySelector(selector) {
+          return selector === 'main' ? main : null;
+        },
+        querySelectorAll() {
+          return [];
+        }
+      },
+      fetch() {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(socialAgent.createSocialAgentDemo())
+        });
+      }
+    };
+
+    vm.createContext(context);
+    vm.runInContext(asset, context);
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(main.innerHTML).toMatch(/Human approval gate/);
+    expect(main.innerHTML).toMatch(/Decision board/);
+    expect(main.innerHTML).toMatch(/approve-review/);
+    expect(main.innerHTML).toMatch(/request-review-changes/);
+    expect(main.innerHTML).toMatch(/escalate-review/);
+    expect(main.innerHTML).toMatch(/Review items/);
+  });
+
   test('serve exposes accepted demo screens with extensionless routes', async () => {
     const port = 3300 + Math.floor(Math.random() * 300);
     const child = spawn(process.execPath, [CLI, 'serve', '--port', String(port), '--quiet'], {
@@ -687,6 +777,18 @@ describe('social-agent CLI comprehensive behavior', () => {
       expect(customPayload.summary.topic).toBe('Custom Social Briefing');
       expect(customPayload.moderation.reports.length).toBe(2);
 
+      const persistedCustomDemo = await requestText(`http://127.0.0.1:${port}/api/demo`);
+      expect(persistedCustomDemo.statusCode).toBe(200);
+      expect(JSON.parse(persistedCustomDemo.body).summary.topic).toBe('Custom Social Briefing');
+
+      const resetDemo = await requestText(`http://127.0.0.1:${port}/api/demo`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ reset: true })
+      });
+      expect(resetDemo.statusCode).toBe(200);
+      expect(JSON.parse(resetDemo.body).summary.topic).toBe('Context-Med social launch briefing');
+
       const demoAsset = await requestText(`http://127.0.0.1:${port}/assets/social-agent-demo.js`);
       expect(demoAsset.statusCode).toBe(200);
       expect(demoAsset.body).toMatch(/api\/demo/);
@@ -707,9 +809,21 @@ describe('social-agent CLI comprehensive behavior', () => {
       expect(demoAsset.body).toMatch(/finalPostCard/);
       expect(demoAsset.body).toMatch(/Adaptation details/);
       expect(demoAsset.body).toMatch(/sa-adaptation-details/);
+      expect(demoAsset.body).toMatch(/Hashtags/);
+      expect(demoAsset.body).toMatch(/Planning board/);
+      expect(demoAsset.body).toMatch(/Publish handoff/);
+      expect(demoAsset.body).toMatch(/Moderation triage/);
+      expect(demoAsset.body).toMatch(/copy-draft/);
+      expect(demoAsset.body).toMatch(/edit-draft/);
+      expect(demoAsset.body).toMatch(/save-draft-edit/);
+      expect(demoAsset.body).toMatch(/data-draft-editor/);
       expect(demoAsset.body).toMatch(/Final platform outputs/);
       expect(demoAsset.body).toMatch(/Plan created/);
       expect(demoAsset.body).toMatch(/Review Queue/);
+      expect(demoAsset.body).toMatch(/Human approval gate/);
+      expect(demoAsset.body).toMatch(/approve-review/);
+      expect(demoAsset.body).toMatch(/request-review-changes/);
+      expect(demoAsset.body).toMatch(/escalate-review/);
 
       const demoStyles = await requestText(`http://127.0.0.1:${port}/assets/social-agent-demo.css`);
       expect(demoStyles.statusCode).toBe(200);
@@ -720,6 +834,12 @@ describe('social-agent CLI comprehensive behavior', () => {
       expect(demoStyles.body).toMatch(/sa-run-summary/);
       expect(demoStyles.body).toMatch(/sa-run-card--live/);
       expect(demoStyles.body).toMatch(/sa-output-card/);
+      expect(demoStyles.body).toMatch(/sa-plan-board/);
+      expect(demoStyles.body).toMatch(/sa-triage-grid/);
+      expect(demoStyles.body).toMatch(/sa-icon-action/);
+      expect(demoStyles.body).toMatch(/sa-review-board/);
+      expect(demoStyles.body).toMatch(/sa-callout/);
+      expect(demoStyles.body).toMatch(/sa-draft-editor/);
 
       const directScreen = await requestText(`http://127.0.0.1:${port}/screens/overview.html`);
       expect(directScreen.statusCode).toBe(200);

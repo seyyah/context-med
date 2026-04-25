@@ -28,9 +28,12 @@
   };
 
   let currentData = null;
+  let editingDraftId = '';
   let planFilter = {
     platform: 'all',
-    status: 'all'
+    status: 'all',
+    risk: 'all',
+    approval: 'all'
   };
 
   function escapeHtml(value) {
@@ -89,6 +92,20 @@
   function actionButton(action, label, iconName, variant) {
     const className = variant === 'primary' ? 'sa-button' : 'sa-link-button';
     return `<button class="${className}" type="button" data-action="${escapeHtml(action)}">${iconName ? icon(iconName) : ''}${escapeHtml(label)}</button>`;
+  }
+
+  function reviewButton(action, label, iconName, reviewId, variant) {
+    const className = variant === 'primary' ? 'sa-button' : 'sa-link-button';
+    return `<button class="${className}" type="button" data-action="${escapeHtml(action)}" data-review-id="${escapeHtml(reviewId)}">${iconName ? icon(iconName) : ''}${escapeHtml(label)}</button>`;
+  }
+
+  function draftButton(action, label, iconName, draftId, variant) {
+    const className = variant === 'primary' ? 'sa-button' : 'sa-link-button';
+    return `<button class="${className}" type="button" data-action="${escapeHtml(action)}" data-draft-id="${escapeHtml(draftId)}">${iconName ? icon(iconName) : ''}${escapeHtml(label)}</button>`;
+  }
+
+  function iconActionButton(action, label, iconName, attributes) {
+    return `<button class="sa-icon-action" type="button" data-action="${escapeHtml(action)}"${attributes || ''} title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${icon(iconName)}</button>`;
   }
 
   function hero(title, subtitle, actions) {
@@ -224,7 +241,7 @@
     return {
       source: form.elements.source.value.trim(),
       comments: commentsFromTextarea(form.elements.comments.value),
-      language: form.elements.language.value || 'en'
+      language: 'en'
     };
   }
 
@@ -327,20 +344,13 @@
     return [
       '<form class="sa-form" data-workspace-form>',
       '<div class="sa-form__grid">',
-      '<label class="sa-field sa-field--wide">',
+      '<label class="sa-field">',
       '<span>Source context</span>',
-      `<textarea class="sa-textarea sa-textarea--source" name="source" rows="6">${escapeHtml(request.source)}</textarea>`,
+      `<textarea class="sa-textarea sa-textarea--source" name="source" rows="12">${escapeHtml(request.source)}</textarea>`,
       '</label>',
       '<label class="sa-field">',
       '<span>Community comments</span>',
-      `<textarea class="sa-textarea sa-textarea--comments" name="comments" rows="6">${escapeHtml(request.comments.join('\n'))}</textarea>`,
-      '</label>',
-      '<label class="sa-field">',
-      '<span>Language</span>',
-      '<select class="sa-select" name="language">',
-      `<option value="en"${request.language === 'en' ? ' selected' : ''}>English</option>`,
-      `<option value="tr"${request.language === 'tr' ? ' selected' : ''}>Turkish</option>`,
-      '</select>',
+      `<textarea class="sa-textarea sa-textarea--comments" name="comments" rows="12">${escapeHtml(request.comments.join('\n'))}</textarea>`,
       '</label>',
       '</div>',
       '<div class="sa-form__actions">',
@@ -384,6 +394,10 @@
 
   function adaptationList(draft) {
     const adaptation = draft.adaptation || {};
+    const hashtagPolicy = draft.hashtag_policy || {};
+    const hashtags = Array.isArray(draft.hashtags) && draft.hashtags.length
+      ? draft.hashtags.join(' ')
+      : 'None selected';
     const constraints = Array.isArray(adaptation.platform_constraints)
       ? adaptation.platform_constraints.join('; ')
       : '';
@@ -394,6 +408,8 @@
       `<li>${icon('tune')}<span><strong>Tone:</strong> ${escapeHtml(adaptation.tone || 'platform appropriate')}</span></li>`,
       `<li>${icon('compress')}<span><strong>Length:</strong> ${escapeHtml(adaptation.length_target || 'platform specific')}</span></li>`,
       constraints ? `<li>${icon('rule')}<span><strong>Constraints:</strong> ${escapeHtml(constraints)}</span></li>` : '',
+      `<li>${icon('tag')}<span><strong>Hashtags:</strong> ${escapeHtml(hashtags)}. Max ${escapeHtml(hashtagPolicy.max || 'platform default')}, ${escapeHtml(hashtagPolicy.placement || 'platform placement')}.</span></li>`,
+      `<li>${icon('policy')}<span><strong>Hashtag policy:</strong> ${escapeHtml(hashtagPolicy.reason || 'Use only relevant hashtags that do not add unsupported claims.')}</span></li>`,
       `<li>${icon('campaign')}<span><strong>CTA:</strong> ${escapeHtml(draft.cta || 'Review before posting.')}</span></li>`,
       `<li>${icon('source')}<span><strong>Source:</strong> ${escapeHtml(draft.source_quote || 'Source quote unavailable.')}</span></li>`
     ].join('');
@@ -411,14 +427,30 @@
   }
 
   function finalPostCard(draft) {
+    const isEditing = editingDraftId === draft.id;
+    const draftActions = routeName() === 'drafts'
+      ? [
+        isEditing
+          ? draftButton('save-draft-edit', 'Save Draft', 'save', draft.id, 'primary')
+          : draftButton('edit-draft', 'Edit', 'edit', draft.id, 'secondary'),
+        isEditing ? draftButton('cancel-draft-edit', 'Cancel', 'close', draft.id, 'secondary') : ''
+      ].join('')
+      : '';
+
     return [
       '<article class="sa-final-post">',
       '<div class="sa-final-post__head">',
       `<p class="sa-label">Final ${escapeHtml(draft.platform.toUpperCase())} output</p>`,
-      `<div class="sa-output-meta">${status(draft.risk_level)}${status(draft.status)}</div>`,
+      `<div class="sa-output-meta">${status(draft.risk_level)}${status(draft.status)}${iconActionButton('copy-draft', 'Copy final copy', 'content_copy', ` data-draft-id="${escapeHtml(draft.id)}"`)}</div>`,
       '</div>',
       `<h4 class="sa-output-card__title">${escapeHtml(draft.hook)}</h4>`,
-      `<p class="sa-final-copy">${escapeHtml(draft.body)}</p>`,
+      isEditing
+        ? [
+          `<textarea class="sa-textarea sa-draft-editor" data-draft-editor="${escapeHtml(draft.id)}" rows="12">${escapeHtml(draft.body)}</textarea>`,
+          '<p class="sa-editor-note">Saved edits update this demo package state and are used by copy/export actions.</p>'
+        ].join('')
+        : `<p class="sa-final-copy">${escapeHtml(draft.body)}</p>`,
+      draftActions ? `<div class="sa-actions sa-draft-actions">${draftActions}</div>` : '',
       '<details class="sa-adaptation-details">',
       `<summary>${icon('tune')}<span>Adaptation details</span></summary>`,
       `<ul class="sa-list">${adaptationList(draft)}</ul>`,
@@ -563,8 +595,63 @@
     return `<option value="${escapeHtml(value)}"${value === selectedValue ? ' selected' : ''}>${escapeHtml(label)}</option>`;
   }
 
+  function approvalState(item) {
+    return item.approval_required ? 'needs_review' : 'ready';
+  }
+
+  function countBy(items, predicate) {
+    return items.filter(predicate).length;
+  }
+
+  function planReadinessCards(items) {
+    const ready = countBy(items, (item) => !item.approval_required && item.status !== 'needs_review');
+    const needsReview = countBy(items, (item) => item.approval_required || item.status === 'needs_review');
+    const highRisk = countBy(items, (item) => item.risk_level === 'high');
+    const channels = Array.from(new Set(items.map((item) => item.platform))).join(', ');
+
+    return [
+      '<section class="sa-run-summary">',
+      runCard('Visible plan items', String(items.length), 'items', channels ? `Channels in view: ${channels}.` : 'No items match the current filters.', ''),
+      runCard('Ready to draft', String(ready), 'items', 'Items that can move toward draft review.', ''),
+      runCard('Needs review', String(needsReview), 'items', 'Approval-required items stay visible before handoff.', needsReview ? 'warning' : ''),
+      runCard('High risk', String(highRisk), 'items', 'High-risk topics should route through review queue.', highRisk ? 'danger' : ''),
+      '</section>'
+    ].join('');
+  }
+
+  function planBoard(items) {
+    if (!items.length) {
+      return '<div class="sa-empty">No plan items match the current filters.</div>';
+    }
+
+    return [
+      '<section class="sa-plan-board">',
+      items.map((item) => [
+        '<article class="sa-plan-card">',
+        '<div class="sa-plan-card__head">',
+        `<p class="sa-label">${escapeHtml(item.platform)} / ${escapeHtml(item.suggested_day)}</p>`,
+        `<div class="sa-output-meta">${status(item.risk_level)}${status(approvalState(item))}</div>`,
+        '</div>',
+        `<h4 class="sa-output-card__title">${escapeHtml(item.topic)}</h4>`,
+        `<p class="sa-body">${escapeHtml(item.cta)}</p>`,
+        '<ul class="sa-list sa-list--compact">',
+        `<li>${icon('category')}<span><strong>Pillar:</strong> ${escapeHtml(item.content_pillar)}</span></li>`,
+        `<li>${icon('format_shapes')}<span><strong>Format:</strong> ${escapeHtml(item.format || 'social post')}</span></li>`,
+        `<li>${icon('source')}<span><strong>Source:</strong> ${escapeHtml(item.source_quote)}</span></li>`,
+        '</ul>',
+        '<div class="sa-actions mt-3">',
+        button('/drafts', 'Draft', 'drafts', 'secondary'),
+        item.approval_required ? button('/review-queue', 'Review', 'fact_check', 'secondary') : '',
+        '</div>',
+        '</article>'
+      ].join('')).join(''),
+      '</section>'
+    ].join('');
+  }
+
   function planFilters(data) {
     const statuses = Array.from(new Set(data.plan.items.map((item) => item.status)));
+    const risks = Array.from(new Set(data.plan.items.map((item) => item.risk_level)));
     return [
       '<section class="sa-filter-bar">',
       '<label class="sa-field sa-field--compact"><span>Platform</span>',
@@ -577,6 +664,17 @@
       option('all', 'All statuses', planFilter.status),
       statuses.map((itemStatus) => option(itemStatus, itemStatus.replace(/_/g, ' '), planFilter.status)).join(''),
       '</select></label>',
+      '<label class="sa-field sa-field--compact"><span>Risk</span>',
+      '<select class="sa-select" data-plan-filter="risk">',
+      option('all', 'All risks', planFilter.risk),
+      risks.map((itemRisk) => option(itemRisk, itemRisk, planFilter.risk)).join(''),
+      '</select></label>',
+      '<label class="sa-field sa-field--compact"><span>Approval</span>',
+      '<select class="sa-select" data-plan-filter="approval">',
+      option('all', 'All approval states', planFilter.approval),
+      option('needs_review', 'Needs review', planFilter.approval),
+      option('ready', 'Ready', planFilter.approval),
+      '</select></label>',
       '<div class="sa-actions">',
       actionButton('reset-plan-filters', 'Reset Filters', 'filter_alt_off', 'secondary'),
       '</div>',
@@ -588,7 +686,9 @@
     const visibleItems = data.plan.items.filter((item) => {
       const platformMatches = planFilter.platform === 'all' || item.platform === planFilter.platform;
       const statusMatches = planFilter.status === 'all' || item.status === planFilter.status;
-      return platformMatches && statusMatches;
+      const riskMatches = planFilter.risk === 'all' || item.risk_level === planFilter.risk;
+      const approvalMatches = planFilter.approval === 'all' || approvalState(item) === planFilter.approval;
+      return platformMatches && statusMatches && riskMatches && approvalMatches;
     });
 
     const rows = visibleItems.map((item) => [
@@ -610,13 +710,43 @@
       [
         commandBar(['node bin/cli.js plan --input <path> --output out/plan.json', 'node bin/cli.js plan --input <path> --output out/plan.json --dry-run']),
         planFilters(data),
+        planReadinessCards(visibleItems),
+        panel('Planning board', planBoard(visibleItems)),
         panel('Plan items', table(['Day', 'Platform', 'Topic and CTA', 'Pillar', 'Risk', 'Status'], rows))
       ].join('')
     );
   }
 
+  function draftSummaryCards(drafts) {
+    const reviewCount = countBy(drafts, (draft) => draft.approval_required || draft.status === 'needs_review');
+    const tagCount = drafts.reduce((total, draft) => total + (Array.isArray(draft.hashtags) ? draft.hashtags.length : 0), 0);
+    const platforms = drafts.map((draft) => draft.platform.toUpperCase()).join(', ');
+
+    return [
+      '<section class="sa-run-summary">',
+      runCard('Final copies', String(drafts.length), 'drafts', platforms ? `Platform-ready outputs: ${platforms}.` : 'No drafts generated.', ''),
+      runCard('Needs review', String(reviewCount), 'drafts', 'Review-required drafts route to the queue before publishing.', reviewCount ? 'warning' : ''),
+      runCard('Hashtags', String(tagCount), 'tags', 'Tags are kept inside final copy and documented in adaptation details.', ''),
+      runCard('Publishing mode', 'Manual', 'handoff', 'No direct social publishing is performed in the MVP.', 'warning'),
+      '</section>'
+    ].join('');
+  }
+
+  function draftHandoffTable(drafts) {
+    const rows = drafts.map((draft) => [
+      escapeHtml(draft.platform),
+      status(draft.risk_level),
+      status(draft.status),
+      escapeHtml(Array.isArray(draft.hashtags) ? draft.hashtags.join(' ') : ''),
+      draft.approval_required ? button('/review-queue', 'Queue', 'fact_check', 'secondary') : '<span class="sa-body">Ready for manual copy</span>'
+    ]);
+
+    return panel('Publish handoff', table(['Platform', 'Risk', 'Status', 'Hashtags', 'Next step'], rows));
+  }
+
   function renderDrafts(data) {
-    const drafts = data.drafts.drafts.map(finalPostCard).join('');
+    const finalDrafts = data.drafts.drafts;
+    const drafts = finalDrafts.map(finalPostCard).join('');
 
     return layout(
       'Drafts',
@@ -627,9 +757,65 @@
       ].join(''),
       [
         commandBar(['node bin/cli.js draft --input <path> --output out/drafts.json']),
-        `<section class="sa-final-output__grid">${drafts}</section>`
+        draftSummaryCards(finalDrafts),
+        `<section class="sa-final-output__grid">${drafts}</section>`,
+        draftHandoffTable(finalDrafts),
+        panel('Draft package contract', `<pre class="sa-code">${escapeHtml(JSON.stringify({
+          type: data.drafts.type,
+          topic: data.drafts.topic,
+          drafts: finalDrafts.map((draft) => ({
+            id: draft.id,
+            platform: draft.platform,
+            status: draft.status,
+            hashtags: draft.hashtags,
+            approval_required: draft.approval_required
+          }))
+        }, null, 2))}</pre>`)
       ].join('')
     );
+  }
+
+  function moderationSummaryCards(reports) {
+    const high = countBy(reports, (report) => report.risk_level === 'high');
+    const escalations = countBy(reports, (report) => report.recommended_action === 'escalate');
+    const replies = countBy(reports, (report) => report.recommended_action === 'reply');
+    const ignored = countBy(reports, (report) => report.recommended_action === 'ignore');
+
+    return [
+      '<section class="sa-run-summary">',
+      runCard('Checked comments', String(reports.length), 'items', 'Every community input receives a risk and action.', ''),
+      runCard('Escalations', String(escalations), 'items', 'Privacy, crisis, or sensitive medical signals route to review.', escalations ? 'danger' : ''),
+      runCard('Reply drafts', String(replies), 'items', 'Safe questions get a reviewed response draft.', ''),
+      runCard('Ignored', String(ignored), 'items', 'Spam and low-value inputs do not create public replies.', ignored ? '' : 'warning'),
+      runCard('High risk', String(high), 'items', 'High-risk items should never be auto-published.', high ? 'danger' : ''),
+      '</section>'
+    ].join('');
+  }
+
+  function moderationTriage(reports) {
+    const actions = ['escalate', 'reply', 'ignore'];
+    return [
+      '<section class="sa-triage-grid">',
+      actions.map((action) => {
+        const items = reports.filter((report) => report.recommended_action === action);
+        return [
+          '<article class="sa-triage-card">',
+          '<div class="sa-plan-card__head">',
+          `<p class="sa-label">${escapeHtml(action)} lane</p>`,
+          status(`${items.length} items`),
+          '</div>',
+          items.length ? items.map((report) => [
+            '<div class="sa-triage-item">',
+            `<div class="sa-output-meta">${status(report.classification)}${status(report.risk_level)}</div>`,
+            `<p class="sa-body"><strong>Source:</strong> ${escapeHtml(report.source_quote)}</p>`,
+            report.reply_draft ? `<p class="sa-body"><strong>Reply draft:</strong> ${escapeHtml(report.reply_draft)}</p>` : '<p class="sa-body"><strong>Reply draft:</strong> No public reply.</p>',
+            '</div>'
+          ].join('')).join('') : '<div class="sa-empty">No items in this lane.</div>',
+          '</article>'
+        ].join('');
+      }).join(''),
+      '</section>'
+    ].join('');
   }
 
   function renderModeration(data) {
@@ -650,9 +836,115 @@
       ].join(''),
       [
         commandBar(['node bin/cli.js moderate --input comments.txt --output out/moderation.json']),
+        moderationSummaryCards(data.moderation.reports),
+        panel('Moderation triage', moderationTriage(data.moderation.reports)),
         panel('Moderation reports', table(['Class', 'Risk', 'Action', 'Source text', 'Reply draft'], rows))
       ].join('')
     );
+  }
+
+  function unresolvedReviewItems(items) {
+    return items.filter((item) => !['approved', 'escalated'].includes(normalizeStatus(item.status)));
+  }
+
+  function updatePackageApprovalState() {
+    if (!currentData || !Array.isArray(currentData.packages)) {
+      return;
+    }
+
+    const hasUnresolvedReview = unresolvedReviewItems(currentData.review_queue).length > 0;
+    currentData.packages = currentData.packages.map((item) => ({
+      ...item,
+      approval_required: hasUnresolvedReview,
+      status: hasUnresolvedReview ? item.status : 'approved'
+    }));
+  }
+
+  function applyReviewDecision(action, reviewId) {
+    const item = currentData.review_queue.find((entry) => entry.id === reviewId);
+    if (!item) {
+      setMessage('Review item not found.', 'error');
+      return;
+    }
+
+    if (action === 'approve-review') {
+      item.status = 'approved';
+      item.recommended_action = 'approved';
+    }
+
+    if (action === 'request-review-changes') {
+      item.status = 'changes_requested';
+      item.recommended_action = 'revise';
+    }
+
+    if (action === 'escalate-review') {
+      item.status = 'escalated';
+      item.recommended_action = 'escalate';
+    }
+
+    updatePackageApprovalState();
+    render(currentData);
+    setMessage(`${item.id} updated to ${item.status.replace(/_/g, ' ')}.`, 'success');
+  }
+
+  function reviewSummaryCards(items) {
+    const pending = countBy(items, (item) => normalizeStatus(item.status) === 'needs_review');
+    const approved = countBy(items, (item) => normalizeStatus(item.status) === 'approved');
+    const escalated = countBy(items, (item) => normalizeStatus(item.status) === 'escalated');
+    const changes = countBy(items, (item) => normalizeStatus(item.status) === 'changes_requested');
+
+    return [
+      '<section class="sa-run-summary">',
+      runCard('Pending review', String(pending), 'items', 'These block package approval until a decision is made.', pending ? 'warning' : ''),
+      runCard('Approved', String(approved), 'items', 'Approved items can move into the export package.', approved ? 'live' : ''),
+      runCard('Escalated', String(escalated), 'items', 'Escalated items need human owner follow-up before public use.', escalated ? 'danger' : ''),
+      runCard('Changes requested', String(changes), 'items', 'Items sent back for revision should return to Drafts or Plan.', changes ? 'warning' : ''),
+      '</section>'
+    ].join('');
+  }
+
+  function reviewActions(item) {
+    const normalized = normalizeStatus(item.status);
+    if (normalized === 'approved') {
+      return '<span class="sa-body">Approved for package handoff</span>';
+    }
+    if (normalized === 'escalated') {
+      return '<span class="sa-body">Escalated to human owner</span>';
+    }
+
+    const highRisk = item.risk_level === 'high' || item.recommended_action === 'escalate';
+    return [
+      highRisk ? '' : reviewButton('approve-review', 'Approve', 'check_circle', item.id, 'primary'),
+      reviewButton('request-review-changes', 'Request Changes', 'edit_note', item.id, 'secondary'),
+      reviewButton('escalate-review', 'Escalate', 'priority_high', item.id, highRisk ? 'primary' : 'secondary')
+    ].join('');
+  }
+
+  function reviewQueueBoard(items) {
+    if (!items.length) {
+      return '<div class="sa-empty">No review items are currently blocking package handoff.</div>';
+    }
+
+    return [
+      '<section class="sa-review-board">',
+      items.map((item) => [
+        `<article class="sa-review-card sa-review-card--${escapeHtml(normalizeStatus(item.status))}">`,
+        '<div class="sa-plan-card__head">',
+        `<p class="sa-label">${escapeHtml(item.source)} / ${escapeHtml(item.platform)}</p>`,
+        `<div class="sa-output-meta">${status(item.risk_level)}${status(item.status)}</div>`,
+        '</div>',
+        `<h4 class="sa-output-card__title">${escapeHtml(item.label)}</h4>`,
+        `<p class="sa-body">${escapeHtml(item.source_quote)}</p>`,
+        item.current_copy ? `<p class="sa-body"><strong>Current copy:</strong> ${escapeHtml(previewText(item.current_copy, 260))}</p>` : '',
+        '<ul class="sa-list sa-list--compact">',
+        `<li>${icon('rule')}<span><strong>Decision needed:</strong> ${escapeHtml(item.recommended_action)}</span></li>`,
+        `<li>${icon('inventory_2')}<span><strong>Why queued:</strong> ${escapeHtml(item.source)} output requires approval before package handoff.</span></li>`,
+        '</ul>',
+        `<div class="sa-actions mt-3">${reviewActions(item)}</div>`,
+        '</article>'
+      ].join('')).join(''),
+      '</section>'
+    ].join('');
   }
 
   function renderReviewQueue(data) {
@@ -673,7 +965,15 @@
         button('/workspace', 'Edit Inputs', 'edit_note', 'secondary'),
         button('/packages', 'Package Approved Work', 'inventory_2', 'primary')
       ].join(''),
-      panel('Review items', table(['ID', 'Source', 'Channel', 'Risk', 'Action', 'Status', 'Source quote'], rows))
+      [
+        '<section class="sa-callout">',
+        `<h3 class="sa-section-title">${icon('fact_check')} Human approval gate</h3>`,
+        '<p class="sa-body">Review Queue is the safety gate between generated social output and package handoff. Plans, drafts, and community replies land here when they need approval, revision, or escalation before they can be exported.</p>',
+        '</section>',
+        reviewSummaryCards(data.review_queue),
+        panel('Decision board', reviewQueueBoard(data.review_queue)),
+        panel('Review items', table(['ID', 'Source', 'Channel', 'Risk', 'Action', 'Status', 'Source quote'], rows))
+      ].join('')
     );
   }
 
@@ -836,7 +1136,60 @@
     URL.revokeObjectURL(url);
   }
 
-  async function handleAction(action) {
+  function draftById(draftId) {
+    return currentData && currentData.drafts && currentData.drafts.drafts
+      ? currentData.drafts.drafts.find((item) => item.id === draftId)
+      : null;
+  }
+
+  function draftEditorFor(draftId) {
+    return Array.from(document.querySelectorAll('[data-draft-editor]'))
+      .find((element) => element.dataset.draftEditor === draftId);
+  }
+
+  function syncDraftReviewItem(draft) {
+    if (!currentData || !Array.isArray(currentData.review_queue)) {
+      return;
+    }
+
+    const reviewItem = currentData.review_queue.find((item) => item.source === 'draft' && item.platform === draft.platform);
+    if (!reviewItem) {
+      return;
+    }
+
+    reviewItem.label = draft.hook;
+    reviewItem.risk_level = draft.risk_level;
+    reviewItem.recommended_action = 'review';
+    reviewItem.status = 'needs_review';
+    reviewItem.source_quote = draft.source_quote;
+    reviewItem.current_copy = draft.body;
+  }
+
+  function saveDraftEdit(draftId) {
+    const draft = draftById(draftId);
+    const editor = draftEditorFor(draftId);
+    if (!draft || !editor) {
+      setMessage('Draft editor not found.', 'error');
+      return;
+    }
+
+    const nextBody = editor.value.trim();
+    if (!nextBody) {
+      setMessage('Draft copy cannot be empty.', 'error');
+      return;
+    }
+
+    draft.body = nextBody;
+    draft.status = 'needs_review';
+    draft.approval_required = true;
+    syncDraftReviewItem(draft);
+    updatePackageApprovalState();
+    editingDraftId = '';
+    render(currentData);
+    setMessage(`${draft.platform.toUpperCase()} draft saved and returned to review.`, 'success');
+  }
+
+  async function handleAction(action, element) {
     if (!currentData) {
       return;
     }
@@ -857,16 +1210,53 @@
       return;
     }
 
+    if (action === 'copy-draft') {
+      const draftId = element && element.dataset ? element.dataset.draftId : '';
+      const draft = draftById(draftId);
+      if (!draft) {
+        setMessage('Draft not found.', 'error');
+        return;
+      }
+      await copyText(draft.body);
+      setMessage(`${draft.platform.toUpperCase()} final copy copied.`, 'success');
+      return;
+    }
+
+    if (action === 'edit-draft') {
+      editingDraftId = element && element.dataset ? element.dataset.draftId : '';
+      render(currentData);
+      setMessage('Draft is editable. Save returns it to review.', 'neutral');
+      return;
+    }
+
+    if (action === 'cancel-draft-edit') {
+      editingDraftId = '';
+      render(currentData);
+      setMessage('Draft edit canceled.', 'neutral');
+      return;
+    }
+
+    if (action === 'save-draft-edit') {
+      saveDraftEdit(element && element.dataset ? element.dataset.draftId : '');
+      return;
+    }
+
+    if (['approve-review', 'request-review-changes', 'escalate-review'].includes(action)) {
+      applyReviewDecision(action, element && element.dataset ? element.dataset.reviewId : '');
+      return;
+    }
+
     if (action === 'reset-demo') {
       storageClear();
-      currentData = await fetchDemoData(null);
+      currentData = await fetchDemoData({ reset: true });
+      editingDraftId = '';
       render(currentData);
       setMessage('Demo inputs reset.', 'success');
       return;
     }
 
     if (action === 'reset-plan-filters') {
-      planFilter = { platform: 'all', status: 'all' };
+      planFilter = { platform: 'all', status: 'all', risk: 'all', approval: 'all' };
       render(currentData);
     }
   }
@@ -875,7 +1265,7 @@
     document.querySelectorAll('[data-action]').forEach((element) => {
       element.addEventListener('click', async () => {
         try {
-          await handleAction(element.dataset.action);
+          await handleAction(element.dataset.action, element);
         } catch (error) {
           setMessage(error.message, 'error');
         }
@@ -915,6 +1305,7 @@
         const nextData = await fetchDemoData(request);
         storageSet(request);
         currentData = nextData;
+        editingDraftId = '';
         render(nextData);
         setMessage(generationInfo(nextData).label === 'Gemini live' ? 'Gemini output regenerated.' : 'Demo output regenerated with local fallback.', 'success');
       } catch (error) {

@@ -5,6 +5,30 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.3.1] - 2026-04-25
+
+### Contributors
+
+- Akbulut55
+
+### Added
+
+- Added platform hashtag output and hashtag policy metadata for LinkedIn and X drafts.
+- Added functional plan board, draft handoff, and moderation triage sections to the standalone demo UI.
+- Added final-copy copy actions for platform draft cards.
+- Added Review Queue decision actions for approving, requesting changes, or escalating queued items in the demo UI.
+- Added Drafts screen edit/save actions for updating final platform copy in the demo package state.
+
+### Changed
+
+- Updated LinkedIn and X final outputs so hashtags are part of the generated post copy when useful.
+- Expanded plan filters to include risk and approval state.
+- Updated `/api/demo` so it returns the latest Workspace-generated payload after custom input is submitted, with reset support for returning to the default demo.
+- Simplified the Workspace input form by removing the language selector and increasing source/comment editor height.
+- Normalized generated plan schedules so the same platform is not assigned to the same day more than once.
+- Updated draft review queue items to expose the current draft copy preview.
+- Bumped package metadata to `0.3.1`.
+
 ## [social-agent-v0.3.0] - 2026-04-25
 
 ### Contributors
