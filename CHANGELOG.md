@@ -5,6 +5,36 @@ Format: [Keep a Changelog](https://keepachangelog.com) — [Semantic Versioning]
 
 ## [Unreleased]
 
+## [istabot-nokta-v0.2.0] — 2026-04-25
+
+### Katkıda Bulunan
+- seyyah
+
+### İyileştirmeler
+- 📦 istabot-nokta paketi güncellendi.
+- Merge branch 'main' into main
+
+
+## [context-cert-v0.1.0] — 2026-04-25
+
+### Katkıda Bulunan
+- Hüseyin Baran Işık
+
+### İyileştirmeler
+- 📦 context-cert paketi güncellendi.
+- feat(context-cert): translate demo to Turkish, add PDF certificate download and quiz hints
+
+
+## [istabot-nokta-v0.1.0] — 2026-04-25
+
+### Katkıda Bulunan
+- Hüseyin Baran Işık
+
+### İyileştirmeler
+- 📦 istabot-nokta paketi güncellendi.
+- Merge remote-tracking branch 'upstream/main' into feat/context-cert-implementation
+
+
 ## [social-agent-v0.1.0] — 2026-04-24
 
 ### Katkıda Bulunan

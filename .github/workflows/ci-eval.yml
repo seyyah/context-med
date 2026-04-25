@@ -50,7 +50,7 @@ jobs:
       - name: Run Tests
         if: steps.pack.outputs.target != ''
         id: test
-        continue-on-error: true # Let it fail but we still calculate score and comment
+        continue-on-error: true
         run: |
           PACK_DIR="packages/${{ steps.pack.outputs.target }}"
           echo "Running tests for $PACK_DIR"
@@ -120,7 +120,9 @@ jobs:
           echo "score=$SCORE" >> $GITHUB_OUTPUT
 
           # For step success check
-          if [ "$FAIL_COUNT" != "0" ]; then
+          if [ "$PASS_COUNT" = "0" ] && [ "$FAIL_COUNT" = "0" ]; then
+             echo "conclusion=failure" >> $GITHUB_OUTPUT
+          elif [ "$FAIL_COUNT" != "0" ]; then
              echo "conclusion=failure" >> $GITHUB_OUTPUT
           else
              echo "conclusion=success" >> $GITHUB_OUTPUT
