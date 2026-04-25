@@ -18,7 +18,7 @@ Tıp araştırmacıları ve akademisyenler için geliştirilen, ham PDF, tez ve 
 - **Slides** (`context-slides`) — Konferans sunum destesi
 - **Narrated Audio** (`context-narrate`) — Makale seslendirme / narrated abstract
 
-![](context.png)
+![](context.jpg)
 
 Tüm süreç **context-core** tarafından orkestre edilir ve tıbbi gizlilik kurallarına (`context-shield`) uygun olarak çalışır.
 

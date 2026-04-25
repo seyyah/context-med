@@ -269,3 +269,15 @@ CLI + API çalışıyor, her modül test edildi. Thin shell kurulur.
 | 9 | context-ui | — | `@context-med/ui` (npm) | API |
 
 `context-med run all` → Phase 5 sonunda çalışır.
+
+---
+
+## YZ Ajan Geliştirmeleri (Antigravity)
+
+**DevEx & CI/CD Altyapısı**
+Antigravity tarafından depo root alanına aşağıdaki mekanizmalar uygulanmıştır:
+- [x] **PR Template:** Checklist ve Gamification skor bilgilendirmesi.
+- [x] **Workflow:** İzolasyon (Gate); `tests/` ya da root dışı alan editlendiğinde HITL etiketi.
+- [x] **Workflow:** CI Test & Skoring; otomatik puan hesabı (Gamification).
+- [x] **Workflow:** Merge durumunda paket-spesifik Semantic Version tag (minor bump) ve auto `CHANGELOG.md` güncelleyici.
+Detaylar doğrudan depo içindeki `WALKTHROUGH.md` alanında okunabilir.
