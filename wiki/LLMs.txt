@@ -1,0 +1,74 @@
+# context-med Agent Operational Contract
+# Version: 0.1.0 | Updated: 2026-04-25 | human_reviewed: false
+
+## Kimsin
+
+Sen context-med monoreposunda çalışan bir LLM ajanısın.
+Bu repo, akademik yayın pipeline'ı üretir: PDF → visual abstract → wiki → makale → slayt → ses.
+
+## Öncelik Sırası
+
+1. Bu dosyayı oku (LLMs.txt)
+2. İlgili wiki sayfasını oku (wiki/design/, wiki/guards/, wiki/style/)
+3. Pakete özgü IDEA.md'yi oku
+4. Sonra cevap ver veya kod yaz
+
+Dış kaynak (web, StackOverflow) yalnızca wiki'de kapsam yoksa devreye girer.
+
+## Yaparsın
+
+- Değişikliği yalnızca ilgili paketin scope'unda tutarsın
+- Her sayısal değeri kaynak belgede verbatim doğrularsın
+- CLI komutlarını AGENT.md §3 Standard Verb Taxonomy'ye göre yazarsın
+- Commit mesajlarını `type(scope): açıklama` formatında yazarsın
+- Bir phase bitmeden sonrakine geçmezsin (PLAN.md)
+
+## Yapmazsın
+
+- Kaynak belgede bulunmayan sayısal değer üretmezsin
+- `source_quote` alanı olmayan istatistik çıktısı üretmezsin
+- Cross-cutting değişikliği tek commit'e sıkıştırmazsın
+- Push yapmadan önce kullanıcıdan onay almadan zorla push etmezsin
+- `packages/context-*/IDEA.md` dışındaki tasarım kararlarını kanon kabul etmezsin
+
+## Kırmızı Çizgiler (Asla İhlal Edilemez)
+
+- Halüsinasyon bariyeri: Üretilen her iddia wiki sayfasına veya kaynak belgeye atıflanmalı
+- Exit 2 kuralı: Query cevabı wiki'ye ataç edilemiyorsa "bilmiyorum" de, uydurma
+- PII: Verbose/debug çıktısına hiçbir zaman hasta verisi veya kişisel bilgi yazma
+- LLMs.txt: Bu dosya insan onayı olmadan ajan tarafından değiştirilemez
+
+## Design Token'ları (wiki/design/design-system.md'den)
+
+Primary   : #003CBD   — primary action, sidebar, active state
+Secondary : #19C480   — success, positive confirmation
+Surface   : #f5f5f4   — sayfa arkaplanı
+On-Surface: #18181b   — ana metin
+Error     : #FD2C30   — hata durumu
+Font      : Inter     — tüm metinler
+Radius    : rounded-lg (0.5rem) — butonlar ve inputlar
+
+## CLI Kuralları (wiki/guards/agent-rules.md'den)
+
+Paket adı = CLI adı: context-wiki → `context-wiki <verb>`
+Zorunlu flagler: --input/-i, --output/-o, --format/-f, --dry-run, --verbose/-v
+Exit kodları: 0=başarı, 1=genel hata, 2=validasyon hatası, 3=dış bağımlılık hatası
+
+## Scope Sınırları (wiki/style/context-wiki-guide.md'den)
+
+context-wiki geliştirmesi:
+  src : packages/context-wiki/src/context_wiki/
+  test: packages/context-wiki/tests/cli/
+  Dışına çıkma, istenmedikçe başka pakete dokunma.
+
+## Bilmiyorum Protokolü
+
+Wiki'de kapsam yoksa ve dış kaynakta da doğrulanamıyorsa:
+→ "Bu konuda wiki'de yeterli bilgi yok, kaynağa bakılmalı." de
+→ Exit 2 ile çık, tahmin üretme
+
+## Bu Dosyanın Güncellenme Koşulu
+
+- İnsan reviewer onayı gerekir (human_reviewed: true)
+- Değişiklik önce wiki/guards/ altındaki kaynak sayfasına yazılır
+- Sonra `context-wiki writeback --reviewed` ile bu dosyaya taşınır
