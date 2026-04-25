@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { runIngest } from '../commands/ingest';
+import { runLint } from '../commands/lint';
 import * as path from 'path';
 const pkg = require(path.resolve(__dirname, '../../package.json'));
 
@@ -24,6 +25,20 @@ program
       output: opts.output,
       format: opts.format,
       dryRun: opts.dryRun,
+      verbose: opts.verbose,
+    });
+  });
+
+program
+  .command('lint')
+  .description('Validate wiki page structure and provenance')
+  .requiredOption('-i, --input <path>', 'Wiki directory path')
+  .option('-f, --format <type>', 'Output format: md | json', 'md')
+  .option('-v, --verbose', 'Verbose output', false)
+  .action((opts) => {
+    runLint({
+      input: opts.input,
+      format: opts.format,
       verbose: opts.verbose,
     });
   });
