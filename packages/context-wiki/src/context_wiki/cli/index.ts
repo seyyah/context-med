@@ -2,6 +2,8 @@ import { Command } from 'commander';
 import { runIngest } from '../commands/ingest';
 import { runLint } from '../commands/lint';
 import { runQuery } from '../commands/query';
+import { runWriteback } from '../commands/writeback';
+import { runAutoresearch } from '../commands/autoresearch';
 import * as path from 'path';
 const pkg = require(path.resolve(__dirname, '../../package.json'));
 
@@ -58,6 +60,31 @@ program
       format: opts.format,
       verbose: opts.verbose,
     });
+  });
+
+program
+  .command('writeback')
+  .description('Write a result or experiment back into the wiki')
+  .requiredOption('-i, --input <path>', 'Input result file')
+  .requiredOption('-o, --output <path>', 'Target wiki directory')
+  .option('--reviewed', 'Mark page as human_reviewed: true', false)
+  .option('--force', 'Create page if it does not exist', false)
+  .option('--dry-run', 'Simulate without writing', false)
+  .action((opts) => {
+    runWriteback({
+      input: opts.input,
+      output: opts.output,
+      reviewed: opts.reviewed,
+      force: opts.force,
+      dryRun: opts.dryRun,
+    });
+  });
+
+program
+  .command('autoresearch <subcommand>')
+  .description('Autoresearch loop management')
+  .action((subcommand) => {
+    runAutoresearch(subcommand);
   });
 
 program.parse(process.argv);
