@@ -1,0 +1,12 @@
+{
+  "name": "context-slides-demo",
+  "version": "1.0.0",
+  "description": "Demo implementation of the Context-Slides UI with Xtatistix design",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "context-slides": "file:../"
+  }
+}
