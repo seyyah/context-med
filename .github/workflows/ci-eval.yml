@@ -53,10 +53,16 @@ jobs:
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
 
           # Check for CHANGELOG.md changes
-          CHANGELOG_CHANGED=$(echo "$CHANGED_FILES" | grep -c '^CHANGELOG\.md$' || echo "0")
+          CHANGELOG_CHANGED=0
+          if echo "$CHANGED_FILES" | grep -q '^CHANGELOG\.md$'; then
+            CHANGELOG_CHANGED=1
+          fi
 
           # Check for workflow changes
-          WORKFLOW_CHANGED=$(echo "$CHANGED_FILES" | grep -c '^\.github/workflows/' || echo "0")
+          WORKFLOW_CHANGED=0
+          if echo "$CHANGED_FILES" | grep -q '^\.github/workflows/'; then
+            WORKFLOW_CHANGED=1
+          fi
 
           # Check for other core files (not in packages/)
           CORE_FILES=$(echo "$CHANGED_FILES" | grep -v '^packages/' | grep -v '^CHANGELOG\.md$' | grep -v '^\.github/workflows/' || true)
@@ -66,12 +72,12 @@ jobs:
             CORE_COUNT=$(echo "$CORE_FILES" | wc -l)
           fi
 
-          echo "changelog_changed=$CHANGELOG_CHANGED" >> $GITHUB_OUTPUT
-          echo "workflow_changed=$WORKFLOW_CHANGED" >> $GITHUB_OUTPUT
-          echo "core_count=$CORE_COUNT" >> $GITHUB_OUTPUT
+          echo "changelog_changed=${CHANGELOG_CHANGED:-0}" >> $GITHUB_OUTPUT
+          echo "workflow_changed=${WORKFLOW_CHANGED:-0}" >> $GITHUB_OUTPUT
+          echo "core_count=${CORE_COUNT:-0}" >> $GITHUB_OUTPUT
 
           # Prepare conflict resolution guide
-          if [ "$CHANGELOG_CHANGED" != "0" ] || [ "$WORKFLOW_CHANGED" != "0" ]; then
+          if [ "${CHANGELOG_CHANGED:-0}" != "0" ] || [ "${WORKFLOW_CHANGED:-0}" != "0" ]; then
             echo "has_unwanted=true" >> $GITHUB_OUTPUT
           else
             echo "has_unwanted=false" >> $GITHUB_OUTPUT
