@@ -7,12 +7,14 @@ const fs = require('fs');
 const http = require('http');
 const os = require('os');
 const path = require('path');
+const vm = require('vm');
 const { spawn, spawnSync } = require('child_process');
 
 const PKG_ROOT = path.resolve(__dirname, '../..');
 const REPO_ROOT = path.resolve(PKG_ROOT, '../..');
 const CLI = path.join(PKG_ROOT, 'bin', 'cli.js');
 const DEMO_SCRIPT = path.join(PKG_ROOT, 'demo', 'comprehensive-demo.js');
+const DEMO_ASSET = path.join(PKG_ROOT, 'demo', 'assets', 'social-agent-demo.js');
 const FIXTURES = path.join(REPO_ROOT, 'fixtures');
 
 function runCli(args, options = {}) {
@@ -273,6 +275,38 @@ describe('social-agent CLI comprehensive behavior', () => {
     });
   });
 
+  test('browser demo asset replaces placeholder main content from package data', async () => {
+    const socialAgent = require('@context-med/social-agent');
+    const asset = fs.readFileSync(DEMO_ASSET, 'utf8');
+    const main = { innerHTML: '' };
+    const context = {
+      window: { location: { pathname: '/plan' } },
+      document: {
+        querySelector(selector) {
+          return selector === 'main' ? main : null;
+        },
+        querySelectorAll() {
+          return [];
+        }
+      },
+      fetch() {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(socialAgent.createSocialAgentDemo())
+        });
+      }
+    };
+
+    vm.createContext(context);
+    vm.runInContext(asset, context);
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(main.innerHTML).toMatch(/data-social-agent-app/);
+    expect(main.innerHTML).toMatch(/Generated Weekly Plan/);
+    expect(main.innerHTML).toMatch(/Plan items/);
+    expect(main.innerHTML).toMatch(/node bin\/cli\.js plan/);
+  });
+
   test('serve exposes accepted demo screens with extensionless routes', async () => {
     const port = 3300 + Math.floor(Math.random() * 300);
     const child = spawn(process.execPath, [CLI, 'serve', '--port', String(port), '--quiet'], {
@@ -305,6 +339,10 @@ describe('social-agent CLI comprehensive behavior', () => {
       const demoAsset = await requestText(`http://127.0.0.1:${port}/assets/social-agent-demo.js`);
       expect(demoAsset.statusCode).toBe(200);
       expect(demoAsset.body).toMatch(/api\/demo/);
+      expect(demoAsset.body).toMatch(/data-social-agent-app/);
+      expect(demoAsset.body).toMatch(/main\.innerHTML = renderRoute/);
+      expect(demoAsset.body).toMatch(/Generated Weekly Plan/);
+      expect(demoAsset.body).toMatch(/Review Queue/);
 
       const directScreen = await requestText(`http://127.0.0.1:${port}/screens/overview.html`);
       expect(directScreen.statusCode).toBe(200);

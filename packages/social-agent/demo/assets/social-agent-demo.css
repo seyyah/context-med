@@ -1,113 +1,283 @@
-.sa-package-demo {
-  border-top: 1px solid #d9dde7;
-  background: #f8fafc;
-  color: #202124;
-  padding: 24px;
-}
-
-.sa-package-demo__inner {
-  max-width: 1180px;
-  margin: 0 auto;
-}
-
-.sa-package-demo__header {
+.sa-view {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 18px;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
 }
 
-.sa-package-demo__eyebrow {
-  color: #4f5f7a;
-  font: 600 12px/1.4 Inter, system-ui, sans-serif;
+.sa-view * {
+  box-sizing: border-box;
+}
+
+.sa-hero,
+.sa-panel,
+.sa-table-wrap,
+.sa-command-bar {
+  background: #ffffff;
+  border: 1px solid #d9dde7;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.sa-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  padding: 20px;
+}
+
+.sa-eyebrow {
+  color: #536179;
+  font: 700 12px/1.4 Inter, system-ui, sans-serif;
   letter-spacing: 0;
-  margin: 0 0 4px;
+  margin: 0 0 6px;
   text-transform: uppercase;
 }
 
-.sa-package-demo__title {
+.sa-title {
+  color: #15171c;
+  font: 700 24px/1.25 Inter, system-ui, sans-serif;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.sa-subtitle {
+  color: #4f5f73;
+  font: 400 14px/1.6 Inter, system-ui, sans-serif;
+  margin: 8px 0 0;
+  max-width: 820px;
+}
+
+.sa-actions {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.sa-button,
+.sa-link-button {
+  align-items: center;
+  border-radius: 8px;
+  display: inline-flex;
+  font: 700 13px/1 Inter, system-ui, sans-serif;
+  gap: 8px;
+  justify-content: center;
+  min-height: 36px;
+  padding: 10px 12px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sa-button {
+  background: #002989;
+  border: 1px solid #002989;
+  color: #ffffff;
+}
+
+.sa-link-button {
+  background: #ffffff;
+  border: 1px solid #cbd3e1;
+  color: #202a3a;
+}
+
+.sa-command-bar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+  padding: 12px 14px;
+}
+
+.sa-command-bar code {
+  background: #f2f5fb;
+  border: 1px solid #d9dde7;
+  border-radius: 6px;
+  color: #1f2a44;
+  font: 600 12px/1.4 Consolas, monospace;
+  padding: 5px 7px;
+}
+
+.sa-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.sa-grid--wide {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.sa-card,
+.sa-panel {
+  padding: 16px;
+}
+
+.sa-card {
+  background: #ffffff;
+  border: 1px solid #d9dde7;
+  border-radius: 8px;
+  min-height: 132px;
+}
+
+.sa-card--accent {
+  border-left: 4px solid #002989;
+}
+
+.sa-label {
+  color: #536179;
+  font: 700 12px/1.4 Inter, system-ui, sans-serif;
+  letter-spacing: 0;
+  margin: 0 0 7px;
+  text-transform: uppercase;
+}
+
+.sa-value {
   color: #15171c;
   font: 700 22px/1.2 Inter, system-ui, sans-serif;
   letter-spacing: 0;
   margin: 0;
 }
 
-.sa-package-demo__meta {
-  color: #4f5f7a;
-  font: 500 13px/1.5 Inter, system-ui, sans-serif;
-  margin: 4px 0 0;
-}
-
-.sa-package-demo__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 12px;
-}
-
-.sa-package-demo__tile {
-  background: #ffffff;
-  border: 1px solid #d9dde7;
-  border-radius: 8px;
-  padding: 14px;
-  min-height: 120px;
-}
-
-.sa-package-demo__label {
-  color: #526173;
-  font: 600 12px/1.4 Inter, system-ui, sans-serif;
-  letter-spacing: 0;
-  margin: 0 0 8px;
-  text-transform: uppercase;
-}
-
-.sa-package-demo__value {
-  color: #15171c;
-  font: 700 18px/1.25 Inter, system-ui, sans-serif;
-  letter-spacing: 0;
-  margin: 0 0 6px;
-}
-
-.sa-package-demo__body {
+.sa-body,
+.sa-list,
+.sa-table {
   color: #3f4858;
-  font: 400 14px/1.5 Inter, system-ui, sans-serif;
-  margin: 0;
+  font: 400 14px/1.55 Inter, system-ui, sans-serif;
 }
 
-.sa-package-demo__status {
+.sa-body {
+  margin: 8px 0 0;
+}
+
+.sa-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+
+.sa-list li {
+  align-items: flex-start;
+  background: #f8fafc;
+  border: 1px solid #e0e6ef;
+  border-radius: 8px;
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+}
+
+.sa-status {
   border-radius: 999px;
   display: inline-flex;
   font: 700 12px/1 Inter, system-ui, sans-serif;
   padding: 6px 9px;
+  text-transform: capitalize;
 }
 
-.sa-package-demo__status--high,
-.sa-package-demo__status--escalate,
-.sa-package-demo__status--needs_review {
+.sa-status--high,
+.sa-status--escalate,
+.sa-status--escalated,
+.sa-status--needs_review,
+.sa-status--true {
   background: #ffdad6;
   color: #9b1c1c;
 }
 
-.sa-package-demo__status--medium,
-.sa-package-demo__status--reply {
+.sa-status--medium,
+.sa-status--reply,
+.sa-status--review {
   background: #fff0c2;
   color: #7c4a03;
 }
 
-.sa-package-demo__status--low,
-.sa-package-demo__status--ready,
-.sa-package-demo__status--draft,
-.sa-package-demo__status--ignore {
+.sa-status--low,
+.sa-status--ready,
+.sa-status--draft,
+.sa-status--ignore,
+.sa-status--disabled,
+.sa-status--false {
   background: #dff5e6;
   color: #146334;
 }
 
-@media (max-width: 640px) {
-  .sa-package-demo {
-    padding: 18px;
+.sa-table-wrap {
+  overflow-x: auto;
+}
+
+.sa-table {
+  border-collapse: collapse;
+  min-width: 760px;
+  width: 100%;
+}
+
+.sa-table th,
+.sa-table td {
+  border-bottom: 1px solid #e0e6ef;
+  padding: 12px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.sa-table th {
+  background: #f6f8fc;
+  color: #536179;
+  font: 700 12px/1.4 Inter, system-ui, sans-serif;
+  text-transform: uppercase;
+}
+
+.sa-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.sa-code {
+  background: #111827;
+  border-radius: 8px;
+  color: #e5edff;
+  font: 500 12px/1.55 Consolas, monospace;
+  margin: 10px 0 0;
+  max-height: 280px;
+  overflow: auto;
+  padding: 14px;
+  white-space: pre-wrap;
+}
+
+.sa-empty {
+  background: #f8fafc;
+  border: 1px dashed #cbd3e1;
+  border-radius: 8px;
+  color: #536179;
+  font: 500 14px/1.5 Inter, system-ui, sans-serif;
+  padding: 18px;
+}
+
+@media (max-width: 900px) {
+  .sa-hero {
+    grid-template-columns: 1fr;
   }
 
-  .sa-package-demo__header {
-    display: block;
+  .sa-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .sa-view {
+    gap: 14px;
+  }
+
+  .sa-hero,
+  .sa-panel,
+  .sa-card,
+  .sa-command-bar {
+    padding: 14px;
+  }
+
+  .sa-title {
+    font-size: 20px;
   }
 }

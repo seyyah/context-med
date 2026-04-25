@@ -5,6 +5,17 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.2.3] - 2026-04-25
+
+### Contributors
+
+- Akbulut55
+
+### Changed
+
+- Reworked demo browser UI to replace placeholder screen content with route-specific package output from `/api/demo`.
+- Bumped package metadata to `0.2.3`.
+
 ## [social-agent-v0.2.2] - 2026-04-25
 
 ### Contributors
