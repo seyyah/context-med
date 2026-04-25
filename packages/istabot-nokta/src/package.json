@@ -1,0 +1,36 @@
+{
+  "name": "istabot-nokta",
+  "version": "0.1.0",
+  "description": "MRLC-guided medical research lifecycle orchestrator. LLM wrapper for DISCOVER, DESIGN, EXECUTE, PUBLISH phases.",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    }
+  },
+  "files": [
+    "src/"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/.bin/jest --verbose"
+  },
+  "jest": {
+    "transform": {}
+  },
+  "keywords": [
+    "medical-research",
+    "llm",
+    "claude",
+    "academic",
+    "mrlc",
+    "istabot"
+  ],
+  "license": "MIT"
+}
