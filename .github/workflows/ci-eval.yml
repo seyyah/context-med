@@ -43,37 +43,42 @@ jobs:
           TARGET_PACK=$(echo "$CHANGED_FILES" | grep '^packages/' | cut -d '/' -f 2 | sort | uniq | head -n 1)
           echo "target=$TARGET_PACK" >> $GITHUB_OUTPUT
 
-      - name: Run Pytest
+      - name: Run Tests
         if: steps.pack.outputs.target != ''
         id: test
-        continue-on-error: true # Let it fail but we still calculate score and comment
+        continue-on-error: true
         run: |
           PACK_DIR="packages/${{ steps.pack.outputs.target }}"
           echo "Running tests for $PACK_DIR"
-          
-          # Go to pack dir and run test
           cd $PACK_DIR || exit 0
+
+          if [ -f "package.json" ]; then
+            echo "Node.js package detected."
+            npm install
+            npm test > test_output.txt || true
+            
+            # Extract scores from Jest output
+            PASS_COUNT=$(grep -oP '\d+(?= passed)' test_output.txt | tail -n 1 || echo "0")
+            FAIL_COUNT=$(grep -oP '\d+(?= failed)' test_output.txt | tail -n 1 || echo "0")
+          else
+            echo "Python package assumed."
+            if [ -f "pyproject.toml" ]; then pip install -e .; fi
+            pytest tests/ --junitxml=pytest.xml > test_output.txt || true
+            
+            PASS_COUNT=$(grep -oP '\d+(?= passed)' test_output.txt || echo "0")
+            FAIL_COUNT=$(grep -oP '\d+(?= failed)' test_output.txt || echo "0")
+          fi
           
-          # If we have a local src we install it
-          if [ -f "pyproject.toml" ]; then pip install -e .; fi
-          
-          pytest tests/ --junitxml=pytest.xml > pytest_output.txt || true
-          
-          # Basic gamification point extraction (Count passes/fails from text)
-          PASS_COUNT=$(grep -oP '\d+(?= passed)' pytest_output.txt || echo "0")
-          FAIL_COUNT=$(grep -oP '\d+(?= failed)' pytest_output.txt || echo "0")
-          
-          # GitHub Outputs
           echo "passed=$PASS_COUNT" >> $GITHUB_OUTPUT
           echo "failed=$FAIL_COUNT" >> $GITHUB_OUTPUT
           
-          # Basic score formula (10 per pass, -5 per fail)
           SCORE=$(( PASS_COUNT * 10 - FAIL_COUNT * 5 ))
           if [ $SCORE -lt 0 ]; then SCORE=0; fi
           echo "score=$SCORE" >> $GITHUB_OUTPUT
           
-          # For step success check
-          if [ "$FAIL_COUNT" != "0" ]; then
+          if [ "$PASS_COUNT" = "0" ] && [ "$FAIL_COUNT" = "0" ]; then
+             echo "conclusion=failure" >> $GITHUB_OUTPUT
+          elif [ "$FAIL_COUNT" != "0" ]; then
              echo "conclusion=failure" >> $GITHUB_OUTPUT
           else
              echo "conclusion=success" >> $GITHUB_OUTPUT
