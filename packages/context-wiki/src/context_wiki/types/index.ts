@@ -71,19 +71,16 @@ export interface ExperimentSpec {
   expected_keywords: string[];
 }
 
-export interface ExperimentResult {
-  id: string;
-  description: string;
-  query: string;
-  expected_keywords: string[];
+export interface ExperimentResult extends ExperimentSpec {
   answer: string;
   source: string;
+  source_hash: string;
   confidence: 'high' | 'low' | 'none';
   score: number;
-  max_score: number;
+  maxScore: number;
   passed: boolean;
-  run_at: string;
-  human_reviewed: boolean;
+  runAt: string;
+  humanReviewed: boolean;
 }
 
 export interface AutoresearchOptions {
