@@ -1,0 +1,8 @@
+Rapor No: 2026-X12
+Hasta: Ayşe Kara
+Kimlik No: 98765432101
+İletişim: 05445554433
+Adres: Atatürk Cad. No:5, İstanbul
+Bulgu: Akut apandisit şüphesi.
+Muayene Eden: Prof. Dr. Selim Yıldız
+Email: selim.yildiz@hospital.tr

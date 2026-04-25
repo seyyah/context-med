@@ -4,7 +4,7 @@
  * Tests: --help, missing flags, nonexistent input, dry-run, output file creation
  */
 const path = require('path');
-const { execCli, getBinPath, FIXTURES, setupOutputDir, teardownOutputDir, expectFileExists } = require('../../../tests/helpers/cli-test-utils');
+const { execCli, getBinPath, FIXTURES, setupOutputDir, teardownOutputDir, expectFileExists } = require('../../../../tests/helpers/cli-test-utils');
 
 const PKG = 'context-shield';
 const BIN = getBinPath(PKG);

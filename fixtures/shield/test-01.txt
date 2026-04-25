@@ -1,0 +1,7 @@
+Hasta Adı: Mehmet Özcan
+Doğum Tarihi: 15.04.1980
+TC Kimlik: 12345678901
+Telefon: 0532 987 65 43
+E-posta: mehmet.ozcan@klinik.com
+Tanı: Hipertansiyon ve Tip 2 Diyabet.
+Dr. Caner Aksoy tarafından muayene edildi.

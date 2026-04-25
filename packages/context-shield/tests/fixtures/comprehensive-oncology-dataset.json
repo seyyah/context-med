@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "type": "PET-CT Raporu",
+    "original_text": "Dosya No: 2026/X45. Hasta: SELİM YILDIZ. Bulgular: Sol aksiller bölgede hipermetabolik LAP (SUVmax: 12.4). Metastatik kemik lezyonları saptanmıştır. Raporu onaylayan: Uzm. Dr. Fatma Kaya. Telefon: 0212 555 44 33.",
+    "expected_entities": ["SELİM YILDIZ", "Fatma Kaya", "0212 555 44 33"]
+  },
+  {
+    "id": 2,
+    "type": "Kemoterapi Protokolü",
+    "original_text": "Ayşe Fatma Demir (TC: 98765432101) için AC-T kür planlanmıştır. Adria: 90mg, Cytoxan: 900mg. Hasta yakını Ahmet Demir (05445554433) bilgilendirildi. Bir sonraki randevu e-posta (ayse.demir@gmail.com) üzerinden onaylanacak.",
+    "expected_entities": ["Ayşe Fatma Demir", "98765432101", "Ahmet Demir", "05445554433", "ayse.demir@gmail.com"]
+  },
+  {
+    "id": 3,
+    "type": "Genetik Analiz",
+    "original_text": "Numune sahibi: CANSU AKSOY. BRCA1 mutasyonu saptanmıştır. Aile öyküsü: Anne (MELEK AKSOY, TC 111 222 333 44) meme ca tanılı. Danışman: Prof. Dr. Metin Yılmaz.",
+    "expected_entities": ["CANSU AKSOY", "MELEK AKSOY", "111 222 333 44", "Metin Yılmaz"]
+  },
+  {
+    "id": 4,
+    "type": "Cerrahi Epikriz",
+    "original_text": "Hastanede yatan HAKAN GÜNEŞ (TC 11122233344) için modifiye radikal mastektomi icra edildi. Ameliyat ekibi: Prof. Dr. Banu Güneş ve Dr. Selim Yıldız. Komplikasyon gelişmedi.",
+    "expected_entities": ["HAKAN GÜNEŞ", "11122233344", "Banu Güneş", "Selim Yıldız"]
+  },
+  {
+    "id": 5,
+    "type": "Radyoterapi Sevk",
+    "original_text": "Hasta: ZEYNEP IŞIK. 2026-05. Sağ meme 50Gy/25fr planlandı. İletişim: zeynep.isik@outlook.com. Sevk eden hastane: İstanbul Onkoloji. Telefon: +90 533-333-2211.",
+    "expected_entities": ["ZEYNEP IŞIK", "zeynep.isik@outlook.com", "+90 533-333-2211"]
+  },
+  {
+    "id": 6,
+    "type": "Patoloji Sonucu",
+    "original_text": "Materyal: Sol meme biyopsi. Sonuç: İnvaziv Duktal Karsinom (Grade 3). Hasta: AYŞE FATMA DEMİR. TC: 333 444 555 66. Rapor tarihi: 12.01.2026.",
+    "expected_entities": ["AYŞE FATMA DEMİR", "333 444 555 66"]
+  },
+  {
+    "id": 7,
+    "type": "Biyopsi Notu",
+    "original_text": "Dr. Kerem Öztürk (02165551122) tarafından yapılan tru-cut biyopsi sonucu bekleniyor. Hasta: Mert Can Yıldız. Adres: Kadikoy, Istanbul.",
+    "expected_entities": ["Kerem Öztürk", "02165551122", "Mert Can Yıldız"]
+  },
+  {
+    "id": 8,
+    "type": "Konsey Kararı",
+    "original_text": "MEHMET ÖZTÜRK isimli hastanın PET sonucu BRCA2 pozitifliği açısından değerlendirildi. Notlar: mehmetozturk@gmail.com adresine bilgi geçildi.",
+    "expected_entities": ["MEHMET ÖZTÜRK", "mehmetozturk@gmail.com"]
+  },
+  {
+    "id": 9,
+    "type": "Laboratuvar Raporu",
+    "original_text": "Hasta: Berken Solmaz (TC 99988877766). WBC: 4.5, HBG: 12.1. Cihaz Sorumlusu: Kimyager Oya Tekin.",
+    "expected_entities": ["Berken Solmaz", "99988877766", "Oya Tekin"]
+  },
+  {
+    "id": 10,
+    "type": "Takip Notu",
+    "original_text": "Sayın Prof. Dr. Leyla Gök'e iletildi. Hasta Sibel Kaya (0530 000 11 22) ilaçlarını düzenli alıyor.",
+    "expected_entities": ["Leyla Gök", "Sibel Kaya", "0530 000 11 22"]
+  }
+]
