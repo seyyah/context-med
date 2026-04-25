@@ -1,0 +1,41 @@
+{
+  "name": "@context-med/context-qualitative",
+  "version": "0.1.0",
+  "description": "Multi-agent qualitative data analysis pipeline for medical research (MapReduce architecture)",
+  "bin": {
+    "context-qualitative": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "jest --verbose --rootDir ../../",
+    "test:cli": "jest tests/cli/ --verbose --rootDir ../../",
+    "lint": "eslint src/"
+  },
+  "keywords": [
+    "qualitative-analysis",
+    "multi-agent",
+    "medical-research",
+    "thematic-analysis",
+    "mapreduce",
+    "llm"
+  ],
+  "author": "Emin ALTAN",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.0.0",
+    "dotenv": "^16.4.0",
+    "openai": "^4.50.0",
+    "p-retry": "^6.2.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  },
+  "jest": {
+    "testMatch": [
+      "**/packages/context-qualitative/tests/**/*.test.js"
+    ],
+    "moduleNameMapper": {
+      "^\\\\.\\\\./\\\\.\\\\./\\\\.\\\\./tests/helpers/(.*)$": "<rootDir>/tests/helpers/$1"
+    }
+  }
+}

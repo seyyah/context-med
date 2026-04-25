@@ -1,11 +1,551 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Med-AgentLab - Agent Monitor</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Space+Grotesk:wght@500&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#d0e1fb",
+                        "inverse-on-surface": "#f0f0f9",
+                        "inverse-surface": "#2e3037",
+                        "surface-tint": "#115cb9",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#004491",
+                        "on-tertiary-container": "#75e2d4",
+                        "surface-variant": "#e1e2ea",
+                        "error-container": "#ffdad6",
+                        "outline": "#727784",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed": "#001a40",
+                        "secondary": "#505f76",
+                        "on-secondary-container": "#54647a",
+                        "tertiary-fixed-dim": "#6bd8cb",
+                        "on-surface": "#191c21",
+                        "surface-bright": "#f9f9ff",
+                        "surface": "#f9f9ff",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#191c21",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-surface-variant": "#424752",
+                        "tertiary": "#004a43",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "primary-container": "#0056b3",
+                        "primary": "#003f87",
+                        "outline-variant": "#c2c6d4",
+                        "surface-container-high": "#e7e8f0",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#bbd0ff",
+                        "primary-fixed-dim": "#acc7ff",
+                        "surface-container-low": "#f2f3fc",
+                        "background": "#f9f9ff",
+                        "on-tertiary-fixed": "#00201d",
+                        "primary-fixed": "#d7e2ff",
+                        "tertiary-fixed": "#89f5e7",
+                        "inverse-primary": "#acc7ff",
+                        "on-error": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#005049",
+                        "surface-container-highest": "#e1e2ea",
+                        "surface-container": "#ededf6",
+                        "surface-dim": "#d9d9e2",
+                        "tertiary-container": "#00645b",
+                        "secondary-fixed": "#d3e4fe"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "sm": "12px",
+                        "xl": "80px",
+                        "margin": "32px",
+                        "base": "8px",
+                        "md": "24px",
+                        "lg": "48px",
+                        "gutter": "24px",
+                        "grid_columns": "12"
+                    },
+                    "fontFamily": {
+                        "body-md": [
+                            "Inter"
+                        ],
+                        "body-sm": [
+                            "Inter"
+                        ],
+                        "body-lg": [
+                            "Inter"
+                        ],
+                        "mono-data": [
+                            "Space Grotesk"
+                        ],
+                        "h1": [
+                            "Inter"
+                        ],
+                        "h2": [
+                            "Inter"
+                        ],
+                        "h3": [
+                            "Inter"
+                        ],
+                        "label-caps": [
+                            "Inter"
+                        ]
+                    },
+                    "fontSize": {
+                        "body-md": [
+                            "16px",
+                            {
+                                "lineHeight": "1.5",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "body-sm": [
+                            "14px",
+                            {
+                                "lineHeight": "1.5",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "body-lg": [
+                            "18px",
+                            {
+                                "lineHeight": "1.6",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "mono-data": [
+                            "14px",
+                            {
+                                "lineHeight": "1.4",
+                                "fontWeight": "500"
+                            }
+                        ],
+                        "h1": [
+                            "40px",
+                            {
+                                "lineHeight": "1.2",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                            }
+                        ],
+                        "h2": [
+                            "32px",
+                            {
+                                "lineHeight": "1.25",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "h3": [
+                            "24px",
+                            {
+                                "lineHeight": "1.3",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "label-caps": [
+                            "12px",
+                            {
+                                "lineHeight": "1",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "600"
+                            }
+                        ]
+                    }
+                },
+            },
+        }
+    </script>
 </head>
-<body>
-    
+
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+    <!-- SideNavBar Component -->
+    <nav
+        class="h-screen w-64 border-r border-slate-200 dark:border-slate-800 fixed left-0 top-0 z-50 shadow-sm border-r border-slate-200/60 dark:border-slate-800/60 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-xl font-sans text-sm font-medium tracking-tight">
+        <div class="flex flex-col h-full py-6 px-4">
+            <div class="flex items-center gap-3 mb-8 px-4">
+                <div
+                    class="w-8 h-8 rounded bg-primary-container flex items-center justify-center text-on-primary-container">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">science</span>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tighter text-blue-800 dark:text-blue-100">Med-AgentLab</h1>
+                    <p class="text-xs text-slate-500">AI Research Orchestrator</p>
+                </div>
+            </div>
+            <input type="file" id="fileInput" class="hidden" accept=".xlsx,.txt,.csv" />
+            <button id="initBtn"
+                class="mb-6 w-full py-2 px-4 bg-primary text-on-primary rounded-DEFAULT hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Initialize Analysis
+            </button>
+            <div class="flex-1 space-y-1">
+                <a class="flex items-center gap-3 px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-200 transform active:scale-[0.98] rounded-lg"
+                    href="#">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-200 transform active:scale-[0.98] rounded-lg"
+                    href="#">
+                    <span class="material-symbols-outlined">analytics</span>
+                    New Analysis
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 bg-blue-50/50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg border-l-4 border-blue-600 transform active:scale-[0.98]"
+                    href="#">
+                    <span class="material-symbols-outlined">biotech</span>
+                    Agent Monitor
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-200 transform active:scale-[0.98] rounded-lg"
+                    href="#">
+                    <span class="material-symbols-outlined">description</span>
+                    Reports
+                </a>
+            </div>
+            <div class="mt-auto space-y-1 pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
+                <a class="flex items-center gap-3 px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-200 transform active:scale-[0.98] rounded-lg"
+                    href="#">
+                    <span class="material-symbols-outlined">settings</span>
+                    System Settings
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-200 transform active:scale-[0.98] rounded-lg"
+                    href="#">
+                    <span class="material-symbols-outlined">help_center</span>
+                    Lab Support
+                </a>
+            </div>
+        </div>
+    </nav>
+    <!-- Main Content Area -->
+    <main class="ml-64 flex-1 flex flex-col min-h-screen">
+        <!-- TopAppBar Component -->
+        <header
+            class="fixed top-0 right-0 left-64 h-16 border-b border-slate-200 dark:border-slate-800 z-40 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-8 w-full font-sans text-sm font-semibold">
+            <div class="text-lg font-bold text-slate-900 dark:text-slate-100 hidden md:block">
+                Med-AgentLab
+            </div>
+            <div class="flex items-center gap-6 ml-auto">
+                <div class="relative hidden md:flex items-center">
+                    <span class="material-symbols-outlined absolute left-3 text-slate-400">search</span>
+                    <input
+                        class="pl-10 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-full text-body-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64"
+                        placeholder="Search agents..." type="text" />
+                </div>
+                <div class="flex items-center gap-4 text-slate-400 dark:text-slate-500">
+                    <button
+                        class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer active:opacity-70">
+                        <span class="material-symbols-outlined">notifications_active</span>
+                    </button>
+                    <button
+                        class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer active:opacity-70">
+                        <span class="material-symbols-outlined">dns</span>
+                    </button>
+                    <button
+                        class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer active:opacity-70">
+                        <span class="material-symbols-outlined">account_circle</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+        <!-- Page Content -->
+        <div class="pt-16 p-margin flex-1 flex flex-col gap-gutter max-w-[1600px] mx-auto w-full">
+            <div class="flex justify-between items-end mb-4">
+                <div>
+                    <h2 class="font-h2 text-h2 text-on-background mb-1">Observability Dashboard</h2>
+                    <p class="font-body-md text-body-md text-on-surface-variant">Real-time monitoring of agent
+                        orchestration and cluster performance.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button
+                        class="px-4 py-2 border border-outline rounded-DEFAULT text-on-surface font-body-sm text-body-sm flex items-center gap-2 hover:bg-surface-container transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">filter_list</span> Filter
+                    </button>
+                    <button
+                        class="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-DEFAULT font-body-sm text-body-sm flex items-center gap-2 hover:bg-secondary-fixed transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">refresh</span> Refresh
+                    </button>
+                </div>
+            </div>
+            <!-- Bento Grid Layout -->
+            <div class="grid grid-cols-12 gap-gutter flex-1">
+                <!-- Agent Grid (Left Col) -->
+                <div class="col-span-12 lg:col-span-8 flex flex-col gap-gutter">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+                        <!-- Agent Ollama -->
+                        <div
+                            class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm relative overflow-hidden group">
+                            <div class="absolute top-0 left-0 w-full h-1 bg-tertiary-fixed-dim"></div>
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-tertiary-fixed-dim">
+                                        <span class="material-symbols-outlined">shield_locked</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-h3 text-h3 text-on-surface text-[18px]">Agent Ollama</h3>
+                                        <p class="font-body-sm text-body-sm text-on-surface-variant">Local HIPAA
+                                            Scrubber</p>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex items-center gap-1 bg-tertiary-fixed/20 text-tertiary px-2 py-1 rounded-full border border-tertiary-fixed-dim/30">
+                                    <span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span>
+                                    <span class="font-label-caps text-label-caps uppercase">Idle</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-outline-variant/50">
+                                <div class="flex justify-between text-body-sm font-body-sm">
+                                    <span class="text-on-surface-variant">Uptime</span>
+                                    <span class="font-mono-data text-mono-data text-on-surface">99.9%</span>
+                                </div>
+                                <div class="flex justify-between text-body-sm font-body-sm mt-1">
+                                    <span class="text-on-surface-variant">Memory</span>
+                                    <span class="font-mono-data text-mono-data text-on-surface">4.2 GB</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Agent Groq -->
+                        <div
+                            class="bg-surface-container-lowest border border-primary rounded-lg p-md shadow-[0_0_15px_rgba(0,86,179,0.1)] relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+                                        <span class="material-symbols-outlined">memory</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-h3 text-h3 text-on-surface text-[18px]">Agent Groq (1-4)</h3>
+                                        <p class="font-body-sm text-body-sm text-on-surface-variant">Llama-3-70B Mapper
+                                        </p>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex items-center gap-1 bg-primary-fixed/30 text-primary px-2 py-1 rounded-full border border-primary/30">
+                                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                                    <span class="font-label-caps text-label-caps uppercase">Active</span>
+                                </div>
+                            </div>
+                            <div class="bg-surface-container-low rounded p-3 mb-4 border border-outline-variant/30">
+                                <p class="font-mono-data text-mono-data text-[12px] text-primary">Extraction in
+                                    progress...</p>
+                                <div class="w-full bg-outline-variant/30 h-1.5 rounded-full mt-2 overflow-hidden">
+                                    <div id="progressFill" class="bg-primary h-full w-[0%] rounded-full relative transition-all duration-300">
+                                        <div
+                                            class="absolute top-0 left-0 right-0 bottom-0 bg-white/20 animate-[pulse_2s_ease-in-out_infinite]">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-body-sm font-body-sm">
+                                <span class="text-on-surface-variant">Throughput</span>
+                                <span class="font-mono-data text-mono-data text-on-surface">840 t/s</span>
+                            </div>
+                        </div>
+                        <!-- Agent Gemini -->
+                        <div
+                            class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-1 bg-secondary"></div>
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-secondary">
+                                        <span class="material-symbols-outlined">fact_check</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-h3 text-h3 text-on-surface text-[18px]">Agent Gemini</h3>
+                                        <p class="font-body-sm text-body-sm text-on-surface-variant">Senior Medical
+                                            Reviewer</p>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex items-center gap-1 bg-surface-container-highest text-on-surface-variant px-2 py-1 rounded-full">
+                                    <span class="material-symbols-outlined text-[14px]">hourglass_empty</span>
+                                    <span class="font-label-caps text-label-caps uppercase">Waiting</span>
+                                </div>
+                            </div>
+                            <div class="bg-surface-container rounded p-2 border border-outline-variant/30">
+                                <p class="font-body-sm text-body-sm text-on-surface-variant text-center italic">Waiting
+                                    for map results...</p>
+                            </div>
+                        </div>
+                        <!-- Agent Master Reducer -->
+                        <div
+                            class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm relative overflow-hidden opacity-80">
+                            <div class="absolute top-0 left-0 w-full h-1 bg-outline"></div>
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-outline">
+                                        <span class="material-symbols-outlined">summarize</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-h3 text-h3 text-on-surface text-[18px]">Master Reducer</h3>
+                                        <p class="font-body-sm text-body-sm text-on-surface-variant">Academic
+                                            Synthesizer</p>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex items-center gap-1 bg-surface-container-highest text-on-surface-variant px-2 py-1 rounded-full">
+                                    <span class="w-2 h-2 rounded-full bg-outline"></span>
+                                    <span class="font-label-caps text-label-caps uppercase">Standby</span>
+                                </div>
+                            </div>
+                            <div class="bg-surface-container rounded p-2 border border-outline-variant/30">
+                                <p class="font-body-sm text-body-sm text-on-surface-variant text-center italic">Awaiting
+                                    final reduction phase...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Performance Graph Area (Mockup) -->
+                    <div
+                        class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md shadow-sm flex-1 min-h-[250px] flex flex-col">
+                        <div class="flex justify-between items-center mb-4 border-b border-outline-variant/50 pb-2">
+                            <h3 class="font-h3 text-h3 text-[18px] text-on-surface flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary">monitoring</span>
+                                Cluster Performance
+                            </h3>
+                            <div class="flex gap-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded bg-primary"></span>
+                                    <span
+                                        class="font-label-caps text-label-caps text-on-surface-variant">Token/Sec</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded bg-tertiary-fixed-dim"></span>
+                                    <span class="font-label-caps text-label-caps text-on-surface-variant">API Latency
+                                        (ms)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Pseudo Graph Container -->
+                        <div
+                            class="flex-1 relative w-full flex items-end justify-between px-4 pb-6 pt-4 bg-surface-container-low/50 rounded border border-outline-variant/20">
+                            <!-- Y-Axis labels -->
+                            <div
+                                class="absolute left-2 top-4 bottom-6 flex flex-col justify-between text-[10px] text-outline font-mono-data">
+                                <span>1k</span>
+                                <span>500</span>
+                                <span>0</span>
+                            </div>
+                            <!-- Graph Bars (Mocking data flow) -->
+                            <div class="w-8 bg-primary/20 rounded-t h-[30%] relative group">
+                                <div
+                                    class="absolute bottom-0 w-full bg-primary rounded-t h-[40%] group-hover:bg-primary-container transition-colors">
+                                </div>
+                            </div>
+                            <div class="w-8 bg-primary/20 rounded-t h-[45%] relative group">
+                                <div
+                                    class="absolute bottom-0 w-full bg-primary rounded-t h-[60%] group-hover:bg-primary-container transition-colors">
+                                </div>
+                            </div>
+                            <div class="w-8 bg-primary/20 rounded-t h-[60%] relative group">
+                                <div
+                                    class="absolute bottom-0 w-full bg-primary rounded-t h-[75%] group-hover:bg-primary-container transition-colors">
+                                </div>
+                            </div>
+                            <div class="w-8 bg-primary/20 rounded-t h-[50%] relative group">
+                                <div
+                                    class="absolute bottom-0 w-full bg-primary rounded-t h-[55%] group-hover:bg-primary-container transition-colors">
+                                </div>
+                            </div>
+                            <div class="w-8 bg-primary/20 rounded-t h-[80%] relative group">
+                                <div
+                                    class="absolute bottom-0 w-full bg-primary rounded-t h-[90%] group-hover:bg-primary-container transition-colors">
+                                </div>
+                            </div>
+                            <div class="w-8 bg-primary/20 rounded-t h-[95%] relative group border border-primary">
+                                <div class="absolute bottom-0 w-full bg-primary rounded-t h-[100%]"></div>
+                            </div>
+                            <!-- Latency Line Mockup -->
+                            <svg class="absolute top-0 left-0 w-full h-full pointer-events-none"
+                                preserveaspectratio="none">
+                                <path d="M 40,150 L 120,140 L 200,160 L 280,120 L 360,100 L 440,90" fill="none"
+                                    stroke="#6bd8cb" stroke-dasharray="4 2" stroke-width="2"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- Live Console (Right Col) -->
+                <div
+                    class="col-span-12 lg:col-span-4 bg-inverse-surface text-inverse-on-surface rounded-lg flex flex-col overflow-hidden shadow-lg border border-outline/30 h-[calc(100vh-140px)] sticky top-24">
+                    <div class="bg-[#1e1f24] px-4 py-3 flex justify-between items-center border-b border-outline/20">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px] text-primary-fixed-dim">terminal</span>
+                            <h3 class="font-mono-data text-[14px] font-semibold tracking-wide">Live Console</h3>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <div class="w-3 h-3 rounded-full bg-error/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-[#fbbc04]/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-[#34a853]/80"></div>
+                        </div>
+                    </div>
+                    <div class="flex-1 p-4 overflow-y-auto font-mono-data text-[13px] leading-relaxed space-y-2"
+                        id="console-output">
+                        <div class="text-outline">System initialized. Awaiting orchestration signals...</div>
+                        <div class="text-tertiary-fixed-dim">[Ollama] <span class="text-inverse-on-surface">HIPAA
+                                Scrubber online. Models loaded.</span></div>
+                        <div class="text-primary-fixed-dim">[Orchestrator] <span
+                                class="text-inverse-on-surface">Dispatching Patient Record #8472 to Pipeline
+                                Alpha.</span></div>
+                        <div class="text-secondary-fixed-dim">[Groq-W1] <span class="text-inverse-on-surface">Received
+                                chunk 1. Processing mapping request.</span></div>
+                        <div class="text-secondary-fixed-dim">[Groq-W2] <span class="text-inverse-on-surface">Received
+                                chunk 2. Processing mapping request.</span></div>
+                        <div class="text-secondary-fixed-dim">[Groq-W3] <span class="text-inverse-on-surface">Received
+                                chunk 3. Processing mapping request.</span></div>
+                        <div class="flex gap-2">
+                            <span class="text-[#fbbc04] font-bold">INFO:</span>
+                            <span class="text-inverse-on-surface">Worker 2 extracted theme [Physiological Stress] from
+                                Chunk 14</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="text-[#fbbc04] font-bold">INFO:</span>
+                            <span class="text-inverse-on-surface">Worker 1 extracted theme [Medication Adherence] from
+                                Chunk 12</span>
+                        </div>
+                        <div class="text-secondary-fixed-dim">[Groq-W4] <span class="text-inverse-on-surface">Received
+                                chunk 4. Processing mapping request.</span></div>
+                        <div class="flex gap-2 opacity-80">
+                            <span class="text-[#34a853] font-bold">SUCCESS:</span>
+                            <span class="text-inverse-on-surface">Worker 2 completed map phase (240ms)</span>
+                        </div>
+                        <div class="flex gap-2 opacity-60">
+                            <span class="text-primary-fixed-dim animate-pulse">&gt;_</span>
+                        </div>
+                    </div>
+                    <div class="p-2 bg-[#1e1f24] border-t border-outline/20 flex items-center gap-2">
+                        <span class="text-primary-fixed-dim font-mono-data text-[14px] pl-2">$</span>
+                        <input
+                            class="bg-transparent border-none text-inverse-on-surface font-mono-data text-[13px] w-full focus:outline-none focus:ring-0 placeholder:text-outline"
+                            placeholder="Filter logs or execute debug command..." type="text" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="app.js"></script>
 </body>
+
 </html>
