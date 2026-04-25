@@ -3,9 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Context-Cert | Medical Certification Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">C</div>
+                <span class="logo-text">Context-Cert</span>
+            </div>
+            <nav class="nav">
+                <a href="#" class="nav-item active" id="nav-dashboard">
+                    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-item" id="nav-cli">
+                    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-9 12H5v-2h6v2zm8-4H5V8h14v4z"/></svg>
+                    CLI Playground
+                </a>
+                <a href="#" class="nav-item" id="nav-reviewer">
+                    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                    Quiz Reviewer
+                </a>
+                <a href="#" class="nav-item" id="nav-eval">
+                    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    Ratchet Eval
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="version">v0.1.0-stable</div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <header class="header">
+                <div class="header-title">
+                    <h1 id="page-title">Program Dashboard</h1>
+                    <p id="page-subtitle">Monitoring medical certification excellence pipeline</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary">Export Logs</button>
+                    <button class="btn btn-primary">+ Generate Quiz</button>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Dashboard Tab -->
+                <section id="tab-dashboard" class="tab-content active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Questions</div>
+                            <div class="stat-value">1,248</div>
+                            <div class="stat-trend up">+12% vs last week</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Pending Review</div>
+                            <div class="stat-value">42</div>
+                            <div class="stat-trend">8 programs active</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Avg. Quality Score</div>
+                            <div class="stat-value">0.86</div>
+                            <div class="stat-trend up">Ratchet: PASSED</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Approved Quizzes</div>
+                            <div class="stat-value">156</div>
+                            <div class="stat-trend">98.2% accuracy</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="card main-visual">
+                            <h3>Certification Programs Overview</h3>
+                            <div class="img-placeholder">
+                                <img src="certification_programs_dash.png" alt="Programs Dashboard">
+                            </div>
+                        </div>
+                        <div class="card secondary-visual">
+                            <h3>Approval Pipeline</h3>
+                            <div class="img-placeholder">
+                                <img src="approval_curation_panel.png" alt="Approval Panel">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CLI Playground Tab -->
+                <section id="tab-cli" class="tab-content">
+                    <div class="terminal-container">
+                        <div class="terminal-header">
+                            <div class="terminal-dots">
+                                <span></span><span></span><span></span>
+                            </div>
+                            <div class="terminal-title">bash — context-cert</div>
+                        </div>
+                        <div class="terminal-body" id="terminal-output">
+                            <div class="line"><span class="prompt">$</span> context-cert generate --input cardio.md --output quiz.json</div>
+                            <div class="line">Processing 1 file(s)…</div>
+                            <div class="line">Extracting facts from: cardio.md</div>
+                            <div class="line">  → 14 facts found</div>
+                            <div class="line">Generated 10 question(s)</div>
+                            <div class="line">Output written to: quiz.json</div>
+                            <div class="line"><span class="prompt">$</span> <span class="cursor">_</span></div>
+                        </div>
+                    </div>
+                    <div class="cli-docs">
+                        <h3>Command Reference</h3>
+                        <div class="cmd-item">
+                            <code>generate</code>
+                            <p>Extracts MCQ questions from source text with verbatim source quotes.</p>
+                        </div>
+                        <div class="cmd-item">
+                            <code>review</code>
+                            <p>Lists and filters generated quiz drafts for administrative approval.</p>
+                        </div>
+                        <div class="cmd-item">
+                            <code>eval</code>
+                            <p>Ensures new generations match or exceed baseline quality metrics.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reviewer Tab -->
+                <section id="tab-reviewer" class="tab-content">
+                    <div class="reviewer-layout">
+                        <div class="card quiz-list">
+                            <h3>Draft Quizzes</h3>
+                            <div class="list-item active">
+                                <div class="item-title">Cardiology_Basic_v1.json</div>
+                                <div class="item-meta">10 Questions • Draft</div>
+                            </div>
+                            <div class="list-item">
+                                <div class="item-title">Neurology_Advanced_v2.json</div>
+                                <div class="item-meta">25 Questions • Approved</div>
+                            </div>
+                            <div class="list-item">
+                                <div class="item-title">Pediatrics_ER_v4.json</div>
+                                <div class="item-meta">15 Questions • Rejected</div>
+                            </div>
+                        </div>
+                        <div class="card quiz-preview">
+                            <div class="preview-header">
+                                <h3>Quiz Preview: Cardiology_Basic_v1</h3>
+                                <span class="badge badge-draft">DRAFT</span>
+                            </div>
+                            <div class="question-container" id="preview-questions">
+                                <!-- Dynamically filled -->
+                                <div class="question-card">
+                                    <div class="q-header">Question #1 <span class="q-difficulty">MEDIUM</span></div>
+                                    <div class="q-stem">Which of the following describes the primary role of the SA node in cardiac conduction?</div>
+                                    <div class="q-options">
+                                        <div class="option">A) Acts as the primary pacemaker</div>
+                                        <div class="option">B) Delays the electrical impulse</div>
+                                        <div class="option">C) Conducts directly to Purkinje fibers</div>
+                                        <div class="option">D) Modulates ventricular contraction strength</div>
+                                    </div>
+                                    <div class="q-source">
+                                        <strong>Source Quote:</strong> "The sinoatrial (SA) node is the primary pacemaker of the heart, initiating the electrical impulse."
+                                    </div>
+                                </div>
+                                
+                                <div class="mockup-view">
+                                    <h4>Candidate View Mockup</h4>
+                                    <div class="img-placeholder">
+                                        <img src="quiz_session_view.png" alt="Quiz Session View">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Eval Tab -->
+                <section id="tab-eval" class="tab-content">
+                    <div class="eval-grid">
+                        <div class="card">
+                            <h3>Ratchet Evaluation Results</h3>
+                            <div class="eval-comparison">
+                                <div class="eval-side baseline">
+                                    <div class="side-label">BASELINE</div>
+                                    <div class="side-score">0.78</div>
+                                    <div class="side-details">
+                                        <p>Coverage: 80%</p>
+                                        <p>Options: 3.2 avg</p>
+                                    </div>
+                                </div>
+                                <div class="eval-vs">VS</div>
+                                <div class="eval-side current">
+                                    <div class="side-label">CURRENT</div>
+                                    <div class="side-score highlight">0.86</div>
+                                    <div class="side-details">
+                                        <p>Coverage: 100%</p>
+                                        <p>Options: 4.0 avg</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="eval-status-banner pass">
+                                <strong>✅ PASSED</strong> — Current version exceeds baseline quality.
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Quality Metrics Breakdown</h3>
+                            <div class="chart-mockup">
+                                <!-- Simplified bars -->
+                                <div class="bar-row">
+                                    <span>Source Coverage</span>
+                                    <div class="bar-container"><div class="bar" style="width: 100%;"></div></div>
+                                </div>
+                                <div class="bar-row">
+                                    <span>Option Count</span>
+                                    <div class="bar-container"><div class="bar" style="width: 90%;"></div></div>
+                                </div>
+                                <div class="bar-row">
+                                    <span>Zero Fabrication</span>
+                                    <div class="bar-container"><div class="bar" style="width: 100%;"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
