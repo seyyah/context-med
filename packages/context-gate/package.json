@@ -1,0 +1,23 @@
+{
+  "name": "context-med-gate",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Node wrapper for the context-gate Python CLI.",
+  "types": "./browser/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./browser/index.d.ts",
+      "import": "./browser/index.mjs"
+    }
+  },
+  "bin": {
+    "context-gate": "bin/cli.js"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:cli": "jest tests/cli"
+  },
+  "devDependencies": {
+    "jest": "^30.3.0"
+  }
+}

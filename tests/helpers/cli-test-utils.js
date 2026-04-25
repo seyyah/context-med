@@ -5,7 +5,7 @@
  *   const { execCli, FIXTURES, setupOutputDir, teardownOutputDir } = require('../../../tests/helpers/cli-test-utils');
  */
 
-const { execSync, execFileSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
@@ -18,12 +18,11 @@ const FIXTURES = path.join(ROOT_DIR, 'fixtures');
  * Never throws — captures exit code for assertion.
  */
 function execCli(binPath, args = [], opts = {}) {
-  const cmd = `node ${binPath} ${args.join(' ')}`;
   const cwd = opts.cwd || ROOT_DIR;
   const timeout = opts.timeout || 30000;
 
   try {
-    const stdout = execSync(cmd, {
+    const stdout = execFileSync('node', [binPath, ...args], {
       cwd,
       timeout,
       encoding: 'utf8',

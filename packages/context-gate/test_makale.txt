@@ -1,0 +1,11 @@
+Bu örnek bir akademik makale metnidir.
+Bu metin, context-gate projemizin kalite kontrol (SWOT) aşamasından geçip geçemeyeceğini, 
+kelime sınırını aşıp aşmadığını test etmek amacı ile yazılmıştır.
+
+Tıbbi bir araştırmanın abstrakt kısmı olarak düşünülebilir. Hastalar üzerinde yapılan analizler, 
+ilacın etkileri ve sonuçlar gibi detayları barındırır. Bu metnin amacı sistemin düz metin dosyasını 
+okuyup SHA-256 hash parmak izini nasıl çıkardığını, onay verdikten sonra ise kendi 
+raw/ klasörüne kopyalama işlemini nasıl yönettiğini canlı olarak görebilmektir. 
+
+Sistem en az 50 kelime bekliyor. Biz de kelime sayısını artırmak için bu cümleyi ekliyoruz.
+Böylece "Onaylandı" durumunu net olarak kalite kontrol ekranında görebileceğiz.

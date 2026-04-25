@@ -16,4 +16,7 @@ logs/
 *.env
 *.local
 *.pem
-*.key       
+*.key
+tmp-test-output/
+__pycache__/
+*.py[cod]
