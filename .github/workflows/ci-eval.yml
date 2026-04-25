@@ -82,8 +82,8 @@ jobs:
               else
                 # Fallback: try to parse from stdout
                 npm test > test_output.txt 2>&1 || true
-                PASS_COUNT=$(grep -oP '\d+(?= passed)' test_output.txt | tail -n 1 || echo "0")
-                FAIL_COUNT=$(grep -oP '\d+(?= failed)' test_output.txt | tail -n 1 || echo "0")
+                PASS_COUNT=$(grep -oP '\d+(?= passed)' test_output.txt || echo "0")
+                FAIL_COUNT=$(grep -oP '\d+(?= failed)' test_output.txt || echo "0")
               fi
             else
               echo "⚠️ No test framework detected in package.json"
@@ -102,8 +102,8 @@ jobs:
             pytest tests/ --junitxml=pytest.xml > pytest_output.txt 2>&1 || true
 
             # Basic gamification point extraction (Count passes/fails from text)
-            PASS_COUNT=$(grep -oP '\d+(?= passed)' pytest_output.txt | tail -n 1 || echo "0")
-            FAIL_COUNT=$(grep -oP '\d+(?= failed)' pytest_output.txt | tail -n 1 || echo "0")
+            PASS_COUNT=$(grep -oP '\d+(?= passed)' pytest_output.txt || echo "0")
+            FAIL_COUNT=$(grep -oP '\d+(?= failed)' pytest_output.txt || echo "0")
             echo "✅ Passed: $PASS_COUNT, ❌ Failed: $FAIL_COUNT"
 
           else

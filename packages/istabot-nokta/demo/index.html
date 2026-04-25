@@ -1,11 +1,2150 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOKTA — MRLC Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Design tokens — DESIGN.md light ── */
+    :root {
+      --surface:                   #ffffff;
+      --surface-container-low:     #ffffff;
+      --surface-container:         #ffffff;
+      --surface-container-high:    #ffffff;
+      --surface-container-highest: #ffffff;
+      --surface-variant:           #ffffff;
+      --background:                #ffffff;
+      --on-surface:                #18181b;
+      --on-surface-variant:        #71717a;
+      --outline:                   #d4d4d8;
+      --outline-variant:           #e5e5e5;
+
+      --primary:                   #003CBD;
+      --on-primary:                #ffffff;
+      --primary-container:         #EBF2FF;
+      --on-primary-container:      #1E3A8A;
+      --inverse-primary:           #93C5FD;
+
+      --secondary:                 #19C480;
+      --on-secondary:              #ffffff;
+      --secondary-container:       #EBF7F2;
+      --on-secondary-container:    #0A7C5C;
+
+      --error:                     #FD2C30;
+      --error-container:           #FFF5F5;
+      --on-error-container:        #B80D10;
+
+      --r-sm:   0.5rem;
+      --r-md:   0.5rem;
+      --r-lg:   0.5rem;
+      --r-xl:   0.5rem;
+      --r-3xl:  0.5rem;
+      --r-full: 9999px;
+
+      --sp-xs:   4px;
+      --sp-base: 8px;
+      --sp-sm:   12px;
+      --sp-md:   16px;
+      --sp-lg:   24px;
+      --sp-xl:   32px;
+
+      --font: "Inter", system-ui, -apple-system, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      font-size: 14px; font-weight: 400; line-height: 22px;
+      color: var(--on-surface);
+      background: var(--background);
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+    }
+
+    /* ── Top stepper ── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: var(--sp-md) 0 var(--sp-sm);
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.88));
+      backdrop-filter: blur(10px);
+    }
+    .stepper {
+      width: fit-content;
+      max-width: calc(100% - 32px);
+      margin: 0 auto;
+      padding: 8px 12px;
+      border: 1px solid var(--outline);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.92);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 8px 26px rgba(24, 24, 27, 0.05);
+    }
+    .nav-tab {
+      padding: 8px 12px;
+      border: none;
+      background: none;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 16px;
+      color: var(--on-surface-variant);
+      cursor: pointer;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.15s, background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .nav-tab:hover  { color: var(--on-surface); background: var(--surface-container-high); }
+    .nav-tab.active { color: var(--primary); background: var(--primary-container); }
+    .nav-step {
+      width: 22px;
+      height: 22px;
+      border-radius: var(--r-full);
+      border: 1px solid currentColor;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .nav-tab.done .nav-step {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--on-primary);
+    }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      padding: var(--sp-xl);
+      display: flex; flex-direction: column; gap: var(--sp-lg);
+      max-width: 1120px; width: 100%; margin: 0 auto;
+    }
+    .phase-stage {
+      position: relative;
+      min-height: 0;
+    }
+    .phase-stage.phase-transitioning {
+      overflow: clip;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: var(--sp-md);
+    }
+    .page-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .page-icon {
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .page-icon svg {
+      width: 100%;
+      height: 100%;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .page-icon .spinner {
+      width: 16px;
+      height: 16px;
+      border-width: 2px;
+    }
+    .page-title { font-size: 27px; font-weight: 500; line-height: 34px; }
+    .page-sub   { font-size: 14px; font-weight: 400; line-height: 22px; color: var(--on-surface-variant); margin-top: 5px; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex; align-items: center;
+      border-radius: var(--r-lg);
+      font-size: 11px; font-weight: 500; line-height: 14px;
+      padding: 2px 10px; white-space: nowrap;
+    }
+    .badge-blue  { background: var(--primary-container);   color: var(--primary); }
+    .badge-green { background: var(--secondary-container); color: var(--on-secondary-container); }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface); border-radius: var(--r-3xl);
+      padding: var(--sp-lg); border: 1px solid var(--outline);
+    }
+    .composer-card {
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      padding: 0;
+    }
+    .card-sub {
+      background: var(--surface); border-radius: var(--r-xl);
+      padding: var(--sp-md); border: 1px solid var(--outline);
+    }
+    .card-title {
+      font-size: 14px; font-weight: 500; line-height: 18px;
+      color: var(--on-surface); margin-bottom: var(--sp-sm);
+      display: flex; align-items: center; gap: var(--sp-base);
+    }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      padding: var(--sp-sm); border-radius: var(--r-lg);
+      background: var(--primary); color: var(--on-primary);
+      border: none; font-family: var(--font);
+      font-size: 12px; font-weight: 500; line-height: 16px;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+      white-space: nowrap; transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn-primary:hover:not(:disabled)  { opacity: 0.85; }
+    .btn-primary:active:not(:disabled) { transform: scale(0.97); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+
+    /* ── Inputs ── */
+    .composer {
+      position: relative;
+    }
+    .textarea {
+      width: 100%; min-height: 88px;
+      padding: var(--sp-md);
+      border-radius: var(--r-lg) var(--r-lg) 0 0;
+      border: 1px solid var(--outline);
+      border-bottom: none;
+      background: var(--surface);
+      font-family: var(--font); font-size: 14px; font-weight: 400; line-height: 22px;
+      color: var(--on-surface); resize: vertical; outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .textarea:focus {
+      border-color: rgba(0, 60, 189, 0.35);
+      box-shadow: 0 0 0 4px rgba(0, 60, 189, 0.08);
+    }
+    .textarea:focus + .composer-toolbar {
+      border-color: rgba(0, 60, 189, 0.35);
+      box-shadow: 0 0 0 4px rgba(0, 60, 189, 0.08);
+    }
+    .textarea::placeholder { color: var(--on-surface-variant); }
+    .composer-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-base);
+      padding: 8px 10px;
+      background: var(--surface);
+      border: 1px solid var(--outline);
+      border-top: 1px solid var(--outline-variant);
+      border-radius: 0 0 var(--r-lg) var(--r-lg);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .composer-toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .composer-select {
+      padding: 5px 8px;
+      border-radius: var(--r-lg);
+      border: 1px solid var(--outline);
+      background: var(--surface);
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--on-surface);
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .composer-select:focus { border-color: var(--primary); }
+    .composer-toggle {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      cursor: pointer;
+      user-select: none;
+      padding: 5px 8px;
+      border-radius: var(--r-lg);
+      border: 1px solid var(--outline);
+    }
+    .composer-toggle input { accent-color: var(--primary); }
+    .composer-submit-inline {
+      padding: 7px 14px;
+      font-size: 12px;
+    }
+
+    .select {
+      padding: var(--sp-base) var(--sp-sm); border-radius: var(--r-lg);
+      border: 1.5px solid var(--outline); background: var(--surface);
+      font-family: var(--font); font-size: 12px; font-weight: 500;
+      color: var(--on-surface); outline: none; cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .select:focus { border-color: var(--primary); }
+
+    .field-label {
+      font-size: 11px; font-weight: 400; line-height: 14px;
+      color: var(--on-surface-variant);
+      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;
+    }
+    .field-value { font-size: 14px; font-weight: 400; line-height: 22px; color: var(--on-surface); }
+
+
+    /* ── Tab panels ── */
+    .tab-panel { display: none; flex-direction: column; gap: var(--sp-lg); scroll-margin-top: 84px; width: 100%; }
+    .tab-panel.active { display: flex; }
+    .tab-panel.transition-panel {
+      will-change: transform, opacity;
+    }
+    .workspace-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(260px, 1fr);
+      gap: var(--sp-xl);
+      align-items: start;
+    }
+    .workspace-main {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-lg);
+    }
+    .workspace-side {
+      min-width: 0;
+      position: sticky;
+      top: 96px;
+    }
+    .side-stack {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-sm);
+    }
+    .side-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .side-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 14px;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .side-copy {
+      font-size: 13px;
+      line-height: 20px;
+      color: var(--on-surface-variant);
+    }
+    .side-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .side-item {
+      padding: 10px 12px;
+      border: 1px solid var(--outline-variant);
+      border-radius: var(--r-lg);
+      background: var(--surface);
+      font-size: 12px;
+      line-height: 18px;
+      color: var(--on-surface);
+    }
+    .side-stat {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--sp-base);
+    }
+    .side-stat-cell {
+      padding: 12px;
+      border: 1px solid var(--outline-variant);
+      border-radius: var(--r-lg);
+      background: var(--surface);
+    }
+    .side-stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 24px;
+      color: var(--on-surface);
+    }
+    .side-stat-label {
+      font-size: 11px;
+      line-height: 16px;
+      color: var(--on-surface-variant);
+      margin-top: 2px;
+    }
+    .progress-card {
+      gap: var(--sp-md);
+      padding: var(--sp-lg);
+    }
+    .progress-head {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .progress-kicker {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--secondary);
+    }
+    .progress-title {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 24px;
+      color: var(--on-surface);
+      letter-spacing: -0.01em;
+    }
+    .progress-note {
+      font-size: 12px;
+      line-height: 18px;
+      color: var(--on-surface-variant);
+    }
+    .tube-stage {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: var(--sp-md);
+      min-height: 280px;
+    }
+    .tube-meter {
+      position: relative;
+      width: 84px;
+      height: 220px;
+      border: 2px solid var(--outline);
+      border-radius: 40px 40px 24px 24px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .tube-fill {
+      position: absolute;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      height: 0%;
+      min-height: 0;
+      border-radius: 0 0 24px 24px;
+      background: #1f7ae0;
+      transition: height 0.6s ease;
+      overflow: hidden;
+    }
+    .tube-fill::before,
+    .tube-fill::after {
+      content: "";
+      position: absolute;
+      top: -18px;
+      width: 180%;
+      height: 34px;
+      border-radius: 44% 56% 38% 62% / 58% 42% 58% 42%;
+      animation: tube-wave-drift 3.6s linear infinite;
+      transition: opacity 0.4s ease;
+    }
+    .tube-fill::before {
+      left: -40%;
+      background: #7ec0ff;
+    }
+    .tube-fill::after {
+      left: -30%;
+      top: -16px;
+      height: 30px;
+      background: #5ea9ff;
+      opacity: 0.9;
+      animation-duration: 2.4s;
+      animation-direction: reverse;
+    }
+    .tube-fill.is-full::before,
+    .tube-fill.is-full::after {
+      opacity: 0;
+    }
+    @keyframes tube-wave-drift {
+      0% { transform: translateX(0) rotate(0deg); }
+      50% { transform: translateX(-18%) rotate(-2deg); }
+      100% { transform: translateX(-36%) rotate(0deg); }
+    }
+    .tube-readout {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-bottom: var(--sp-sm);
+    }
+    .tube-percent {
+      font-size: 34px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--on-surface);
+    }
+    .tube-status {
+      font-size: 12px;
+      line-height: 18px;
+      color: var(--on-surface-variant);
+      max-width: 90px;
+    }
+    .phase-dots {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .phase-dot {
+      padding: 10px 6px 8px;
+      border: 1px solid var(--outline-variant);
+      border-radius: var(--r-lg);
+      text-align: center;
+      font-size: 9px;
+      font-weight: 700;
+      line-height: 13px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--on-surface-variant);
+      background: var(--surface);
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .phase-dot-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .phase-dot-icon svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .phase-dot.active {
+      border-color: rgba(0, 60, 189, 0.22);
+      color: var(--primary);
+      background: var(--primary-container);
+    }
+    .phase-dot.done {
+      border-color: rgba(25, 196, 128, 0.28);
+      color: var(--on-secondary-container);
+      background: var(--secondary-container);
+    }
+    .phase-nav {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .phase-nav-btn {
+      padding: 10px 0;
+      border: 1px solid var(--outline);
+      border-radius: var(--r-lg);
+      background: var(--surface);
+      color: var(--on-surface);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+    }
+    .phase-nav-btn:hover:not(:disabled) {
+      background: var(--surface-container-low);
+      border-color: var(--primary);
+    }
+    .phase-nav-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    /* ── Inner tabs ── */
+    .inner-tabs {
+      display: flex; gap: 2px;
+      border-bottom: 1px solid var(--outline); margin-bottom: var(--sp-md);
+    }
+    .inner-tab {
+      padding: var(--sp-base) var(--sp-sm); border: none; background: none;
+      font-family: var(--font); font-size: 13px; font-weight: 500;
+      color: var(--on-surface-variant); cursor: pointer;
+      border-bottom: 2px solid transparent;
+      position: relative; bottom: -1px;
+      border-radius: var(--r-lg) var(--r-lg) 0 0;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .inner-tab:hover:not(.active) { color: var(--on-surface); }
+    .inner-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .inner-panel { display: none; }
+    .inner-panel.active { display: block; }
+
+    /* ── Result layouts ── */
+    .results-2col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-md); }
+    .results-col  { display: flex; flex-direction: column; gap: var(--sp-md); }
+
+    .pico-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-base); }
+    .pico-cell { padding: var(--sp-sm); border-radius: var(--r-lg); background: var(--primary-container); }
+    .pico-key  { font-size: 10px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+    .pico-val  { font-size: 13px; font-weight: 400; line-height: 19px; color: var(--on-primary-container); }
+
+    .timeline { display: flex; flex-direction: column; gap: var(--sp-xs); }
+    .timeline-row {
+      display: flex; gap: var(--sp-sm); align-items: flex-start;
+      padding: var(--sp-base) var(--sp-sm); border-radius: var(--r-lg);
+      background: var(--surface-container-low);
+    }
+    .timeline-month { font-size: 11px; font-weight: 700; color: var(--primary); min-width: 44px; padding-top: 1px; }
+    .timeline-ms    { font-size: 13px; font-weight: 400; line-height: 19px; color: var(--on-surface); }
+
+    .scale-list { display: flex; flex-direction: column; gap: var(--sp-base); }
+    .scale-row  {
+      display: flex; align-items: center; gap: var(--sp-base);
+      padding: var(--sp-sm) var(--sp-md); border-radius: var(--r-lg);
+      background: var(--surface-container-low); border: 1px solid var(--outline-variant);
+      transition: background 0.12s;
+    }
+    .scale-row:hover { background: var(--surface-container-high); }
+    .scale-name { font-size: 14px; font-weight: 500; flex: 1; color: var(--on-surface); }
+    .scale-meta { font-size: 12px; font-weight: 400; color: var(--on-surface-variant); }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--sp-base); }
+    .stat-cell { padding: var(--sp-sm); border-radius: var(--r-lg); background: var(--surface-container-low); text-align: center; }
+    .stat-val  { font-size: 20px; font-weight: 700; line-height: 28px; color: var(--primary); }
+    .stat-lbl  { font-size: 11px; font-weight: 500; color: var(--on-surface-variant); margin-top: 2px; }
+
+    .chip-list { display: flex; flex-wrap: wrap; gap: var(--sp-xs); margin-top: 6px; }
+
+    .journal-list { display: flex; flex-direction: column; gap: var(--sp-base); }
+    .journal-row  {
+      padding: var(--sp-sm) var(--sp-md); border-radius: var(--r-lg);
+      background: var(--surface-container-low); border: 1px solid var(--outline-variant);
+      transition: background 0.12s;
+    }
+    .journal-row:hover { background: var(--surface-container-high); }
+    .journal-name { font-size: 14px; font-weight: 500; color: var(--on-surface); margin-bottom: 2px; }
+    .journal-meta { font-size: 12px; font-weight: 400; color: var(--on-surface-variant); }
+    .journal-note { font-size: 13px; font-weight: 400; line-height: 19px; color: var(--on-surface); margin-top: 6px; }
+
+    .card-title svg {
+      width: 14px; height: 14px;
+      stroke: currentColor; fill: none;
+      stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    .rq-highlight {
+      padding: var(--sp-md);
+      border-radius: var(--r-lg);
+      border-left: 3px solid var(--primary);
+      background: var(--primary-container);
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 24px;
+      color: var(--on-primary-container);
+    }
+
+    .imrad-block {
+      border-bottom: 1px solid var(--outline-variant);
+      padding-bottom: var(--sp-md);
+      margin-bottom: var(--sp-md);
+    }
+    .imrad-block:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+    .imrad-section-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      margin-bottom: 0;
+    }
+    .imrad-section-toggle[aria-expanded="true"] { margin-bottom: 10px; }
+    .imrad-section-toggle svg {
+      width: 14px; height: 14px;
+      stroke: var(--primary); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .imrad-section-toggle[aria-expanded="false"] svg { transform: rotate(-90deg); }
+    .imrad-label { font-size: 11px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.07em; }
+    .imrad-text  { font-size: 14px; font-weight: 400; line-height: 22px; color: var(--on-surface); }
+    .imrad-body  { overflow: hidden; }
+    .imrad-body[hidden] { display: none; }
+
+    .phase-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: var(--sp-xl) var(--sp-lg);
+      border: 1px dashed var(--outline);
+      border-radius: var(--r-lg);
+      text-align: center;
+      color: var(--on-surface-variant);
+    }
+    .phase-empty svg {
+      width: 32px; height: 32px;
+      stroke: var(--outline); fill: none;
+      stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .phase-empty-title { font-size: 14px; font-weight: 500; color: var(--on-surface-variant); }
+    .phase-empty-sub   { font-size: 12px; line-height: 18px; }
+
+    .pub-imrad-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--sp-md);
+      margin-bottom: var(--sp-lg);
+      flex-wrap: wrap;
+    }
+    .pub-manuscript-title {
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 24px;
+      color: var(--on-surface);
+      flex: 1;
+    }
+    .pub-imrad-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .pub-wordcount {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      padding: 5px 10px;
+      border: 1px solid var(--outline);
+      border-radius: var(--r-full);
+      white-space: nowrap;
+    }
+    .btn-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border: 1px solid var(--outline);
+      border-radius: var(--r-lg);
+      background: var(--surface);
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .btn-copy:hover { background: var(--surface-container-low); color: var(--on-surface); border-color: var(--primary); }
+    .btn-copy svg {
+      width: 13px; height: 13px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+    .ref-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: var(--r-full);
+      background: var(--primary-container);
+      color: var(--primary);
+      font-size: 10px;
+      font-weight: 700;
+      margin-left: 5px;
+    }
+    .ref-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .ref-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 12px;
+      border-radius: var(--r-lg);
+      border: 1px solid var(--outline-variant);
+      background: var(--surface);
+    }
+    .ref-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      min-width: 18px;
+      padding-top: 1px;
+      flex-shrink: 0;
+    }
+    .ref-body {
+      font-size: 13px;
+      line-height: 20px;
+      color: var(--on-surface);
+    }
+    .ref-body em {
+      font-style: italic;
+    }
+
+    .journal-row-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-base);
+      margin-bottom: 4px;
+    }
+    .journal-badges {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .alt-list { display: flex; flex-direction: column; gap: var(--sp-base); }
+    .alt-item {
+      padding: var(--sp-sm) var(--sp-md); border-radius: var(--r-lg);
+      background: var(--primary-container);
+      font-size: 14px; font-weight: 400; line-height: 22px; color: var(--on-primary-container);
+    }
+
+    .error-box {
+      padding: var(--sp-sm) var(--sp-md); border-radius: var(--r-xl);
+      background: var(--error-container); border: 1px solid rgba(253,44,48,0.2);
+      color: var(--on-error-container); font-size: 13px; line-height: 21px;
+    }
+    .raw-text { font-size: 12px; line-height: 20px; color: var(--on-surface); white-space: pre-wrap; word-break: break-word; }
+
+    @keyframes skeleton-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .skeleton-pulse { animation: skeleton-pulse 1.4s ease-in-out infinite; }
+    .skeleton-shell {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-md);
+    }
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-md);
+    }
+    .skeleton-col {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-md);
+    }
+    .skeleton-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 132px;
+    }
+    .skeleton-line,
+    .skeleton-chip {
+      background: linear-gradient(90deg, #d0d8e4 0%, #e2e8f0 50%, #d0d8e4 100%);
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.35s linear infinite;
+      border-radius: var(--r-lg);
+    }
+    .skeleton-line {
+      height: 12px;
+    }
+    .skeleton-line.title {
+      width: 42%;
+      height: 14px;
+    }
+    .skeleton-line.wide { width: 100%; }
+    .skeleton-line.mid { width: 74%; }
+    .skeleton-line.short { width: 48%; }
+    .skeleton-chip-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .skeleton-chip {
+      width: 72px;
+      height: 24px;
+    }
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 12px; height: 12px;
+      border: 2px solid currentColor; border-top-color: transparent;
+      border-radius: var(--r-full); display: inline-block;
+      animation: spin 0.65s linear infinite; flex-shrink: 0;
+    }
+
+    /* ── Landing ── */
+    .landing {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--sp-xl) var(--sp-lg);
+      min-height: calc(100vh - 80px);
+      gap: var(--sp-xl);
+    }
+    .landing-head {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--sp-sm);
+      text-align: center;
+    }
+    .landing-logo {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--r-full);
+      background: var(--primary-container);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    .landing-logo svg {
+      width: 24px; height: 24px;
+      stroke: currentColor; fill: none;
+      stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .landing-title {
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 44px;
+      letter-spacing: -0.02em;
+      color: var(--on-surface);
+    }
+    .landing-sub {
+      font-size: 15px;
+      line-height: 24px;
+      color: var(--on-surface-variant);
+      max-width: 480px;
+    }
+    .landing-composer {
+      width: 100%;
+      max-width: 640px;
+    }
+    .landing-composer-box {
+      border: 1.5px solid var(--outline);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .landing-composer-box:focus-within {
+      border-color: rgba(0,60,189,0.4);
+      box-shadow: 0 0 0 4px rgba(0,60,189,0.08);
+    }
+    .landing-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: var(--sp-md);
+      border: none;
+      border-bottom: 1px solid var(--outline-variant);
+      background: var(--surface);
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 24px;
+      color: var(--on-surface);
+      resize: none;
+      outline: none;
+      display: block;
+    }
+    .landing-textarea::placeholder { color: var(--on-surface-variant); }
+    .landing-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-base);
+      padding: 10px 12px;
+      background: var(--surface);
+    }
+    .landing-toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .landing-btn {
+      padding: 9px 20px;
+      border-radius: var(--r-lg);
+      background: var(--primary);
+      color: var(--on-primary);
+      border: none;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.15s;
+    }
+    .landing-btn:hover { opacity: 0.88; }
+    .landing-btn svg {
+      width: 14px; height: 14px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .landing-suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      max-width: 640px;
+    }
+    .landing-suggestion {
+      padding: 7px 14px;
+      border: 1px solid var(--outline);
+      border-radius: var(--r-full);
+      background: var(--surface);
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      text-align: left;
+    }
+    .landing-suggestion:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-container);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .workspace-layout { grid-template-columns: 1fr; gap: var(--sp-lg); }
+      .workspace-side { position: static; }
+      .results-2col { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .main { padding: var(--sp-md); }
+      .topbar { padding: var(--sp-sm) 0; }
+      .stepper {
+        width: calc(100% - 24px);
+        max-width: none;
+        justify-content: space-between;
+        gap: 4px;
+        padding: 8px;
+      }
+      .nav-tab {
+        min-width: 0;
+        flex: 1 1 0;
+        justify-content: center;
+        padding: 8px 6px;
+      }
+      .nav-label {
+        display: none;
+      }
+      .pico-grid { grid-template-columns: 1fr; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
 </head>
 <body>
-    
+
+<!-- ── Top stepper ── -->
+<div class="topbar" id="topbar" style="display:none">
+  <nav class="stepper" aria-label="Workflow Steps">
+    <button class="nav-tab" id="nav-discover" onclick="goto('discover')"><span class="nav-step" data-step="1">1</span><span class="nav-label">Discover</span></button>
+    <button class="nav-tab" id="nav-design"   onclick="goto('design')"><span class="nav-step" data-step="2">2</span><span class="nav-label">Design</span></button>
+    <button class="nav-tab" id="nav-execute"  onclick="goto('execute')"><span class="nav-step" data-step="3">3</span><span class="nav-label">Execute</span></button>
+    <button class="nav-tab" id="nav-publish"  onclick="goto('publish')"><span class="nav-step" data-step="4">4</span><span class="nav-label">Publish</span></button>
+  </nav>
+</div>
+
+<!-- ── Landing ── -->
+<div id="landing-screen" class="landing">
+  <div class="landing-head">
+    <div class="landing-logo">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2"/></svg>
+    </div>
+    <div class="landing-title">NOKTA</div>
+    <div class="landing-sub">Anahtar kelimeden yayına — tüm araştırma yaşam döngüsü tek platformda.</div>
+  </div>
+  <div class="landing-composer">
+    <div class="landing-composer-box">
+    <textarea class="landing-textarea" id="landing-input" rows="3" placeholder="Ne üzerine araştırma yapmak istiyorsunuz?&#10;Örnek: Tip 2 diyabetli hastalarda implant başarısını etkileyen faktörler" onkeydown="landingKeydown(event)"></textarea>
+    <div class="landing-toolbar">
+      <div class="landing-toolbar-left">
+        <select class="composer-select" id="di-domain">
+          <option value="">Alan</option>
+          <option>dentistry</option><option>periodontology</option><option>implantology</option>
+          <option>psychiatry</option><option>cardiology</option><option>internal-medicine</option>
+          <option>neurology</option><option>orthopedics</option>
+        </select>
+        <select class="composer-select" id="di-lang"><option value="tr">Türkçe</option><option value="en">English</option></select>
+        <label class="composer-toggle"><input type="checkbox" id="di-stream"> Stream</label>
+      </div>
+      <button class="landing-btn" onclick="startFromLanding()">
+        Başla
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+    </div>
+  </div>
+  <div class="landing-suggestions">
+    <button class="landing-suggestion" onclick="fillSuggestion(this)">Diyabet + dental implant başarısı</button>
+    <button class="landing-suggestion" onclick="fillSuggestion(this)">Sigara ve periodontal hastalık ilişkisi</button>
+    <button class="landing-suggestion" onclick="fillSuggestion(this)">COVID-19 mortalitesinde IL-6 rolü</button>
+    <button class="landing-suggestion" onclick="fillSuggestion(this)">Anksiyete ölçeği Türkçe adaptasyonu</button>
+    <button class="landing-suggestion" onclick="fillSuggestion(this)">Hipertansiyon + kardiyovasküler risk faktörleri</button>
+  </div>
+</div>
+
+<!-- ── Main ── -->
+<main class="main" id="main-app" style="display:none">
+  <div class="phase-stage" id="phase-stage">
+
+  <!-- DISCOVER -->
+  <section class="tab-panel" id="tab-discover">
+    <div class="workspace-layout">
+      <div class="workspace-main">
+        <div class="page-header">
+          <div>
+            <div class="page-title-row">
+              <span class="page-icon js-page-icon" data-phase="discover" data-icon='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="M20 20l-4.2-4.2"></path></svg>'><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="M20 20l-4.2-4.2"></path></svg></span>
+              <div class="page-title">Discover</div>
+            </div>
+            <div class="page-sub">Anahtar kelime veya fikir kırıntısından PICO + araştırma sorusu üret</div>
+          </div>
+          <span class="badge badge-blue">Faz 1</span>
+        </div>
+        <textarea id="di-input" style="display:none"></textarea>
+        <button id="di-btn" style="display:none" data-label="Gönder"></button>
+        <div id="di-result"></div>
+      </div>
+      <aside class="workspace-side">
+        <div class="side-stack">
+          <div class="card-sub side-card progress-card">
+            <div class="progress-head">
+              <div class="progress-kicker">Araştırma Akışı</div>
+              <div class="progress-title">Genel İlerleme</div>
+              <div class="progress-note">Her fazın tamamlanma durumu ve toplam araştırma ilerlemesi.</div>
+            </div>
+            <div class="tube-stage">
+              <div class="tube-meter">
+                <div class="tube-fill js-tube-fill"></div>
+              </div>
+              <div class="tube-readout">
+                <div class="tube-percent js-tube-percent">0%</div>
+                <div class="tube-status js-tube-status">Beklemede</div>
+              </div>
+            </div>
+            <div class="phase-dots">
+              <div class="phase-dot" data-phase="discover"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="M20 20l-4.2-4.2"></path></svg></span>Keşif</div>
+              <div class="phase-dot" data-phase="design"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18L12 4l8 14"></path><path d="M7 13h10"></path><path d="M10 18h4"></path></svg></span>Tasarım</div>
+              <div class="phase-dot" data-phase="execute"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"></circle><path d="M12 2.8v2.6"></path><path d="M12 18.6v2.6"></path><path d="M4.9 4.9l1.8 1.8"></path><path d="M17.3 17.3l1.8 1.8"></path><path d="M2.8 12h2.6"></path><path d="M18.6 12h2.6"></path><path d="M4.9 19.1l1.8-1.8"></path><path d="M17.3 6.7l1.8-1.8"></path></svg></span>Analiz</div>
+              <div class="phase-dot" data-phase="publish"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l3 3V20.5H7z"></path><path d="M14 3.5v4h4"></path><path d="M9.5 11h5"></path><path d="M9.5 14.5h5"></path><path d="M9.5 18h4"></path></svg></span>Yayın</div>
+            </div>
+            <div class="phase-nav">
+              <button class="phase-nav-btn js-phase-up" type="button" aria-label="Önceki Adım" onclick="stepPhase(-1)">↑</button>
+              <button class="phase-nav-btn js-phase-down" type="button" aria-label="Sonraki Adım" onclick="stepPhase(1)">↓</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- DESIGN -->
+  <section class="tab-panel" id="tab-design">
+    <div class="workspace-layout">
+      <div class="workspace-main">
+        <div class="page-header">
+          <div>
+            <div class="page-title-row">
+              <span class="page-icon js-page-icon" data-phase="design" data-icon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18L12 4l8 14"></path><path d="M7 13h10"></path><path d="M10 18h4"></path></svg>'><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18L12 4l8 14"></path><path d="M7 13h10"></path><path d="M10 18h4"></path></svg></span>
+              <div class="page-title">Design</div>
+            </div>
+            <div class="page-sub">Araştırma sorusu → örneklem, ölçek, çalışma tasarımı</div>
+          </div>
+          <span class="badge badge-blue">Faz 2</span>
+        </div>
+        <div id="de-result"><div class="phase-empty"><svg viewBox="0 0 24 24"><path d="M4 18L12 4l8 14"/><path d="M7 13h10"/></svg><div class="phase-empty-title">Discover tamamlanınca burası dolacak</div><div class="phase-empty-sub">Power analizi, ölçek önerileri ve çalışma tasarımı otomatik olarak aktarılır.</div></div></div>
+      </div>
+      <aside class="workspace-side">
+        <div class="side-stack">
+          <div class="card-sub side-card progress-card">
+            <div class="progress-head">
+              <div class="progress-kicker">Araştırma Akışı</div>
+              <div class="progress-title">Genel İlerleme</div>
+              <div class="progress-note">Her fazın tamamlanma durumu ve toplam araştırma ilerlemesi.</div>
+            </div>
+            <div class="tube-stage">
+              <div class="tube-meter">
+                <div class="tube-fill js-tube-fill"></div>
+              </div>
+              <div class="tube-readout">
+                <div class="tube-percent js-tube-percent">0%</div>
+                <div class="tube-status js-tube-status">Beklemede</div>
+              </div>
+            </div>
+            <div class="phase-dots">
+              <div class="phase-dot" data-phase="discover"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="M20 20l-4.2-4.2"></path></svg></span>Keşif</div>
+              <div class="phase-dot" data-phase="design"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18L12 4l8 14"></path><path d="M7 13h10"></path><path d="M10 18h4"></path></svg></span>Tasarım</div>
+              <div class="phase-dot" data-phase="execute"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"></circle><path d="M12 2.8v2.6"></path><path d="M12 18.6v2.6"></path><path d="M4.9 4.9l1.8 1.8"></path><path d="M17.3 17.3l1.8 1.8"></path><path d="M2.8 12h2.6"></path><path d="M18.6 12h2.6"></path><path d="M4.9 19.1l1.8-1.8"></path><path d="M17.3 6.7l1.8-1.8"></path></svg></span>Analiz</div>
+              <div class="phase-dot" data-phase="publish"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l3 3V20.5H7z"></path><path d="M14 3.5v4h4"></path><path d="M9.5 11h5"></path><path d="M9.5 14.5h5"></path><path d="M9.5 18h4"></path></svg></span>Yayın</div>
+            </div>
+            <div class="phase-nav">
+              <button class="phase-nav-btn js-phase-up" type="button" aria-label="Önceki Adım" onclick="stepPhase(-1)">↑</button>
+              <button class="phase-nav-btn js-phase-down" type="button" aria-label="Sonraki Adım" onclick="stepPhase(1)">↓</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- EXECUTE -->
+  <section class="tab-panel" id="tab-execute">
+    <div class="workspace-layout">
+      <div class="workspace-main">
+        <div class="page-header">
+          <div>
+            <div class="page-title-row">
+              <span class="page-icon js-page-icon" data-phase="execute" data-icon='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"></circle><path d="M12 2.8v2.6"></path><path d="M12 18.6v2.6"></path><path d="M4.9 4.9l1.8 1.8"></path><path d="M17.3 17.3l1.8 1.8"></path><path d="M2.8 12h2.6"></path><path d="M18.6 12h2.6"></path><path d="M4.9 19.1l1.8-1.8"></path><path d="M17.3 6.7l1.8-1.8"></path></svg>'><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"></circle><path d="M12 2.8v2.6"></path><path d="M12 18.6v2.6"></path><path d="M4.9 4.9l1.8 1.8"></path><path d="M17.3 17.3l1.8 1.8"></path><path d="M2.8 12h2.6"></path><path d="M18.6 12h2.6"></path><path d="M4.9 19.1l1.8-1.8"></path><path d="M17.3 6.7l1.8-1.8"></path></svg></span>
+              <div class="page-title">Execute</div>
+            </div>
+            <div class="page-sub">Veri + araştırma sorusu → test seçimi + analiz planı</div>
+          </div>
+          <span class="badge badge-blue">Faz 3</span>
+        </div>
+        <div id="ex-result"><div class="phase-empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2.8 12h2.6M18.6 12h2.6"/></svg><div class="phase-empty-title">Design tamamlanınca burası dolacak</div><div class="phase-empty-sub">Veri tanılama, test seçimi ve analiz planı otomatik olarak üretilir.</div></div></div>
+      </div>
+      <aside class="workspace-side">
+        <div class="side-stack">
+          <div class="card-sub side-card progress-card">
+            <div class="progress-head">
+              <div class="progress-kicker">Araştırma Akışı</div>
+              <div class="progress-title">Genel İlerleme</div>
+              <div class="progress-note">Her fazın tamamlanma durumu ve toplam araştırma ilerlemesi.</div>
+            </div>
+            <div class="tube-stage">
+              <div class="tube-meter">
+                <div class="tube-fill js-tube-fill"></div>
+              </div>
+              <div class="tube-readout">
+                <div class="tube-percent js-tube-percent">0%</div>
+                <div class="tube-status js-tube-status">Beklemede</div>
+              </div>
+            </div>
+            <div class="phase-dots">
+              <div class="phase-dot" data-phase="discover"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="M20 20l-4.2-4.2"></path></svg></span>Keşif</div>
+              <div class="phase-dot" data-phase="design"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18L12 4l8 14"></path><path d="M7 13h10"></path><path d="M10 18h4"></path></svg></span>Tasarım</div>
+              <div class="phase-dot" data-phase="execute"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"></circle><path d="M12 2.8v2.6"></path><path d="M12 18.6v2.6"></path><path d="M4.9 4.9l1.8 1.8"></path><path d="M17.3 17.3l1.8 1.8"></path><path d="M2.8 12h2.6"></path><path d="M18.6 12h2.6"></path><path d="M4.9 19.1l1.8-1.8"></path><path d="M17.3 6.7l1.8-1.8"></path></svg></span>Analiz</div>
+              <div class="phase-dot" data-phase="publish"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l3 3V20.5H7z"></path><path d="M14 3.5v4h4"></path><path d="M9.5 11h5"></path><path d="M9.5 14.5h5"></path><path d="M9.5 18h4"></path></svg></span>Yayın</div>
+            </div>
+            <div class="phase-nav">
+              <button class="phase-nav-btn js-phase-up" type="button" aria-label="Önceki Adım" onclick="stepPhase(-1)">↑</button>
+              <button class="phase-nav-btn js-phase-down" type="button" aria-label="Sonraki Adım" onclick="stepPhase(1)">↓</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- PUBLISH -->
+  <section class="tab-panel" id="tab-publish">
+    <div class="workspace-layout">
+      <div class="workspace-main">
+        <div class="page-header">
+          <div>
+            <div class="page-title-row">
+              <span class="page-icon js-page-icon" data-phase="publish" data-icon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l3 3V20.5H7z"></path><path d="M14 3.5v4h4"></path><path d="M9.5 11h5"></path><path d="M9.5 14.5h5"></path><path d="M9.5 18h4"></path></svg>'><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l3 3V20.5H7z"></path><path d="M14 3.5v4h4"></path><path d="M9.5 11h5"></path><path d="M9.5 14.5h5"></path><path d="M9.5 18h4"></path></svg></span>
+              <div class="page-title">Publish</div>
+            </div>
+            <div class="page-sub">Araştırma bağlamı → IMRAD taslağı + dergi önerileri</div>
+          </div>
+          <span class="badge badge-blue">Faz 4</span>
+        </div>
+        <div id="pu-result"><div class="phase-empty"><svg viewBox="0 0 24 24"><path d="M7 3.5h7l3 3V20.5H7z"/><path d="M14 3.5v4h4"/><path d="M9.5 11h5M9.5 14.5h5M9.5 18h4"/></svg><div class="phase-empty-title">Execute tamamlanınca burası dolacak</div><div class="phase-empty-sub">IMRAD taslağı, kaynakça ve dergi önerileri tüm fazların çıktısından otomatik oluşturulur.</div></div></div>
+      </div>
+      <aside class="workspace-side">
+        <div class="side-stack">
+          <div class="card-sub side-card progress-card">
+            <div class="progress-head">
+              <div class="progress-kicker">Araştırma Akışı</div>
+              <div class="progress-title">Genel İlerleme</div>
+              <div class="progress-note">Her fazın tamamlanma durumu ve toplam araştırma ilerlemesi.</div>
+            </div>
+            <div class="tube-stage">
+              <div class="tube-meter">
+                <div class="tube-fill js-tube-fill"></div>
+              </div>
+              <div class="tube-readout">
+                <div class="tube-percent js-tube-percent">0%</div>
+                <div class="tube-status js-tube-status">Beklemede</div>
+              </div>
+            </div>
+            <div class="phase-dots">
+              <div class="phase-dot" data-phase="discover"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="M20 20l-4.2-4.2"></path></svg></span>Keşif</div>
+              <div class="phase-dot" data-phase="design"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18L12 4l8 14"></path><path d="M7 13h10"></path><path d="M10 18h4"></path></svg></span>Tasarım</div>
+              <div class="phase-dot" data-phase="execute"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"></circle><path d="M12 2.8v2.6"></path><path d="M12 18.6v2.6"></path><path d="M4.9 4.9l1.8 1.8"></path><path d="M17.3 17.3l1.8 1.8"></path><path d="M2.8 12h2.6"></path><path d="M18.6 12h2.6"></path><path d="M4.9 19.1l1.8-1.8"></path><path d="M17.3 6.7l1.8-1.8"></path></svg></span>Analiz</div>
+              <div class="phase-dot" data-phase="publish"><span class="phase-dot-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l3 3V20.5H7z"></path><path d="M14 3.5v4h4"></path><path d="M9.5 11h5"></path><path d="M9.5 14.5h5"></path><path d="M9.5 18h4"></path></svg></span>Yayın</div>
+            </div>
+            <div class="phase-nav">
+              <button class="phase-nav-btn js-phase-up" type="button" aria-label="Önceki Adım" onclick="stepPhase(-1)">↑</button>
+              <button class="phase-nav-btn js-phase-down" type="button" aria-label="Sonraki Adım" onclick="stepPhase(1)">↓</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  </div>
+</main>
+
+<script>
+"use strict";
+
+window.addEventListener("DOMContentLoaded", loadEnvKeys);
+window.addEventListener("DOMContentLoaded", initPhaseNavigation);
+
+/* ── Landing ── */
+function showApp() {
+  document.getElementById("landing-screen").style.display = "none";
+  document.getElementById("main-app").style.display = "";
+  document.getElementById("topbar").style.display = "";
+}
+
+function startFromLanding() {
+  const val = document.getElementById("landing-input").value.trim();
+  if (!val) return;
+  document.getElementById("di-input").value = val;
+  showApp();
+  void goto("discover", false);
+  void runDiscover();
+}
+
+function fillSuggestion(btn) {
+  document.getElementById("landing-input").value = btn.textContent;
+  document.getElementById("landing-input").focus();
+}
+
+function landingKeydown(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    startFromLanding();
+  }
+}
+
+const S = {
+  provider: "claude",
+  keys: { anthropic: "", openai: "" },
+  cache: { discover: null, design: null, execute: null, publish: null },
+  drafts: { design: "", execute: "", publish: "" },
+  progress: 0,   // 0-100
+  progressLabel: "",
+  activePhase: "discover",
+  isTransitioning: false,
+  loadingPhase: "",
+};
+const PHASE_ORDER = ["discover", "design", "execute", "publish"];
+
+function setProgress(pct, label) {
+  S.progress = pct;
+  S.progressLabel = label || "";
+  document.querySelectorAll(".js-tube-fill").forEach(fill => {
+    fill.style.height = `${Math.max(0, Math.min(100, pct))}%`;
+    fill.classList.toggle("is-full", pct >= 100);
+  });
+  document.querySelectorAll(".js-tube-percent").forEach(percent => {
+    percent.textContent = `${Math.round(pct)}%`;
+  });
+  document.querySelectorAll(".js-tube-status").forEach(status => {
+    status.textContent = label || "Standby";
+  });
+
+  const phases = [
+    ["discover", 25],
+    ["design", 50],
+    ["execute", 75],
+    ["publish", 100],
+  ];
+  for (const [phase, threshold] of phases) {
+    document.querySelectorAll(`.phase-dot[data-phase="${phase}"]`).forEach(dot => {
+      dot.classList.remove("active", "done");
+      if (pct >= threshold) {
+        dot.classList.add("done");
+      } else if (pct >= threshold - 25) {
+        dot.classList.add("active");
+      }
+    });
+  }
+}
+
+/* ── Navigation ── */
+function setActiveNav(phase) {
+  document.querySelectorAll(".nav-tab").forEach(el => el.classList.remove("active"));
+  document.getElementById("nav-" + phase)?.classList.add("active");
+}
+
+function currentPhase() {
+  return S.activePhase || document.querySelector(".tab-panel.active")?.id?.replace("tab-", "") || "discover";
+}
+
+function refreshPhaseNavButtons() {
+  const index = PHASE_ORDER.indexOf(currentPhase());
+  document.querySelectorAll(".js-phase-up").forEach(btn => {
+    btn.disabled = index <= 0;
+  });
+  document.querySelectorAll(".js-phase-down").forEach(btn => {
+    btn.disabled = index >= PHASE_ORDER.length - 1;
+  });
+}
+
+function resetPanelLayout(panel) {
+  if (!panel) return;
+  panel.classList.remove("transition-panel");
+  panel.style.position = "";
+  panel.style.inset = "";
+  panel.style.width = "";
+  panel.style.visibility = "";
+  panel.style.pointerEvents = "";
+}
+
+async function goto(phase, smooth = true) {
+  if (!PHASE_ORDER.includes(phase) || S.isTransitioning) return;
+  setActiveNav(phase);
+  const phaseStage = document.getElementById("phase-stage");
+  const previousPhase = currentPhase();
+  const currentPanel = document.getElementById("tab-" + previousPhase);
+  const nextPanel = document.getElementById("tab-" + phase);
+  if (!nextPanel) return;
+  S.activePhase = phase;
+  if (!currentPanel || currentPanel === nextPanel || !phaseStage) {
+    document.querySelectorAll(".tab-panel").forEach(el => el.classList.remove("active"));
+    nextPanel.classList.add("active");
+    nextPanel.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+    refreshPhaseNavButtons();
+    return;
+  }
+
+  S.isTransitioning = true;
+  const stageWidth = phaseStage.clientWidth;
+  const currentHeight = currentPanel.offsetHeight;
+
+  nextPanel.classList.add("active");
+  nextPanel.classList.add("transition-panel");
+  nextPanel.style.position = "absolute";
+  nextPanel.style.inset = "0 auto auto 0";
+  nextPanel.style.width = `${stageWidth}px`;
+  nextPanel.style.visibility = "hidden";
+  nextPanel.style.pointerEvents = "none";
+
+  const nextHeight = nextPanel.offsetHeight;
+  nextPanel.style.visibility = "";
+
+  currentPanel.classList.add("transition-panel");
+  currentPanel.style.position = "absolute";
+  currentPanel.style.inset = "0 auto auto 0";
+  currentPanel.style.width = `${stageWidth}px`;
+  currentPanel.style.pointerEvents = "none";
+
+  phaseStage.classList.add("phase-transitioning");
+  phaseStage.style.height = `${currentHeight}px`;
+  if (smooth) {
+    phaseStage.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  const duration = 620;
+  const easing = "cubic-bezier(0.22, 1, 0.36, 1)";
+  const heightAnimation = phaseStage.animate(
+    [{ height: `${currentHeight}px` }, { height: `${nextHeight}px` }],
+    { duration, easing, fill: "forwards" }
+  );
+  const exitAnimation = currentPanel.animate(
+    [
+      { opacity: 1, transform: "translateY(0) scale(1)" },
+      { opacity: 0, transform: "translateY(-72px) scale(0.985)" }
+    ],
+    { duration, easing, fill: "forwards" }
+  );
+  const enterAnimation = nextPanel.animate(
+    [
+      { opacity: 0, transform: "translateY(88px) scale(0.985)" },
+      { opacity: 1, transform: "translateY(0) scale(1)" }
+    ],
+    { duration, easing, fill: "forwards" }
+  );
+
+  await Promise.all([
+    heightAnimation.finished.catch(() => {}),
+    exitAnimation.finished.catch(() => {}),
+    enterAnimation.finished.catch(() => {}),
+  ]);
+
+  currentPanel.classList.remove("active");
+  document.querySelectorAll(".tab-panel").forEach(panel => {
+    if (panel !== nextPanel) resetPanelLayout(panel);
+  });
+  resetPanelLayout(nextPanel);
+  phaseStage.classList.remove("phase-transitioning");
+  phaseStage.style.height = "";
+  nextPanel.style.pointerEvents = "";
+  S.isTransitioning = false;
+  refreshPhaseNavButtons();
+}
+
+async function moveToPhase(phase) {
+  await goto(phase);
+  await delay(120);
+}
+
+function stepPhase(direction) {
+  const index = PHASE_ORDER.indexOf(currentPhase());
+  if (index === -1) return;
+  const next = PHASE_ORDER[index + direction];
+  if (!next) return;
+  void goto(next);
+}
+
+function initPhaseNavigation() {
+  refreshPhaseNavButtons();
+  window.addEventListener("keydown", e => {
+    const target = e.target;
+    const tag = target?.tagName;
+    const isTypingTarget =
+      tag === "TEXTAREA" ||
+      tag === "INPUT" ||
+      tag === "SELECT" ||
+      target?.isContentEditable;
+    if (isTypingTarget) return;
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      stepPhase(-1);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      stepPhase(1);
+    }
+  });
+}
+
+/* ── Env ── */
+async function loadEnvKeys() {
+  try {
+    const res = await fetch("/env");
+    if (!res.ok) return;
+    const data = await res.json();
+    S.keys.anthropic = data.anthropic || "";
+    S.keys.openai    = data.openai    || "";
+    if (S.keys.openai && !S.keys.anthropic) S.provider = "openai";
+    if (S.keys.anthropic || S.keys.openai) setProgress(0, "Hazır");
+  } catch { /* server not running */ }
+}
+
+function apiKey() {
+  return S.provider === "openai" ? S.keys.openai : S.keys.anthropic;
+}
+
+function sharedLang() {
+  return document.getElementById("di-lang")?.value || "tr";
+}
+
+function phaseFromBtnId(btnId) {
+  return { "di-btn": "discover", "de-btn": "design", "ex-btn": "execute", "pu-btn": "publish" }[btnId] || "";
+}
+
+function refreshPageIcons() {
+  document.querySelectorAll(".js-page-icon").forEach(icon => {
+    const phase = icon.dataset.phase || "";
+    const glyph = icon.dataset.icon || "";
+    icon.innerHTML = S.loadingPhase === phase ? '<span class="spinner"></span>' : glyph;
+  });
+}
+
+function setLoading(btnId, on) {
+  const phase = phaseFromBtnId(btnId);
+  if (on) {
+    S.loadingPhase = phase;
+  } else if (S.loadingPhase === phase) {
+    S.loadingPhase = "";
+  }
+  refreshPageIcons();
+
+  const b = document.getElementById(btnId);
+  if (!b) return;
+  b.disabled = on;
+  b.innerHTML = on ? '<span class="spinner"></span> İşleniyor…' : (b.dataset.label || "Gönder");
+}
+
+function markDone(phase, done) {
+  const nav = document.getElementById("nav-" + phase);
+  const step = nav?.querySelector(".nav-step");
+  if (nav && step) {
+    nav.classList.toggle("done", done);
+    step.textContent = done ? "✓" : (step.dataset.step || "");
+  }
+  document.querySelectorAll(`.phase-dot[data-phase="${phase}"]`).forEach(dot => {
+    dot.classList.toggle("done", done);
+    if (done) dot.classList.remove("active");
+  });
+}
+
+function showErr(id, msg) {
+  document.getElementById(id).innerHTML = `<div class="error-box">⚠ ${escHtml(msg)}</div>`;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function tryParse(text) {
+  try { const m = text.match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null; }
+  catch { return null; }
+}
+
+function streamPlaceholder(id) {
+  document.getElementById(id).innerHTML = `
+    <div class="skeleton-shell skeleton-pulse">
+      <div class="skeleton-grid">
+        <div class="skeleton-col">
+          <div class="card-sub skeleton-card">
+            <div class="skeleton-line title"></div>
+            <div class="skeleton-line wide"></div>
+            <div class="skeleton-line mid"></div>
+            <div class="skeleton-line short"></div>
+          </div>
+          <div class="card-sub skeleton-card">
+            <div class="skeleton-line title"></div>
+            <div class="skeleton-line wide"></div>
+            <div class="skeleton-line wide"></div>
+            <div class="skeleton-chip-row">
+              <div class="skeleton-chip"></div>
+              <div class="skeleton-chip"></div>
+            </div>
+          </div>
+        </div>
+        <div class="skeleton-col">
+          <div class="card-sub skeleton-card">
+            <div class="skeleton-line title"></div>
+            <div class="skeleton-line wide"></div>
+            <div class="skeleton-line mid"></div>
+            <div class="skeleton-line short"></div>
+          </div>
+          <div class="card-sub skeleton-card">
+            <div class="skeleton-line title"></div>
+            <div class="skeleton-line wide"></div>
+            <div class="skeleton-line wide"></div>
+            <div class="skeleton-line mid"></div>
+            <pre class="raw-text" id="${id}-stream" style="display:none;min-height:64px"></pre>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ── API ── */
+const CLAUDE_URL = "https://api.anthropic.com/v1/messages";
+const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
+const delay = ms => new Promise(r => setTimeout(r, ms));
+const PHASE_REVIEW_DELAY = 3000;
+
+async function callAPI({ system, user, maxTokens = 2500, stream = false, onChunk }) {
+  const key = apiKey();
+  if (!key) throw new Error(".env dosyasına API key ekleyin ve server.js'i başlatın.");
+
+  const isClaude = S.provider === "claude";
+  const url     = isClaude ? CLAUDE_URL : OPENAI_URL;
+  const headers = isClaude
+    ? { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json", "anthropic-dangerous-direct-browser-access": "true" }
+    : { "Authorization": `Bearer ${key}`, "content-type": "application/json" };
+  const body = isClaude
+    ? { model: "claude-sonnet-4-6", max_tokens: maxTokens, stream, system, messages: [{ role: "user", content: user }] }
+    : { model: "gpt-4o", max_tokens: maxTokens, stream, messages: [{ role: "system", content: system }, { role: "user", content: user }] };
+
+  if (!stream) {
+    const res = await fetchWithRetry(url, { method: "POST", headers, body: JSON.stringify(body) });
+    if (!res.ok) throw new Error(`${isClaude ? "Claude" : "OpenAI"} ${res.status}: ${await res.text()}`);
+    const data = await res.json();
+    return isClaude ? data.content[0].text : data.choices[0].message.content;
+  }
+
+  const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
+
+  const reader = res.body.getReader(), dec = new TextDecoder();
+  let full = "", buf = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split("\n"); buf = lines.pop() ?? "";
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t.startsWith("data: ")) continue;
+      const d = t.slice(6).trim();
+      if (d === "[DONE]") continue;
+      try {
+        const e = JSON.parse(d);
+        const chunk = isClaude
+          ? (e.type === "content_block_delta" && e.delta?.type === "text_delta" ? e.delta.text : "")
+          : (e.choices?.[0]?.delta?.content ?? "");
+        if (chunk) { full += chunk; onChunk?.(chunk); }
+      } catch { /* skip */ }
+    }
+  }
+  return full;
+}
+
+async function fetchWithRetry(url, init, retries = 3) {
+  let last;
+  for (let i = 0; i < retries; i++) {
+    try {
+      const r = await fetch(url, init);
+      if (r.status === 429 || r.status === 529) { await delay(Math.pow(2,i)*1000); last = new Error("Rate limited"); continue; }
+      return r;
+    } catch(e) { last = e; if (i < retries-1) await delay(Math.pow(2,i)*1000); }
+  }
+  throw last;
+}
+
+/* ── Prompts ── */
+const langStr = l => l === "tr" ? "Yanıtını Türkçe ver." : "Respond in English.";
+
+function promptDiscover(domain, l) {
+  return `Sen NOKTA'sın — tıbbi ve akademik araştırmacılara MRLC sürecinde rehberlik eden AI asistanısın.
+${domain ? `Kullanıcının alanı: ${domain}.` : ""} ${langStr(l)}
+Anahtar kelime/fikirden hareketle üret: PICO Analizi, Research Question, Literatür Boşluğu, Metodoloji, Zaman Çizelgesi.
+Sadece JSON döndür:
+{"pico":{"P":"","I":"","C":"","O":""},"researchQuestion":"","literatureGap":"","methodology":"","timeline":[{"month":"M1-2","milestone":""}]}`;
+}
+function promptDesign(l) {
+  return `Sen NOKTA'sın — MRLC DESIGN fazı uzmanısın. ${langStr(l)}
+Power Analysis, Ölçek Önerileri (max 3, TR validasyon), Veri Toplama Stratejisi, Çalışma Tasarımı üret.
+Sadece JSON döndür:
+{"powerAnalysis":{"minimumN":0,"targetN":0,"alpha":0.05,"power":0.80,"effectSize":0.5,"notes":""},"scales":[{"name":"","items":0,"validatedTr":true,"recommended":true}],"dataCollection":{"method":"","platform":"","notes":""},"studyDesign":{"type":"","inclusionCriteria":"","exclusionCriteria":""}}`;
+}
+function promptExecute(l) {
+  return `Sen NOKTA'sın — MRLC EXECUTE fazı uzmanısın. ${langStr(l)}
+Veri Tanılama, Test Seçimi, Analiz Planı, Yorum Rehberi üret.
+Sadece JSON döndür:
+{"dataDiagnostics":{"missingData":"","outlierRisk":"","normalityAssessment":"","distributionType":"parametric"},"testSelection":{"primaryTest":"","rationale":"","alternativeTest":""},"analysisplan":{"dependentVariable":"","independentVariables":[],"covariates":[],"reportedStatistics":[]},"interpretationGuide":{"significanceThreshold":0.05,"clinicalRelevanceNotes":"","limitations":""}}`;
+}
+function buildPublishContextBlock(cache) {
+  const lines = [];
+  const d = cache.discover?.parsed;
+  if (d) {
+    lines.push("## DISCOVER fazından gelen veriler");
+    if (d.researchQuestion) lines.push(`- Araştırma sorusu: ${d.researchQuestion}`);
+    if (d.literatureGap)    lines.push(`- Literatür boşluğu: ${d.literatureGap}`);
+    if (d.methodology)      lines.push(`- Önerilen metodoloji: ${d.methodology}`);
+    if (d.pico) {
+      const { P, I, C, O } = d.pico;
+      lines.push(`- PICO: P="${P}" I="${I}" C="${C}" O="${O}"`);
+    }
+  }
+  const de = cache.design?.parsed;
+  if (de) {
+    lines.push("## DESIGN fazından gelen veriler");
+    if (de.studyDesign?.type)              lines.push(`- Çalışma tipi: ${de.studyDesign.type}`);
+    if (de.studyDesign?.inclusionCriteria) lines.push(`- Dahil kriterleri: ${de.studyDesign.inclusionCriteria}`);
+    if (de.studyDesign?.exclusionCriteria) lines.push(`- Dışlama kriterleri: ${de.studyDesign.exclusionCriteria}`);
+    if (de.powerAnalysis) {
+      const pa = de.powerAnalysis;
+      lines.push(`- Örneklem: min ${pa.minimumN}, hedef ${pa.targetN} (α=${pa.alpha}, power=${pa.power})`);
+    }
+    if (de.scales?.length) lines.push(`- Kullanılan ölçekler: ${de.scales.map(s => s.name).join(", ")}`);
+    if (de.dataCollection?.method) lines.push(`- Veri toplama yöntemi: ${de.dataCollection.method}`);
+  }
+  const ex = cache.execute?.parsed;
+  if (ex) {
+    lines.push("## EXECUTE fazından gelen veriler");
+    if (ex.testSelection?.primaryTest) lines.push(`- Kullanılan test: ${ex.testSelection.primaryTest}`);
+    if (ex.testSelection?.rationale)   lines.push(`- Test gerekçesi: ${ex.testSelection.rationale}`);
+    if (ex.dataDiagnostics?.distributionType) lines.push(`- Dağılım tipi: ${ex.dataDiagnostics.distributionType}`);
+    if (ex.analysisplan?.dependentVariable)   lines.push(`- Bağımlı değişken: ${ex.analysisplan.dependentVariable}`);
+    if (ex.analysisplan?.independentVariables?.length) lines.push(`- Bağımsız değişkenler: ${ex.analysisplan.independentVariables.join(", ")}`);
+    if (ex.interpretationGuide?.limitations)  lines.push(`- Sınırlılıklar: ${ex.interpretationGuide.limitations}`);
+  }
+  if (!lines.length) return "";
+  return `\nAşağıda önceki fazlardan gelen yapılandırılmış veriler var. IMRAD bölümlerini yazarken bu verileri doğrudan kullan:\n\n${lines.join("\n")}\n\nDirektifler:\n- Introduction → DISCOVER fazındaki literatür boşluğunu ve PICO'yu kullan\n- Methods → DESIGN fazındaki çalışma tipi, örneklem büyüklüğü ve ölçekleri kullan\n- Results → EXECUTE fazındaki test adını ve analiz planını referans al\n- Discussion → EXECUTE'taki sınırlılıkları ve DISCOVER'daki metodoloji önerisini kullan\n`;
+}
+
+function promptPublish(l, cache = {}) {
+  const contextBlock = buildPublishContextBlock(cache);
+  return `Sen NOKTA'sın — MRLC PUBLISH fazı uzmanısın. ${langStr(l)}
+${contextBlock}
+IMRAD Taslağı, 6-10 akademik referans (APA 7), 2-3 Dergi Önerisi (scopeMatchScore: 0-100 sayısal), 2 Alternatif Başlık üret.
+Sadece JSON döndür:
+{"manuscript":{"title":"","introduction":"","methods":"","results":"","discussion":""},"references":[{"authors":"","year":2023,"title":"","journal":"","volume":"","issue":"","pages":"","doi":""}],"titleAlternatives":["",""],"journalRecommendations":[{"name":"","impactFactor":0,"scopeMatchScore":85,"submissionNote":""}]}`;
+}
+
+/* ── Renderers ── */
+function renderDiscover(text, p) {
+  if (!p) return renderRaw(text);
+  return `<div class="results-2col">
+    <div class="results-col">
+      <div class="card-sub">
+        <div class="card-title"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2"/></svg> PICO Analizi</div>
+        <div class="pico-grid">${Object.entries(p.pico||{}).map(([k,v])=>`<div class="pico-cell"><div class="pico-key">${k}</div><div class="pico-val">${escHtml(v)}</div></div>`).join("")}</div>
+      </div>
+      <div class="card-sub">
+        <div class="field-label">Araştırma Sorusu</div>
+        <div class="rq-highlight">${escHtml(p.researchQuestion||"—")}</div>
+      </div>
+      <div class="card-sub"><div class="field-label">Literatür Boşluğu</div><div class="field-value">${escHtml(p.literatureGap||"—")}</div></div>
+    </div>
+    <div class="results-col">
+      <div class="card-sub"><div class="field-label">Önerilen Metodoloji</div><div class="field-value">${escHtml(p.methodology||"—")}</div></div>
+      <div class="card-sub">
+        <div class="card-title"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Zaman Çizelgesi</div>
+        <div class="timeline">${(p.timeline||[]).map(t=>`<div class="timeline-row"><span class="timeline-month">${escHtml(t.month)}</span><span class="timeline-ms">${escHtml(t.milestone)}</span></div>`).join("")}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderDesign(text, p) {
+  if (!p) return renderRaw(text);
+  const pa=p.powerAnalysis||{}, sc=p.scales||[], dc=p.dataCollection||{}, sd=p.studyDesign||{};
+  return `<div class="results-2col">
+    <div class="results-col">
+      <div class="card-sub">
+        <div class="card-title"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Power Analysis</div>
+        <div class="stat-grid">
+          <div class="stat-cell"><div class="stat-val">${pa.minimumN??"—"}</div><div class="stat-lbl">Min n</div></div>
+          <div class="stat-cell"><div class="stat-val">${pa.targetN??"—"}</div><div class="stat-lbl">Hedef n</div></div>
+          <div class="stat-cell"><div class="stat-val">${pa.power??"—"}</div><div class="stat-lbl">Power</div></div>
+        </div>
+        ${pa.notes?`<div class="field-value" style="margin-top:10px;font-size:12px;color:var(--on-surface-variant)">${escHtml(pa.notes)}</div>`:""}
+      </div>
+      <div class="card-sub">
+        <div class="card-title"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg> Ölçek Önerileri</div>
+        <div class="scale-list">${sc.map(s=>`<div class="scale-row"><span class="scale-name">${escHtml(s.name)}</span><span class="scale-meta">${s.items} madde</span>${s.validatedTr?`<span class="badge badge-green">TR ✓</span>`:""} ${s.recommended?`<span class="badge badge-blue">Önerilen</span>`:""}</div>`).join("")}</div>
+      </div>
+    </div>
+    <div class="results-col">
+      <div class="card-sub">
+        <div class="card-title"><svg viewBox="0 0 24 24"><path d="M4 18L12 4l8 14"/><path d="M7 13h10"/><path d="M10 18h4"/></svg> Çalışma Tasarımı</div>
+        <div class="field-label">Tip</div><div class="field-value" style="margin-bottom:10px">${escHtml(sd.type||"—")}</div>
+        <div class="field-label">Dahil Kriterleri</div><div class="field-value" style="margin-bottom:10px">${escHtml(sd.inclusionCriteria||"—")}</div>
+        <div class="field-label">Dışlama Kriterleri</div><div class="field-value">${escHtml(sd.exclusionCriteria||"—")}</div>
+      </div>
+      <div class="card-sub">
+        <div class="card-title"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v4l3 3"/></svg> Veri Toplama</div>
+        <div class="field-label">Yöntem</div><div class="field-value" style="margin-bottom:8px">${escHtml(dc.method||"—")}</div>
+        <div class="field-label">Platform</div><div class="field-value" style="margin-bottom:8px">${escHtml(dc.platform||"—")}</div>
+        ${dc.notes?`<div class="field-label">Notlar</div><div class="field-value">${escHtml(dc.notes)}</div>`:""}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderExecute(text, p) {
+  if (!p) return renderRaw(text);
+  const dd=p.dataDiagnostics||{}, ts=p.testSelection||{}, ap=p.analysisplan||{}, ig=p.interpretationGuide||{};
+  return `<div class="results-2col">
+    <div class="results-col">
+      <div class="card-sub">
+        <div class="card-title"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2"/><path d="M11 8v3l2 2"/></svg> Veri Tanılama</div>
+        <div class="field-label">Eksik Veri</div><div class="field-value" style="margin-bottom:8px">${escHtml(dd.missingData||"—")}</div>
+        <div class="field-label">Aykırı Değer Riski</div><div class="field-value" style="margin-bottom:8px">${escHtml(dd.outlierRisk||"—")}</div>
+        <div class="field-label">Normallik</div><div class="field-value" style="margin-bottom:10px">${escHtml(dd.normalityAssessment||"—")}</div>
+        <span class="badge ${dd.distributionType==="parametric"?"badge-blue":"badge-green"}">${escHtml(dd.distributionType||"—")}</span>
+      </div>
+      <div class="card-sub">
+        <div class="card-title"><svg viewBox="0 0 24 24"><path d="M9 3h6v11l3 7H6l3-7V3z"/><path d="M6 14h12"/></svg> Test Seçimi</div>
+        <div class="field-label">Önerilen Test</div><div class="field-value" style="font-size:15px;font-weight:700;margin-bottom:8px">${escHtml(ts.primaryTest||"—")}</div>
+        <div class="field-label">Gerekçe</div><div class="field-value" style="margin-bottom:8px">${escHtml(ts.rationale||"—")}</div>
+        <div class="field-label">Alternatif</div><div class="field-value">${escHtml(ts.alternativeTest||"—")}</div>
+      </div>
+    </div>
+    <div class="results-col">
+      <div class="card-sub">
+        <div class="card-title"><svg viewBox="0 0 24 24"><path d="M4 20L20 4M20 4h-8M20 4v8"/></svg> Analiz Planı</div>
+        <div class="field-label">Bağımlı Değişken</div><div class="field-value" style="margin-bottom:8px">${escHtml(ap.dependentVariable||"—")}</div>
+        <div class="field-label">Bağımsız Değişkenler</div><div class="field-value" style="margin-bottom:8px">${(ap.independentVariables||[]).map(escHtml).join(", ")||"—"}</div>
+        <div class="field-label">Covariates</div><div class="field-value" style="margin-bottom:8px">${(ap.covariates||[]).map(escHtml).join(", ")||"—"}</div>
+        <div class="field-label">Raporlanacak İstatistikler</div>
+        <div class="chip-list">${(ap.reportedStatistics||[]).map(s=>`<span class="badge badge-blue">${escHtml(s)}</span>`).join("")||"—"}</div>
+      </div>
+      <div class="card-sub">
+        <div class="card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> Yorum Rehberi</div>
+        <div class="field-label">Anlamlılık Eşiği</div><div class="field-value" style="margin-bottom:8px">p &lt; ${ig.significanceThreshold??0.05}</div>
+        <div class="field-label">Klinik Önem</div><div class="field-value" style="margin-bottom:8px">${escHtml(ig.clinicalRelevanceNotes||"—")}</div>
+        <div class="field-label">Sınırlılıklar</div><div class="field-value">${escHtml(ig.limitations||"—")}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function countWords(ms) {
+  if (!ms) return 0;
+  return ["introduction","methods","results","discussion"]
+    .map(k => ms[k] || "").join(" ").trim().split(/\s+/).filter(Boolean).length;
+}
+
+function scopeMatchColor(score) {
+  if (score >= 80) return "badge-green";
+  if (score >= 60) return "badge-blue";
+  return "";
+}
+
+function formatApa(ref) {
+  const authors = escHtml(ref.authors || "");
+  const year    = ref.year ? `(${ref.year})` : "";
+  const title   = escHtml(ref.title || "");
+  const journal = `<em>${escHtml(ref.journal || "")}</em>`;
+  const vol     = ref.volume ? `<em>${escHtml(ref.volume)}</em>` : "";
+  const issue   = ref.issue  ? `(${escHtml(ref.issue)})`  : "";
+  const pages   = ref.pages  ? `, ${escHtml(ref.pages)}`  : "";
+  const doi     = ref.doi    ? ` https://doi.org/${escHtml(ref.doi)}` : "";
+  const volPart = vol ? `, ${vol}${issue}${pages}` : "";
+  return `${authors} ${year}. ${title}. ${journal}${volPart}.${doi}`;
+}
+
+function renderPublish(text, p) {
+  if (!p) return renderRaw(text);
+  const ms=p.manuscript||{}, refs=p.references||[], alts=p.titleAlternatives||[], jrs=p.journalRecommendations||[];
+  const labels={introduction:"Giriş",methods:"Yöntem",results:"Bulgular",discussion:"Tartışma"};
+  const wc = p.wordCount ?? countWords(ms);
+  const fullText = [
+    ms.title||"",
+    ...["introduction","methods","results","discussion"].map(k=>ms[k]||""),
+    refs.length ? "\nKaynakça\n" + refs.map((r,i)=>`${i+1}. ${r.authors} (${r.year}). ${r.title}. ${r.journal}${r.volume?`, ${r.volume}`:""}${r.issue?`(${r.issue})`:""}${r.pages?`, ${r.pages}`:""}${r.doi?`. https://doi.org/${r.doi}`:""}`).join("\n") : "",
+  ].filter(Boolean).join("\n\n");
+
+  return `
+  <div class="inner-tabs">
+    <button class="inner-tab active" onclick="innerTab(this,'pub-imrad')">IMRAD</button>
+    <button class="inner-tab" onclick="innerTab(this,'pub-refs')">Kaynakça ${refs.length?`<span class="ref-count">${refs.length}</span>`:""}</button>
+    <button class="inner-tab" onclick="innerTab(this,'pub-titles')">Başlıklar</button>
+    <button class="inner-tab" onclick="innerTab(this,'pub-journals')">Dergiler</button>
+  </div>
+  <div class="inner-panel active" id="pub-imrad">
+    <div class="card-sub">
+      <div class="pub-imrad-header">
+        ${ms.title?`<div class="pub-manuscript-title">${escHtml(ms.title)}</div>`:""}
+        <div class="pub-imrad-actions">
+          <span class="pub-wordcount">${wc.toLocaleString("tr-TR")} kelime</span>
+          <button class="btn-copy" onclick="copyManuscript()" title="Metni kopyala">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Kopyala
+          </button>
+          <button class="btn-copy" onclick="downloadManuscript()" title="Metin dosyası indir">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            İndir
+          </button>
+        </div>
+      </div>
+      <div id="pub-manuscript-body">
+        ${["introduction","methods","results","discussion"].map((k,i)=>ms[k]?`
+        <div class="imrad-block">
+          <div class="imrad-section-toggle" aria-expanded="${i===0?'true':'false'}" onclick="toggleImrad(this)">
+            <span class="imrad-label">${labels[k]}</span>
+            <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="imrad-body" ${i===0?'':'hidden'}><div class="imrad-text">${escHtml(ms[k])}</div></div>
+        </div>`:"").join("")}
+      </div>
+    </div>
+    <textarea id="pub-manuscript-raw" style="display:none">${escHtml(fullText)}</textarea>
+  </div>
+  <div class="inner-panel" id="pub-refs">
+    <div class="card-sub">
+      <div class="ref-list">
+        ${refs.length
+          ? refs.map((r,i)=>`<div class="ref-item"><span class="ref-num">${i+1}</span><div class="ref-body">${formatApa(r)}</div></div>`).join("")
+          : `<div class="field-value" style="color:var(--on-surface-variant)">Kaynakça bulunamadı.</div>`}
+      </div>
+    </div>
+  </div>
+  <div class="inner-panel" id="pub-titles">
+    <div class="card-sub"><div class="card-title">Alternatif Başlıklar</div><div class="alt-list">${alts.map((t,i)=>`<div class="alt-item">${i+1}. ${escHtml(t)}</div>`).join("")}</div></div>
+  </div>
+  <div class="inner-panel" id="pub-journals">
+    <div class="card-sub"><div class="card-title">Dergi Önerileri</div><div class="journal-list">${jrs.map(j=>`<div class="journal-row">
+      <div class="journal-row-top">
+        <div class="journal-name">${escHtml(j.name)}</div>
+        <div class="journal-badges">
+          <span class="badge badge-blue">IF ${j.impactFactor}</span>
+          ${j.scopeMatchScore!=null?`<span class="badge ${scopeMatchColor(j.scopeMatchScore)}">Uyum %${j.scopeMatchScore}</span>`:""}
+        </div>
+      </div>
+      ${j.submissionNote?`<div class="journal-note">${escHtml(j.submissionNote)}</div>`:""}</div>`).join("")}</div></div>
+  </div>`;
+}
+
+function renderRaw(text) {
+  return `<div class="card-sub"><div class="card-title">Ham Yanıt</div><pre class="raw-text">${escHtml(text)}</pre></div>`;
+}
+
+function copyManuscript() {
+  const raw = document.getElementById("pub-manuscript-raw");
+  if (!raw) return;
+  navigator.clipboard.writeText(raw.value).then(() => {
+    const btn = document.querySelector(".btn-copy");
+    const orig = btn.innerHTML;
+    btn.innerHTML = btn.innerHTML.replace("Kopyala", "Kopyalandı ✓");
+    setTimeout(() => { btn.innerHTML = orig; }, 2000);
+  });
+}
+
+function downloadManuscript() {
+  const raw = document.getElementById("pub-manuscript-raw");
+  if (!raw) return;
+  const blob = new Blob([raw.value], { type: "text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "manuscript.txt";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function toggleImrad(toggle) {
+  const expanded = toggle.getAttribute("aria-expanded") === "true";
+  const body = toggle.nextElementSibling;
+  toggle.setAttribute("aria-expanded", expanded ? "false" : "true");
+  if (expanded) body.setAttribute("hidden", ""); else body.removeAttribute("hidden");
+}
+
+function innerTab(btn, panelId) {
+  const scope = btn.closest(".tab-panel") || document;
+  scope.querySelectorAll(".inner-tab").forEach(b=>b.classList.remove("active"));
+  scope.querySelectorAll(".inner-panel").forEach(p=>p.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById(panelId)?.classList.add("active");
+}
+
+/* ── Phase runner ── */
+async function runPhase({ btnId, resultId, getInput, getSystem, maxTokens, streamId, onDone, pct, pctLabel }) {
+  const input = getInput();
+  if (!input.trim()) return null;
+  setLoading(btnId, true);
+  if (pct !== undefined) setProgress(pct, pctLabel + " çalışıyor…");
+  try {
+    const useStream = document.getElementById(streamId)?.checked;
+    streamPlaceholder(resultId);
+    let text;
+    if (useStream) {
+      const sEl = document.getElementById(resultId+"-stream");
+      text = await callAPI({ system:getSystem(), user:input, maxTokens, stream:true, onChunk: c=>{ if(sEl.style.display==="none"){sEl.style.display="";sEl.closest(".skeleton-card")?.querySelectorAll(".skeleton-line").forEach(l=>l.style.display="none");} sEl.textContent+=c; } });
+    } else {
+      text = await callAPI({ system:getSystem(), user:input, maxTokens });
+    }
+    const parsed = tryParse(text);
+    document.getElementById(resultId).innerHTML = onDone(text, parsed);
+    if (pct !== undefined) setProgress(Math.min(pct+25, 100), pctLabel + " tamamlandı");
+    return { text, parsed };
+  } catch(e) {
+    showErr(resultId, e.message);
+    if (pct !== undefined) setProgress(S.progress, "hata");
+    return null;
+  } finally {
+    setLoading(btnId, false);
+  }
+}
+
+async function runDiscover(opts = {}) {
+  const { autoNext = true } = opts;
+  const domain = document.getElementById("di-domain").value;
+  const l      = sharedLang();
+  const r = await runPhase({
+    btnId:"di-btn", resultId:"di-result", streamId:"di-stream",
+    getInput: ()=>document.getElementById("di-input").value,
+    getSystem: ()=>promptDiscover(domain,l), maxTokens:2500,
+    onDone: (t,p)=>renderDiscover(t,p),
+    pct: 0, pctLabel: "Discover",
+  });
+  if (!r) return;
+  S.cache.discover = r; markDone("discover",true);
+  setProgress(25, "Discover tamamlandı");
+  S.drafts.design = r.parsed?.researchQuestion
+    ? r.parsed.researchQuestion + (r.parsed.methodology ? "\n\n" + r.parsed.methodology : "")
+    : r.text;
+  if (!autoNext) return r;
+  await delay(PHASE_REVIEW_DELAY);
+  await moveToPhase("design");
+  return runDesign({ autoNext: true });
+}
+
+async function runDesign(opts = {}) {
+  const { autoNext = true } = opts;
+  const l = sharedLang();
+  const r = await runPhase({
+    btnId:"de-btn", resultId:"de-result", streamId:"di-stream",
+    getInput: ()=>S.drafts.design,
+    getSystem: ()=>promptDesign(l), maxTokens:2500,
+    onDone: (t,p)=>renderDesign(t,p),
+    pct: 25, pctLabel: "Design",
+  });
+  if (!r) return;
+  S.cache.design = r; markDone("design",true);
+  setProgress(50, "Design tamamlandı");
+  S.drafts.execute = [S.cache.discover?.text, r.text].filter(Boolean).join("\n\n").slice(0,4000);
+  if (!autoNext) return r;
+  await delay(PHASE_REVIEW_DELAY);
+  await moveToPhase("execute");
+  return runExecute({ autoNext: true });
+}
+
+async function runExecute(opts = {}) {
+  const { autoNext = true } = opts;
+  const l = sharedLang();
+  const r = await runPhase({
+    btnId:"ex-btn", resultId:"ex-result", streamId:"di-stream",
+    getInput: ()=>S.drafts.execute,
+    getSystem: ()=>promptExecute(l), maxTokens:2500,
+    onDone: (t,p)=>renderExecute(t,p),
+    pct: 50, pctLabel: "Execute",
+  });
+  if (!r) return;
+  S.cache.execute = r; markDone("execute",true);
+  setProgress(75, "Execute tamamlandı");
+  S.drafts.publish = [S.cache.discover?.text, S.cache.design?.text, r.text].filter(Boolean).join("\n\n").slice(0,4000);
+  if (!autoNext) return r;
+  await delay(PHASE_REVIEW_DELAY);
+  await moveToPhase("publish");
+  return runPublish({ autoNext: true });
+}
+
+async function runPublish(opts = {}) {
+  const { autoNext = true } = opts;
+  const l = sharedLang();
+  const r = await runPhase({
+    btnId:"pu-btn", resultId:"pu-result", streamId:"di-stream",
+    getInput: ()=>S.drafts.publish,
+    getSystem: ()=>promptPublish(l, S.cache), maxTokens:4000,
+    onDone: (t,p)=>renderPublish(t,p),
+    pct: 75, pctLabel: "Publish",
+  });
+  if (!r) return;
+  S.cache.publish = r; markDone("publish",true);
+  setProgress(100, "Tamamlandı");
+  if (autoNext) {
+    goto("publish");
+    document.getElementById("pu-result")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  return r;
+}
+
+</script>
 </body>
 </html>

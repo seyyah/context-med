@@ -72,14 +72,32 @@ export interface Manuscript {
   discussion: string;
 }
 
+export interface Reference {
+  authors: string;
+  year: number;
+  title: string;
+  journal: string;
+  volume?: string;
+  issue?: string;
+  pages?: string;
+  doi?: string;
+}
+
 export interface JournalRecommendation {
   name: string;
   impactFactor: number;
-  scopeMatch: string;
+  /** Scope match percentage (0-100) */
+  scopeMatchScore: number;
   submissionNote: string;
 }
 
 export type Provider = "claude" | "openai";
+
+export interface PublishContext {
+  discover?: DiscoverResult;
+  design?: DesignResult;
+  execute?: ExecuteResult;
+}
 
 export interface BaseOptions {
   /**
@@ -143,6 +161,9 @@ export interface ExecuteResult {
 export interface PublishResult {
   text: string;
   manuscript: Manuscript | null;
+  /** Total word count across all IMRAD sections (title excluded) */
+  wordCount: number;
+  references: Reference[] | null;
   titleAlternatives: string[] | null;
   journalRecommendations: JournalRecommendation[] | null;
 }
@@ -162,5 +183,13 @@ export interface PipelineOptions extends DiscoverOptions {
 export declare function discover(input: string, options?: DiscoverOptions): Promise<DiscoverResult>;
 export declare function design(input: string, options?: BaseOptions): Promise<DesignResult>;
 export declare function execute(input: string, options?: BaseOptions): Promise<ExecuteResult>;
-export declare function publish(input: string, options?: BaseOptions): Promise<PublishResult>;
+export interface PublishOptions extends BaseOptions {
+  /**
+   * Önceki faz sonuçları. Verilirse her IMRAD bölümü ilgili fazın çıktısından beslenir.
+   * Introduction ← discover, Methods ← design, Results/Discussion ← execute
+   */
+  context?: PublishContext;
+}
+
+export declare function publish(input: string, options?: PublishOptions): Promise<PublishResult>;
 export declare function pipeline(input: string, options?: PipelineOptions): Promise<PipelineResult>;

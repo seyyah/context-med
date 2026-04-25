@@ -38,7 +38,14 @@ export async function pipeline(input, options = {}) {
   onProgress?.("execute", executeResult);
 
   const publishInput = `${discoverResult.text}\n\n${designResult.text}\n\n${executeResult.text}`;
-  const publishResult = await publish(publishInput, phaseOptions);
+  const publishResult = await publish(publishInput, {
+    ...phaseOptions,
+    context: {
+      discover: discoverResult,
+      design: designResult,
+      execute: executeResult,
+    },
+  });
   onProgress?.("publish", publishResult);
 
   return {
