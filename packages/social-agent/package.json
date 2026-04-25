@@ -1,0 +1,25 @@
+{
+  "name": "@context-med/social-agent",
+  "version": "0.2.0",
+  "description": "Standalone social operations CLI and UI package for Context-Med.",
+  "private": true,
+  "type": "commonjs",
+  "bin": {
+    "social-agent": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:cli": "jest tests/cli/ --verbose",
+    "start": "node ./bin/cli.js serve",
+    "cli": "node ./bin/cli.js"
+  },
+  "dependencies": {
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

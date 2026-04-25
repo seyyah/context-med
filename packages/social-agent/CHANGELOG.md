@@ -5,6 +5,20 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.2.0] - 2026-04-25
+
+### Contributors
+
+- Akbulut55
+
+### Added
+
+- Added Node.js CLI package scaffold with Commander.
+- Added `plan`, `draft`, `moderate`, and `serve` command entry points.
+- Added deterministic JSON builders for social calendars, draft packages, and moderation reports.
+- Added local demo server command for the accepted Social-Agent UI reference screens.
+- Added package-local `.gitignore` for generated Node, output, and test artifacts.
+
 ## [social-agent-v0.1.1] - 2026-04-25
 
 ### Contributors

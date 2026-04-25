@@ -1,0 +1,16 @@
+node_modules/
+coverage/
+out/
+tmp/
+tmp-check/
+test-results/
+playwright-report/
+
+.env
+.env.*
+!.env.example
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
