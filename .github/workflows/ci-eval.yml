@@ -214,6 +214,7 @@ jobs:
           script: |
             const changelogChanged = parseInt(`${{ steps.unwanted.outputs.changelog_changed }}`);
             const workflowChanged = parseInt(`${{ steps.unwanted.outputs.workflow_changed }}`);
+            const packName = `${{ steps.pack.outputs.target }}`;
 
             let message = `## ⚠️ İstenmeyen Dosya Değişiklikleri Tespit Edildi\n\n`;
             message += `Bu PR **sadece** \`packages/\` klasörü altındaki kendi paketinizde değişiklik yapmalıdır.\n\n`;
@@ -265,7 +266,7 @@ jobs:
             message += `Push sonrasında:\n`;
             message += `- ✅ PR otomatik olarak güncellenecek\n`;
             message += `- ✅ Conflict'ler çözülecek\n`;
-            message += `- ✅ Sadece \`packages/${\`${{ steps.pack.outputs.target }}\`}/\` değişiklikleri kalacak\n\n`;
+            message += `- ✅ Sadece \`packages/${packName}/\` değişiklikleri kalacak\n\n`;
 
             message += `---\n\n`;
             message += `**Alternatif:** GitHub web editor'ü kullanarak da conflict'leri çözebilirsiniz:\n`;
