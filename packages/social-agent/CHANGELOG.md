@@ -5,6 +5,10 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+### Added
+
+- Added package-local `README.md` with setup, CLI, demo, and test instructions.
+
 ## [social-agent-v0.3.1] - 2026-04-25
 
 ### Contributors
