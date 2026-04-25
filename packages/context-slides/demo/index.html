@@ -3,160 +3,213 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DeckForge | Context-Slides Studio</title>
+  <title>Context-Slides | Editor</title>
   <link rel="stylesheet" href="index.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="theme-dark">
-  <!-- Dynamic Background Glow -->
-  <div class="ambient-glow bg-glow-blue"></div>
-  <div class="ambient-glow bg-glow-green"></div>
+<body>
 
-  <div class="app-layout">
-    <!-- Premium Glassmorphic Sidebar -->
-    <aside class="sidebar-glass">
-      <div class="brand">
-        <div class="logo-orb"></div>
-        <span class="brand-text">DeckForge</span>
+<div class="app-container">
+  
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="24" height="24" rx="6" fill="#003CBD"/>
+          <path d="M7 12H17M7 8H13M7 16H11" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
       </div>
+      <span class="brand-text">Context-Slides</span>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-ghost">
+        <span class="icon">✨</span> Regenerate Notes
+      </button>
+      <button class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+        Export PPTX
+      </button>
+      <button class="btn btn-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button class="btn btn-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    
+    <!-- Editor Workspace -->
+    <div class="editor-workspace">
       
-      <div class="nav-section">
-        <h3 class="nav-title">WORKSPACE</h3>
-        <nav class="nav-menu">
-          <a href="#" class="nav-item active">
-            <span class="nav-icon">⎔</span>
-            Pipeline Dashboard
-          </a>
-          <a href="#" class="nav-item">
-            <span class="nav-icon">⚡</span>
-            Active Agents
-          </a>
-          <a href="#" class="nav-item">
-            <span class="nav-icon">≡</span>
-            Slide Configurations
-          </a>
-        </nav>
-      </div>
-
-      <div class="nav-section mt-auto">
-        <div class="status-card">
-          <div class="status-header">
-            <span class="pulse-dot green"></span>
-            <span class="status-text">System Online</span>
+      <!-- Slide Canvas -->
+      <div class="card slide-canvas">
+        
+        <div class="canvas-header">
+          <div>
+            <h1 class="canvas-title">Progression-Free Survival (PFS)</h1>
+            <p class="canvas-subtitle">Primary Endpoint Analysis - Intention to Treat Population</p>
           </div>
-          <div class="status-metric">
-            <span class="metric-label">Memory</span>
-            <span class="metric-val">12%</span>
+          <span class="badge badge-green">
+            <span class="dot"></span> Verified
+          </span>
+        </div>
+
+        <div class="canvas-body">
+          <!-- Chart Area -->
+          <div class="chart-area">
+            <div class="chart-legend">
+              <div class="legend-item"><span class="legend-color bg-blue"></span> Azure-Targeted (n=245)</div>
+              <div class="legend-item"><span class="legend-color bg-purple"></span> Standard Care (n=248)</div>
+            </div>
+            
+            <div class="chart-wrapper">
+              <!-- Y Axis -->
+              <div class="y-axis">
+                <span>100%</span>
+                <span>75%</span>
+                <span>50%</span>
+                <span>25%</span>
+                <span>0%</span>
+              </div>
+              
+              <!-- Plot Area -->
+              <div class="plot-area">
+                <!-- Grid Lines -->
+                <div class="grid-line" style="bottom: 100%;"></div>
+                <div class="grid-line" style="bottom: 75%;"></div>
+                <div class="grid-line" style="bottom: 50%;"></div>
+                <div class="grid-line" style="bottom: 25%;"></div>
+                <div class="grid-line" style="bottom: 0%;"></div>
+                
+                <!-- SVG Chart Lines -->
+                <svg class="chart-svg" preserveAspectRatio="none" viewBox="0 0 100 100">
+                  <!-- Standard Care (Dashed Purple) -->
+                  <path d="M 0,0 C 15,10 20,40 40,75 C 60,95 80,98 100,100" 
+                        fill="none" stroke="#a855f7" stroke-width="2.5" stroke-dasharray="4,4" />
+                  <!-- Azure-Targeted (Solid Blue) -->
+                  <path d="M 0,0 C 20,5 30,15 50,45 C 70,60 85,75 100,85" 
+                        fill="none" stroke="#003CBD" stroke-width="3" />
+                </svg>
+              </div>
+            </div>
+            
+            <!-- X Axis -->
+            <div class="x-axis">
+              <span>0m</span>
+              <span>6m</span>
+              <span>12m</span>
+              <span>18m</span>
+              <span>24m</span>
+              <span>30m</span>
+            </div>
+          </div>
+
+          <!-- Metrics Sidebar -->
+          <div class="metrics-column">
+            <div class="metric-card border-blue">
+              <div class="metric-label">MEDIAN PFS</div>
+              <div class="metric-value text-blue">18.4 months</div>
+              <div class="metric-sub">vs. 11.2 months control</div>
+            </div>
+            
+            <div class="metric-card border-purple">
+              <div class="metric-label">HAZARD RATIO</div>
+              <div class="metric-value text-purple">0.62</div>
+              <div class="metric-sub">95% CI: 0.48 - 0.81</div>
+            </div>
+            
+            <div class="metric-card border-green">
+              <div class="metric-label">P-VALUE</div>
+              <div class="metric-value text-green">0.048</div>
+              <div class="metric-sub text-green-muted">Statistically Significant</div>
+            </div>
           </div>
         </div>
+
       </div>
+
+      <!-- Speaker Notes -->
+      <div class="card speaker-notes">
+        <div class="notes-header">
+          <div class="notes-toolbar">
+            <span class="notes-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              Speaker Notes
+            </span>
+            <div class="toolbar-divider"></div>
+            <button class="toolbar-btn"><b>B</b></button>
+            <button class="toolbar-btn"><i>I</i></button>
+            <button class="toolbar-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
+          </div>
+          <span class="notes-time">Last edited 2m ago</span>
+        </div>
+        
+        <div class="notes-content">
+          <div class="target-badge">[Slide 4 | Target: 120s]</div>
+          <p><b>Focus on the p=0.048 value</b> - emphasize that while close to the threshold, the separation of curves is robust and consistent from the 6-month mark.</p>
+          <p>The HR of 0.62 represents a 38% reduction in the risk of progression or death compared to standard care. This was...</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Deck Navigator -->
+    <aside class="deck-navigator">
+      <div class="nav-header">
+        <h2>Deck Navigator</h2>
+        <p>Clinical Presentation</p>
+      </div>
+
+      <div class="slide-list">
+        
+        <div class="slide-item">
+          <div class="slide-thumb"></div>
+          <span class="slide-title">1. Title & Intro</span>
+        </div>
+        
+        <div class="slide-item">
+          <div class="slide-thumb thumb-icon">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </div>
+          <span class="slide-title">2. Clinical Overview</span>
+        </div>
+        
+        <div class="slide-item">
+          <div class="slide-thumb thumb-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          </div>
+          <span class="slide-title">3. Methodology</span>
+        </div>
+        
+        <div class="slide-item active">
+          <div class="slide-thumb thumb-active">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#003CBD" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <span class="slide-title">4. Outcome Analysis</span>
+        </div>
+        
+        <div class="slide-item">
+          <div class="slide-thumb thumb-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+          </div>
+          <span class="slide-title">5. Data Analysis</span>
+        </div>
+
+      </div>
+
+      <button class="btn btn-dashed mt-auto">
+        + Add Slide
+      </button>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="main-workspace">
-      
-      <header class="header">
-        <div class="header-content">
-          <h1 class="page-title">Context-Slides Compilation</h1>
-          <p class="page-subtitle">Multi-Agent Academic Presentation Engine</p>
-        </div>
-        <div class="header-actions">
-          <button class="btn btn-ghost">Load config.yaml</button>
-          <button class="btn btn-primary btn-glow">
-            <span class="btn-icon">▶</span> Run Compilation
-          </button>
-        </div>
-      </header>
-
-      <!-- Agent Pipeline Visualization -->
-      <section class="pipeline-section">
-        <h2 class="section-title">Agent Pipeline Status</h2>
-        
-        <div class="pipeline-grid">
-          
-          <!-- Agent Card: Data Ingestion -->
-          <div class="agent-card complete">
-            <div class="card-glow"></div>
-            <div class="agent-header">
-              <span class="agent-badge badge-green">COMPLETED</span>
-              <span class="agent-time">0.4s</span>
-            </div>
-            <h3 class="agent-name">Data Ingestion Agent</h3>
-            <p class="agent-desc">Parsed 1,240 tokens from source clinical text.</p>
-            <div class="progress-track"><div class="progress-fill fill-green" style="width: 100%"></div></div>
-          </div>
-
-          <!-- Agent Card: Title Slide -->
-          <div class="agent-card complete">
-            <div class="card-glow"></div>
-            <div class="agent-header">
-              <span class="agent-badge badge-green">COMPLETED</span>
-              <span class="agent-time">1.2s</span>
-            </div>
-            <h3 class="agent-name">TitleSlide Agent</h3>
-            <p class="agent-desc">Synthesized academic title and presenter metadata.</p>
-            <div class="progress-track"><div class="progress-fill fill-green" style="width: 100%"></div></div>
-          </div>
-
-          <!-- Agent Card: Results (Active) -->
-          <div class="agent-card active">
-            <div class="card-glow active-glow"></div>
-            <div class="agent-header">
-              <span class="agent-badge badge-blue pulse">PROCESSING</span>
-              <span class="agent-time">Elapsed: 3.8s</span>
-            </div>
-            <h3 class="agent-name">ResultsSlide Agent</h3>
-            <p class="agent-desc text-highlight">Extracting P-values and generating chart contexts...</p>
-            <div class="progress-track"><div class="progress-fill fill-blue shimmer-anim" style="width: 65%"></div></div>
-          </div>
-
-          <!-- Agent Card: Speaker Notes (Waiting) -->
-          <div class="agent-card waiting">
-            <div class="agent-header">
-              <span class="agent-badge badge-gray">WAITING</span>
-              <span class="agent-time">--</span>
-            </div>
-            <h3 class="agent-name">SpeakerNotes Agent</h3>
-            <p class="agent-desc">Pending completion of slide structure generation.</p>
-            <div class="progress-track"><div class="progress-fill" style="width: 0%"></div></div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- Generated Assets Preview -->
-      <section class="assets-section mt-xl">
-        <h2 class="section-title">Compiled Assets</h2>
-        
-        <div class="data-table-wrapper">
-          <table class="premium-table">
-            <thead>
-              <tr>
-                <th>ASSET TYPE</th>
-                <th>FILE NAME</th>
-                <th>STATUS</th>
-                <th>ACTION</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><div class="asset-icon json-icon">JSON</div> Context Plan</td>
-                <td class="font-mono text-muted">presentation_plan.json</td>
-                <td><span class="status-pill success">Ready</span></td>
-                <td><button class="btn-link">View</button></td>
-              </tr>
-              <tr>
-                <td><div class="asset-icon md-icon">MD</div> Speaker Script</td>
-                <td class="font-mono text-muted">speaker_notes.md</td>
-                <td><span class="status-pill processing">Compiling...</span></td>
-                <td><button class="btn-link disabled">View</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-    </main>
   </div>
+</div>
+
 </body>
 </html>
+<!-- Trigger CI/CD refresh -->
