@@ -135,11 +135,11 @@ context-med qa --notebook my-thesis "PICO nedir?"
 
 context-paper ve context-slides ikisi de wiki'den okur; wiki olmadan çalışamazlar.
 
-- [ ] `raw/` → Karpathy derleme pipeline'ı → entity / concept / procedure sayfaları
-- [ ] Sayfa embedding + retrieval (cosine; vektör DB opsiyonel)
-- [ ] Guideline-in-the-loop runtime: soru → sayfalar → taslak → kılavuz denetimi → cevap
-- [ ] Eskalasyon: eşik altında "bilmiyorum" + terminal bildirimi
-- [ ] Writeback: insan kararları wiki'ye geri yazılır
+- [x] `raw/` → Karpathy derleme pipeline'ı → entity / concept / procedure sayfaları
+- [x] Sayfa embedding + retrieval (token overlap v0; vektör DB opsiyonel)
+- [x] Guideline-in-the-loop runtime: soru → sayfalar → taslak → kılavuz denetimi → cevap
+- [x] Eskalasyon: eşik altında "bilmiyorum" + terminal bildirimi (Exit 2)
+- [x] Writeback: insan kararları wiki'ye geri yazılır (--reviewed flag)
 
 **Tamamlanma kriteri:** Kapsam içi soru kaynaklı yanıt döner; kapsam dışı soru açıkça reddedilir.
 
