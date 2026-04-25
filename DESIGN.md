@@ -1,5 +1,8 @@
 ---
 name: Xtatistix
+resolution: "1920x1080"
+orientation: "Landscape"
+layout: "Desktop-first, Cockpit Dense (8-10 density)"
 colors:
   surface: "#ffffff"
   surface-dim: "#e5e5e5"

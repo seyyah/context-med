@@ -6,8 +6,10 @@
  */
 
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || "";
-const VOICE_ID = import.meta.env.VITE_ELEVENLABS_VOICE_ID || "21m00Tcm4TlvDq8ikWAM";
-const USE_ELEVENLABS = false; // ElevenLabs WebSocket stabil olmadığı için şimdilik kapalı
+const USE_ELEVENLABS = ELEVENLABS_API_KEY.length > 0; // API Key varsa otomatik aktif et
+
+const ELEVENLABS_FEMALE_VOICE = import.meta.env.VITE_ELEVENLABS_FEMALE_VOICE || "21m00Tcm4TlvDq8ikWAM"; // Rachel
+const ELEVENLABS_MALE_VOICE = import.meta.env.VITE_ELEVENLABS_MALE_VOICE || "pNInz6obbf5pNrq8294p"; // Adam
 
 class MedicalVoice {
   constructor() {
@@ -15,28 +17,40 @@ class MedicalVoice {
     this._simulatedLevel = 0;
     this._lipSyncInterval = null;
     this._currentUtterance = null;
+    this.gender = 'female'; // Varsayılan cinsiyet
+  }
+
+  setGender(gender) {
+    this.gender = gender;
+    console.log(`🎙️ Ses Cinsiyeti Değişti: ${gender}`);
   }
 
   /**
    * Ana konuşma metodu - hem sesli çalar hem lip sync başlatır
+   * @param {string} text Konuşulacak metin
+   * @param {function} onEndCallback Konuşma bitince tetiklenecek fonksiyon
    */
-  async speak(text) {
-    if (!text || text.trim() === '') return;
+  async speak(text, onEndCallback = null) {
+    if (!text || text.trim() === '') {
+      if(onEndCallback) onEndCallback();
+      return;
+    }
 
     // Önceki konuşmayı durdur
     this.stop();
 
-    if (USE_ELEVENLABS && ELEVENLABS_API_KEY) {
-      await this._speakElevenLabs(text);
+    // Sadece kadın sesinde ElevenLabs kullan, erkek sesinde ise yerel Windows TTS'i (Web Speech) kullan
+    if (USE_ELEVENLABS && ELEVENLABS_API_KEY && this.gender === 'female') {
+      await this._speakElevenLabs(text, onEndCallback);
     } else {
-      this._speakWebSpeech(text);
+      this._speakWebSpeech(text, onEndCallback);
     }
   }
 
   /**
    * Web Speech API ile sesli okuma + simulated lip sync
    */
-  _speakWebSpeech(text) {
+  _speakWebSpeech(text, onEndCallback = null) {
     if (!window.speechSynthesis) {
       console.warn('❌ Bu tarayıcı Web Speech API desteklemiyor!');
       return;
@@ -45,17 +59,39 @@ class MedicalVoice {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'tr-TR';
     utterance.rate = 0.95;
-    utterance.pitch = 1.1;
     utterance.volume = 1.0;
 
-    // Türkçe ses seç (varsa)
     const voices = window.speechSynthesis.getVoices();
-    const turkishVoice = voices.find(v => v.lang.startsWith('tr'));
-    if (turkishVoice) {
-      utterance.voice = turkishVoice;
-      console.log('🎙️ Türkçe ses bulundu:', turkishVoice.name);
+    const trVoices = voices.filter(v => v.lang.startsWith('tr'));
+    
+    // Windows/Chrome için olası kadın/erkek isimleri
+    const femaleKeywords = ['female', 'ayşe', 'emel', 'yelda', 'kız', 'kadın'];
+    const maleKeywords = ['male', 'tolga', 'erkek'];
+
+    if (this.gender === 'female') {
+      utterance.pitch = 1.5; // Kadın sesi için pitchi biraz daha artıralım (Eğer Tolga seçilirse daha ince çıksın)
+      const turkishFemale = trVoices.find(v => femaleKeywords.some(keyword => v.name.toLowerCase().includes(keyword)));
+      
+      if (turkishFemale) {
+        utterance.voice = turkishFemale;
+        console.log(`🎙️ Kadın Sesi Seçildi: ${turkishFemale.name}`);
+      } else if (trVoices.length > 0) {
+        utterance.voice = trVoices[0]; // Bulunamazsa ilk türkçe sesi al (Muhtemelen Tolga)
+        console.log(`⚠️ Kadın sesi bulunamadı, mevcut ses pitch ile inceltildi: ${trVoices[0].name}`);
+        console.log("Mevcut TR sesler:", trVoices.map(v=>v.name).join(', '));
+      }
     } else {
-      console.log('🎙️ Türkçe ses bulunamadı, default kullanılıyor. Mevcut sesler:', voices.map(v => v.lang).slice(0, 5));
+      utterance.pitch = 0.95; // Erkek sesi daha doğal bir ton
+      const turkishMale = trVoices.find(v => maleKeywords.some(keyword => v.name.toLowerCase().includes(keyword)));
+      
+      if (turkishMale) {
+        utterance.voice = turkishMale;
+        console.log(`🎙️ Erkek Sesi Seçildi: ${turkishMale.name}`);
+      } else if (trVoices.length > 0) {
+        // Genelde varsayılan erkek (Tolga) olur
+        utterance.voice = trVoices[trVoices.length - 1]; 
+        console.log(`⚠️ Erkek sesi bulunamadı, varsayılan TR sesi seçildi: ${utterance.voice.name}`);
+      }
     }
 
     utterance.onstart = () => {
@@ -68,12 +104,14 @@ class MedicalVoice {
       console.log('🔊 Web Speech bitti.');
       this.isPlaying = false;
       this._stopLipSync();
+      if (onEndCallback) onEndCallback();
     };
 
     utterance.onerror = (e) => {
       console.error('❌ Web Speech hatası:', e.error);
       this.isPlaying = false;
       this._stopLipSync();
+      if (onEndCallback) onEndCallback();
     };
 
     this._currentUtterance = utterance;
@@ -134,10 +172,11 @@ class MedicalVoice {
   /**
    * ElevenLabs WebSocket (opsiyonel, yüksek kalite)
    */
-  async _speakElevenLabs(text) {
+  async _speakElevenLabs(text, onEndCallback = null) {
     console.log('🎙️ ElevenLabs deneniyor...');
     try {
-      const wsUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}/stream-input?xi-api-key=${ELEVENLABS_API_KEY}`;
+      const voiceId = this.gender === 'female' ? ELEVENLABS_FEMALE_VOICE : ELEVENLABS_MALE_VOICE;
+      const wsUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream-input?model_id=eleven_multilingual_v2&xi-api-key=${ELEVENLABS_API_KEY}`;
       const socket = new WebSocket(wsUrl);
 
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -165,13 +204,16 @@ class MedicalVoice {
           src.start();
           this.isPlaying = true;
           this._startLipSync();
-          src.onended = () => { this.isPlaying = false; };
+          src.onended = () => { 
+            this.isPlaying = false; 
+            if (onEndCallback) onEndCallback();
+          };
         }
       };
 
       socket.onerror = (e) => {
         console.warn('⚠️ ElevenLabs WebSocket hatası, Web Speech fallback yapılıyor...');
-        this._speakWebSpeech(text);
+        this._speakWebSpeech(text, onEndCallback);
       };
 
       // 3 saniye içinde bağlanamazsa fallback
@@ -179,13 +221,13 @@ class MedicalVoice {
         if (!this.isPlaying && socket.readyState !== WebSocket.OPEN) {
           console.warn('⚠️ ElevenLabs timeout, Web Speech fallback yapılıyor...');
           socket.close();
-          this._speakWebSpeech(text);
+          this._speakWebSpeech(text, onEndCallback);
         }
       }, 3000);
 
     } catch (e) {
       console.error('ElevenLabs hatası:', e);
-      this._speakWebSpeech(text);
+      this._speakWebSpeech(text, onEndCallback);
     }
   }
 }

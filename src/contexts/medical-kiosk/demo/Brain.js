@@ -32,7 +32,7 @@ class MedicalBrain {
     this.history = [];
   }
 
-  async sendMessage(message) {
+  async sendMessage(message, onSpeechEnd = null) {
     console.log("🧠 Brain.sendMessage çağrıldı:", message);
     let text = "";
 
@@ -161,7 +161,7 @@ class MedicalBrain {
     }
 
     console.log("🔊 Seslendirilecek:", speechText);
-    Voice.speak(speechText);
+    Voice.speak(speechText, onSpeechEnd);
 
     return text;
   }

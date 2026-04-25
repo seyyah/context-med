@@ -1,10 +1,11 @@
-import React, { Suspense, useState, useEffect, useRef } from 'react';
+import React, { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Activity, Thermometer, Heart, Wind, AlertCircle, RotateCcw, Globe, HelpCircle, Send } from 'lucide-react';
+import { Activity, Thermometer, Heart, Wind, AlertCircle, RotateCcw, Globe, HelpCircle, Send, Mic, MicOff, MessageSquare, X, ChevronDown, User } from 'lucide-react';
 import Avatar from './Avatar';
 import AvatarWidget from './AvatarWidget';
 import Brain from './Brain';
 import ActionManager from './ActionManager';
+import Voice from './Voice';
 import IdleManager from './IdleManager';
 import ErrorBoundary from './ErrorBoundary';
 
@@ -29,11 +30,27 @@ const KioskFrame = ({ userName = "Ziyaretçi", onLogout, children }) => {
   });
 
   const [chatHistory, setChatHistory] = useState([
-    { role: 'ai', text: `Sistem aktif. Ben Dr. Context, medikal asistanınız. ${userName}, bugün hangi şikayetiniz için buradasınız?` }
+    { role: 'ai', text: `Sistem aktif. Ben Dr. Context, medikal asistanınızım. ${userName}, bugün hangi şikayetiniz için buradasınız?` }
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(true); // Varsayılan: sesli mod
+  const [showTranscript, setShowTranscript] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState('Konuşmak için mikrofona basın');
+  const [gender, setGender] = useState('female'); // Varsayılan cinsiyet
   const chatEndRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const voiceModeRef = useRef(voiceMode);
+
+  // Cinsiyet değiştiğinde Voice API'yi güncelle
+  useEffect(() => {
+    Voice.setGender(gender);
+  }, [gender]);
+
+  useEffect(() => {
+    voiceModeRef.current = voiceMode;
+  }, [voiceMode]);
 
   // Global Action Listener
   useEffect(() => {
@@ -102,20 +119,95 @@ const KioskFrame = ({ userName = "Ziyaretçi", onLogout, children }) => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
 
+  // --- Sesli Mod: Speech Recognition ---
+  const startListening = useCallback(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setVoiceStatus('❌ Tarayıcınız mikrofonu desteklemiyor!');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'tr-TR';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognitionRef.current = recognition;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setVoiceStatus('🎤 Dinliyorum...');
+    };
+
+    recognition.onresult = async (event) => {
+      const transcript = event.results[0][0].transcript;
+      console.log('🎙️ Tanınan ses:', transcript);
+      setVoiceStatus(`Anladım: "${transcript}"`);
+      setIsListening(false);
+
+      // Transcript'e ekle
+      setChatHistory(prev => [...prev, { role: 'user', text: transcript }]);
+      setIsTyping(true);
+      setVoiceStatus('💭 Dr. Context düşünüyor...');
+
+      try {
+        const rawResponse = await Brain.sendMessage(transcript, () => {
+          // AI konuşmayı bitirdiğinde otomatik dinlemeyi başlat
+          if (voiceModeRef.current) {
+            setTimeout(() => {
+              if (voiceModeRef.current) {
+                startListening();
+              }
+            }, 300); // UI'ın güncellenmesi için küçük bir bekleme
+          } else {
+            setVoiceStatus('Konuşmak için mikrofona basın');
+          }
+        });
+        const cleanText = ActionManager.processResponse(rawResponse);
+        setChatHistory(prev => [...prev, { role: 'ai', text: cleanText }]);
+        setVoiceStatus('Sesli yanıt veriliyor...');
+      } catch (err) {
+        console.error('Sesli mod hatası:', err);
+        setVoiceStatus('Hata oluştu. Tekrar deneyin.');
+      } finally {
+        setIsTyping(false);
+      }
+    };
+
+    recognition.onerror = (e) => {
+      console.error('STT Hatası:', e.error);
+      setIsListening(false);
+      if (e.error === 'not-allowed') {
+        setVoiceStatus('❌ Mikrofon izni reddedildi!');
+      } else {
+        setVoiceStatus('Hata oluştu. Tekrar deneyin.');
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  }, []);
+
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setIsListening(false);
+    setVoiceStatus('Konuşmak için mikrofona basın');
+  }, []);
+
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
-
     const userMessage = inputValue;
     setChatHistory(prev => [...prev, { role: 'user', text: userMessage }]);
     setInputValue("");
     setIsTyping(true);
-
     try {
-      // AI'dan cevap al
       const rawResponse = await Brain.sendMessage(userMessage);
       console.log('Raw AI Response:', rawResponse);
-
-      // Aksiyonları işle ve metni temizle
       const cleanText = ActionManager.processResponse(rawResponse);
       setChatHistory(prev => [...prev, { role: 'ai', text: cleanText }]);
     } catch (err) {
@@ -125,6 +217,7 @@ const KioskFrame = ({ userName = "Ziyaretçi", onLogout, children }) => {
       setIsTyping(false);
     }
   };
+
   return (
     <div className="relative w-screen h-screen bg-[#ffffff] overflow-hidden font-['Inter'] text-[#18181b] flex flex-col">
       {/* Arkaplan Grid Deseni - Daha ince ve profesyonel */}
@@ -228,7 +321,7 @@ const KioskFrame = ({ userName = "Ziyaretçi", onLogout, children }) => {
                       style={{ pointerEvents: 'auto' }}
                     >
                     <Suspense fallback={null}>
-                      <Avatar position={[0, sceneConfig.avatar_y, 0]} />
+                      <Avatar position={[0, sceneConfig.avatar_y, 0]} gender={gender} />
                     </Suspense>
                     {sceneConfig.lights ? (
                       <>
@@ -255,53 +348,172 @@ const KioskFrame = ({ userName = "Ziyaretçi", onLogout, children }) => {
 
           {/* Chat Interface - Floating at Bottom Center */}
           <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-[800px] z-30">
-            <div className="bg-white/80 backdrop-blur-3xl rounded-3xl border border-white shadow-[0_32px_64px_-16px_rgba(0,60,189,0.2)] overflow-hidden">
-              <div className="max-h-[180px] overflow-y-auto p-6 space-y-4" id="chat-history">
-                {chatHistory.map((msg, i) => (
-                  <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shrink-0 ${msg.role === 'user' ? 'bg-[#19C480]' : 'bg-[#003CBD]'}`}>
-                      {msg.role === 'user' ? 'U' : 'AI'}
-                    </div>
-                    <div className={`space-y-1 ${msg.role === 'user' ? 'text-right' : ''}`}>
-                      <p className={`text-[10px] font-bold uppercase ${msg.role === 'user' ? 'text-[#19C480]' : 'text-[#003CBD]'}`}>
-                        {msg.role === 'user' ? 'Hasta' : 'Asistan'}
-                      </p>
-                      <p className="text-base text-[#18181b] leading-relaxed">
-                        {msg.text}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                {isTyping && (
-                  <div className="flex gap-4 animate-pulse">
-                    <div className="w-10 h-10 rounded-full bg-[#003CBD]/20" />
-                    <div className="h-10 w-32 bg-[#003CBD]/10 rounded-2xl" />
-                  </div>
-                )}
-                <div ref={chatEndRef} />
-              </div>
 
-              <div className="p-4 bg-white/50 border-t border-[#e5e7eb] flex items-center gap-3">
-                <div className="flex-1 relative">
-                  <input
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                    placeholder="Şikayetinizi söyleyin veya yazın..."
-                    className="w-full bg-white border border-[#e5e7eb] focus:border-[#003CBD] focus:ring-4 focus:ring-[#003CBD]/10 rounded-2xl px-6 py-5 text-lg outline-none transition-all pr-12 min-h-[64px]"
-                  />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#71717a] p-2 cursor-pointer hover:text-[#003CBD] transition-colors">
-                    <AlertCircle size={24} strokeWidth={2} />
+            {/* === TRANSCRIPT PANELİ (Yumuşak animasyonlu) === */}
+            <div 
+              className={`absolute bottom-full mb-4 left-0 right-0 bg-white/95 backdrop-blur-3xl rounded-3xl border border-white shadow-[0_32px_64px_-16px_rgba(0,60,189,0.25)] overflow-hidden transition-all duration-300 ease-out origin-bottom ${
+                showTranscript ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-95 translate-y-4 pointer-events-none'
+              }`}
+              style={{ maxHeight: '320px' }}
+            >
+              <div className="flex items-center justify-between px-6 py-4 border-b border-[#e5e7eb]">
+                  <span className="text-xs font-black uppercase tracking-widest text-[#71717a]">Konuşma Geçmişi</span>
+                  <button onClick={() => setShowTranscript(false)} className="p-1.5 rounded-lg hover:bg-[#f5f6f9] text-[#71717a]">
+                    <X size={16} />
+                  </button>
+                </div>
+                <div className="overflow-y-auto p-6 space-y-4" style={{ maxHeight: '260px' }}>
+                  {chatHistory.map((msg, i) => (
+                    <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${msg.role === 'user' ? 'bg-[#19C480]' : 'bg-[#003CBD]'}`}>
+                        {msg.role === 'user' ? 'S' : 'AI'}
+                      </div>
+                      <div className={`flex-1 ${msg.role === 'user' ? 'text-right' : ''}`}>
+                        <p className={`text-[9px] font-black uppercase mb-1 ${msg.role === 'user' ? 'text-[#19C480]' : 'text-[#003CBD]'}`}>
+                          {msg.role === 'user' ? userName : 'Dr. Context'}
+                        </p>
+                        <p className="text-sm text-[#18181b] leading-relaxed bg-[#f5f6f9] rounded-2xl px-4 py-2 inline-block max-w-[85%] text-left">
+                          {msg.text}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  {isTyping && (
+                    <div className="flex gap-3 animate-pulse">
+                      <div className="w-8 h-8 rounded-full bg-[#003CBD]/20" />
+                      <div className="h-8 w-28 bg-[#003CBD]/10 rounded-2xl" />
+                    </div>
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+            </div>
+
+            <div className="bg-white/85 backdrop-blur-3xl rounded-3xl border border-white shadow-[0_32px_64px_-16px_rgba(0,60,189,0.2)] overflow-hidden">
+
+              {/* === SESLİ MOD === */}
+              {voiceMode ? (
+                <div className="p-6 flex items-center gap-6">
+                  {/* Mikrofon Butonu */}
+                  <div className="relative shrink-0">
+                    {isListening && (
+                      <>
+                        <div className="absolute inset-0 rounded-full bg-red-400/30 animate-ping scale-150" />
+                        <div className="absolute inset-0 rounded-full bg-red-400/20 animate-ping scale-125" style={{ animationDelay: '0.15s' }} />
+                      </>
+                    )}
+                    <button
+                      onClick={isListening ? stopListening : startListening}
+                      disabled={isTyping}
+                      className={`relative w-20 h-20 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-95
+                        ${isListening
+                          ? 'bg-red-500 shadow-red-500/40 scale-110'
+                          : isTyping
+                            ? 'bg-[#71717a] cursor-not-allowed'
+                            : 'bg-[#003CBD] shadow-[#003CBD]/30 hover:scale-105'
+                        }`}
+                    >
+                      {isListening
+                        ? <MicOff size={32} className="text-white" />
+                        : <Mic size={32} className="text-white" />
+                      }
+                    </button>
+                  </div>
+
+                  {/* Durum Metni */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#71717a] mb-1">Sesli Asistan</p>
+                    <p className={`text-lg font-semibold truncate ${isListening ? 'text-red-500' : isTyping ? 'text-[#003CBD]' : 'text-[#18181b]'}`}>
+                      {voiceStatus}
+                    </p>
+                    {isListening && (
+                      <div className="flex gap-0.5 mt-2">
+                        {[...Array(12)].map((_, i) => (
+                          <div key={i} className="w-1.5 bg-red-400 rounded-full animate-pulse"
+                            style={{ height: `${8 + Math.random() * 20}px`, animationDelay: `${i * 0.08}s` }} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Sağ Butonlar */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {/* Transcript Butonu */}
+                    <button
+                      onClick={() => setShowTranscript(!showTranscript)}
+                      className={`p-3 rounded-2xl border flex items-center gap-2 transition-all hover:scale-105 active:scale-95 relative
+                        ${showTranscript ? 'bg-[#003CBD] border-[#003CBD] text-white' : 'bg-white border-[#e5e7eb] text-[#71717a] hover:border-[#003CBD]/30'}`}
+                    >
+                      <MessageSquare size={20} />
+                      {chatHistory.length > 1 && (
+                        <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#19C480] text-white text-[9px] font-black rounded-full flex items-center justify-center">
+                          {chatHistory.length}
+                        </span>
+                      )}
+                    </button>
+                    {/* Yazı Modu Geç */}
+                    <button
+                      onClick={() => setVoiceMode(false)}
+                      className="p-3 rounded-2xl border border-[#e5e7eb] bg-white text-[#71717a] hover:border-[#003CBD]/30 transition-all hover:scale-105 active:scale-95"
+                      title="Yazarak devam et"
+                    >
+                      <ChevronDown size={20} />
+                    </button>
                   </div>
                 </div>
-                <button
-                  onClick={handleSendMessage}
-                  className="h-16 w-16 rounded-2xl bg-[#003CBD] text-white flex items-center justify-center shadow-lg shadow-[#003CBD]/30 hover:scale-105 active:scale-95 transition-all shrink-0"
-                >
-                  <Send size={28} strokeWidth={2.5} className="ml-1" />
-                </button>
-              </div>
+              ) : (
+                /* === YAZI MODU === */
+                <>
+                  <div className="max-h-[180px] overflow-y-auto p-6 space-y-4" id="chat-history">
+                    {chatHistory.map((msg, i) => (
+                      <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shrink-0 ${msg.role === 'user' ? 'bg-[#19C480]' : 'bg-[#003CBD]'}`}>
+                          {msg.role === 'user' ? 'U' : 'AI'}
+                        </div>
+                        <div className={`space-y-1 ${msg.role === 'user' ? 'text-right' : ''}`}>
+                          <p className={`text-[10px] font-bold uppercase ${msg.role === 'user' ? 'text-[#19C480]' : 'text-[#003CBD]'}`}>
+                            {msg.role === 'user' ? 'Hasta' : 'Asistan'}
+                          </p>
+                          <p className="text-base text-[#18181b] leading-relaxed">{msg.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {isTyping && (
+                      <div className="flex gap-4 animate-pulse">
+                        <div className="w-10 h-10 rounded-full bg-[#003CBD]/20" />
+                        <div className="h-10 w-32 bg-[#003CBD]/10 rounded-2xl" />
+                      </div>
+                    )}
+                    <div ref={chatEndRef} />
+                  </div>
+
+                  <div className="p-4 bg-white/50 border-t border-[#e5e7eb] flex items-center gap-3">
+                    {/* Sesli Mod'a geri dön */}
+                    <button
+                      onClick={() => setVoiceMode(true)}
+                      className="h-16 w-16 rounded-2xl bg-[#f5f6f9] border border-[#e5e7eb] text-[#71717a] flex items-center justify-center hover:bg-[#003CBD]/10 hover:border-[#003CBD]/30 transition-all shrink-0"
+                      title="Sesli moda geç"
+                    >
+                      <Mic size={24} />
+                    </button>
+                    <div className="flex-1 relative">
+                      <input
+                        type="text"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                        placeholder="Şikayetinizi yazın..."
+                        className="w-full bg-white border border-[#e5e7eb] focus:border-[#003CBD] focus:ring-4 focus:ring-[#003CBD]/10 rounded-2xl px-6 py-5 text-lg outline-none transition-all min-h-[64px]"
+                      />
+                    </div>
+                    <button
+                      onClick={handleSendMessage}
+                      className="h-16 w-16 rounded-2xl bg-[#003CBD] text-white flex items-center justify-center shadow-lg shadow-[#003CBD]/30 hover:scale-105 active:scale-95 transition-all shrink-0"
+                    >
+                      <Send size={28} strokeWidth={2.5} className="ml-1" />
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -322,7 +534,11 @@ const KioskFrame = ({ userName = "Ziyaretçi", onLogout, children }) => {
               <ControlButton label="Acil Çağrı" icon="alert" danger onClick={() => ActionManager.dispatch({ action: 'UI_EVENT', data: { type: 'OPEN_MODAL', target: 'Emergency' } })} />
               <ControlButton label="Çıkış" icon="reset" onClick={() => { if(onLogout) onLogout(); else window.location.reload(); }} />
               <ControlButton label="Dil" icon="globe" onClick={() => alert("Dil seçenekleri modalı açıldı")} />
-              <ControlButton label="Yardım" icon="help" onClick={() => alert("Yardım dökümantasyonu açıldı")} />
+              <ControlButton 
+                label={gender === 'female' ? "Kadın Asistan" : "Erkek Asistan"} 
+                icon="user" 
+                onClick={() => setGender(g => g === 'female' ? 'male' : 'female')} 
+              />
             </div>
           </div>
         </aside>
@@ -403,6 +619,7 @@ const ControlButton = ({ label, icon, danger, onClick }) => (
       {icon === 'reset' && <RotateCcw size={20} strokeWidth={2.5} />}
       {icon === 'globe' && <Globe size={20} strokeWidth={2.5} />}
       {icon === 'help' && <HelpCircle size={20} strokeWidth={2.5} />}
+      {icon === 'user' && <User size={20} strokeWidth={2.5} />}
     </div>
     <span className="text-[10px] font-black uppercase tracking-tighter">{label}</span>
   </button>
