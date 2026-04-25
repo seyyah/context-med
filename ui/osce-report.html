@@ -1,0 +1,368 @@
+<!-- OSCE Evaluation Report -->
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OSCE Evaluation Report - Context-Sim</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#8b90a0",
+                        "outline-variant": "#414755",
+                        "secondary-fixed": "#c2e8ff",
+                        "tertiary": "#43d9e9",
+                        "secondary-fixed-dim": "#75d1ff",
+                        "on-surface": "#e2e2e8",
+                        "surface-tint": "#adc6ff",
+                        "on-primary-fixed-variant": "#004493",
+                        "primary-fixed": "#d8e2ff",
+                        "secondary-container": "#00c1fd",
+                        "tertiary-fixed-dim": "#43d9e9",
+                        "surface-bright": "#37393e",
+                        "primary": "#adc6ff",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-primary-fixed": "#001a41",
+                        "primary-container": "#4b8eff",
+                        "surface-container-highest": "#333539",
+                        "on-secondary": "#003548",
+                        "tertiary-fixed": "#8bf2ff",
+                        "on-secondary-container": "#004b65",
+                        "background": "#111318",
+                        "surface-dim": "#111318",
+                        "surface-container-lowest": "#0c0e12",
+                        "on-tertiary-container": "#002f34",
+                        "on-secondary-fixed-variant": "#004d67",
+                        "error": "#ffb4ab",
+                        "tertiary-container": "#00a0ad",
+                        "surface-variant": "#333539",
+                        "on-primary-container": "#00285c",
+                        "on-error-container": "#ffdad6",
+                        "error-container": "#93000a",
+                        "surface": "#111318",
+                        "surface-container-low": "#1a1c20",
+                        "on-secondary-fixed": "#001e2b",
+                        "inverse-surface": "#e2e2e8",
+                        "surface-container-high": "#282a2e",
+                        "on-tertiary": "#00363b",
+                        "on-tertiary-fixed": "#001f23",
+                        "on-surface-variant": "#c1c6d7",
+                        "on-background": "#e2e2e8",
+                        "secondary": "#8fd8ff",
+                        "inverse-primary": "#005bc1",
+                        "inverse-on-surface": "#2f3035",
+                        "surface-container": "#1e2024",
+                        "on-error": "#690005",
+                        "on-primary": "#002e69",
+                        "on-tertiary-fixed-variant": "#004f56"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "display": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .radar-mesh {
+            clip-path: polygon(50% 0%, 100% 38%, 81% 100%, 19% 100%, 0% 38%);
+        }
+        .glass-panel {
+            background: rgba(51, 53, 57, 0.4);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary/30">
+<!-- Side Navigation Shell -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-[#111318] flex flex-col py-8 border-r border-[#c1c6d7]/10 z-50">
+<div class="px-6 mb-10">
+<h1 class="text-xl font-black text-[#e2e2e8] tracking-tighter">Context-Sim</h1>
+<p class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold text-[#adc6ff] mt-1">Clinical Intelligence</p>
+</div>
+<nav class="flex-1">
+<ul class="space-y-1">
+<li class="bg-[#adc6ff]/10 text-[#adc6ff] border-l-4 border-[#adc6ff] py-3 px-4 flex items-center gap-3 transition-all duration-300 ease-in-out cursor-pointer">
+<span class="material-symbols-outlined">assignment_turned_in</span>
+<span class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold">Assessments</span>
+</li>
+<li class="text-[#c1c6d7] py-3 px-4 flex items-center gap-3 hover:bg-[#1c1f26] transition-all cursor-pointer">
+<span class="material-symbols-outlined">biotech</span>
+<span class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold">Simulations</span>
+</li>
+<li class="text-[#c1c6d7] py-3 px-4 flex items-center gap-3 hover:bg-[#1c1f26] transition-all cursor-pointer">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold">Analytics</span>
+</li>
+<li class="text-[#c1c6d7] py-3 px-4 flex items-center gap-3 hover:bg-[#1c1f26] transition-all cursor-pointer">
+<span class="material-symbols-outlined">local_library</span>
+<span class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold">Library</span>
+</li>
+</ul>
+</nav>
+<div class="px-4 mt-auto space-y-4">
+<button class="w-full py-3 px-4 bg-gradient-to-r from-primary to-primary-container text-on-primary-container font-bold rounded-xl active:scale-95 transition-all text-xs uppercase tracking-widest">
+                New Simulation
+            </button>
+<ul class="border-t border-outline-variant/20 pt-4">
+<li class="text-[#c1c6d7] py-2 px-4 flex items-center gap-3 hover:bg-[#1c1f26] transition-all cursor-pointer">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold">Settings</span>
+</li>
+<li class="text-[#c1c6d7] py-2 px-4 flex items-center gap-3 hover:bg-[#1c1f26] transition-all cursor-pointer">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-['Inter'] uppercase tracking-[0.05em] text-[10px] font-bold">Support</span>
+</li>
+</ul>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 min-h-screen p-8 lg:p-12 max-w-7xl mx-auto">
+<!-- Header Section -->
+<header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+<div class="space-y-2">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high border border-outline-variant/20">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Clinical Performance Record</span>
+</div>
+<h2 class="text-4xl lg:text-5xl font-extrabold tracking-tight text-on-surface">OSCE Evaluation Report</h2>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="flex items-center gap-2 font-medium">
+<span class="material-symbols-outlined text-sm">person</span>
+                        Dr. Mark V.
+                    </span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="flex items-center gap-2 font-medium">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+                        October 24, 2024
+                    </span>
+</div>
+</div>
+<!-- Global Score -->
+<div class="relative group">
+<div class="absolute -inset-4 bg-primary/10 blur-2xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
+<div class="relative flex flex-col items-center md:items-end">
+<div class="flex items-baseline gap-1">
+<span class="text-7xl font-black text-on-surface tracking-tighter">82</span>
+<span class="text-2xl font-bold text-on-surface-variant">/100</span>
+</div>
+<div class="mt-2 px-6 py-1.5 bg-[#00c1fd]/10 border border-[#00c1fd]/30 rounded-full flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#00c1fd] shadow-[0_0_10px_#00c1fd]"></span>
+<span class="text-xs font-black uppercase tracking-widest text-[#00c1fd]">Passed</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Bento Grid Performance Overview -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12">
+<!-- Radar Performance Comparison -->
+<div class="lg:col-span-7 bg-surface-container-low rounded-3xl p-8 relative overflow-hidden flex flex-col">
+<div class="flex justify-between items-start mb-8">
+<div>
+<h3 class="text-xl font-bold text-on-surface mb-1">Competency Profile</h3>
+<p class="text-sm text-on-surface-variant">Comparative analysis across core domains</p>
+</div>
+<span class="material-symbols-outlined text-primary-fixed-dim">analytics</span>
+</div>
+<div class="flex-1 flex items-center justify-center py-4">
+<div class="relative w-64 h-64 lg:w-80 lg:h-80">
+<!-- Abstract Radar Chart Background -->
+<div class="absolute inset-0 border border-outline-variant/10 rounded-full"></div>
+<div class="absolute inset-[15%] border border-outline-variant/10 rounded-full"></div>
+<div class="absolute inset-[30%] border border-outline-variant/10 rounded-full"></div>
+<div class="absolute inset-[45%] border border-outline-variant/10 rounded-full"></div>
+<!-- Radar Lines (Static Visualization) -->
+<svg class="absolute inset-0 w-full h-full transform -rotate-18" viewbox="0 0 100 100">
+<!-- Background Web -->
+<polygon class="text-outline-variant/20" fill="none" points="50,5 95,38 78,92 22,92 5,38" stroke="currentColor" stroke-width="0.5"></polygon>
+<!-- Performance Data Polygon -->
+<polygon fill="rgba(173, 198, 255, 0.2)" points="50,15 85,42 70,80 30,85 15,45" stroke="#adc6ff" stroke-linejoin="round" stroke-width="2"></polygon>
+<!-- Circles at vertexes -->
+<circle cx="50" cy="15" fill="#adc6ff" r="1.5"></circle>
+<circle cx="85" cy="42" fill="#adc6ff" r="1.5"></circle>
+<circle cx="70" cy="80" fill="#adc6ff" r="1.5"></circle>
+<circle cx="30" cy="85" fill="#adc6ff" r="1.5"></circle>
+<circle cx="15" cy="45" fill="#adc6ff" r="1.5"></circle>
+</svg>
+<!-- Labels -->
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Anamnesis</div>
+<div class="absolute top-1/4 -right-12 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Communication</div>
+<div class="absolute bottom-0 -right-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Reasoning</div>
+<div class="absolute bottom-0 -left-6 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Exam</div>
+<div class="absolute top-1/4 -left-16 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Documentation</div>
+</div>
+</div>
+</div>
+<!-- Vitals & Summary Stack -->
+<div class="lg:col-span-5 grid grid-cols-1 gap-6">
+<!-- Detailed Metric Cards -->
+<div class="bg-surface-container-high rounded-3xl p-6 border-l-4 border-secondary-container">
+<div class="flex justify-between items-center mb-4">
+<span class="text-xs font-bold uppercase tracking-widest text-secondary">Efficiency Index</span>
+<span class="material-symbols-outlined text-secondary-fixed-dim">timer</span>
+</div>
+<div class="flex items-end gap-3">
+<div class="text-4xl font-black text-on-surface">14:22</div>
+<div class="text-sm text-on-tertiary-fixed-variant mb-1">Optimum: 15:00</div>
+</div>
+<div class="mt-4 w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[92%]"></div>
+</div>
+</div>
+<div class="bg-surface-container-high rounded-3xl p-6 border-l-4 border-primary">
+<div class="flex justify-between items-center mb-4">
+<span class="text-xs font-bold uppercase tracking-widest text-primary">Patient Rapport</span>
+<span class="material-symbols-outlined text-primary-fixed-dim">volunteer_activism</span>
+</div>
+<div class="flex items-end gap-3">
+<div class="text-4xl font-black text-on-surface">94%</div>
+<div class="text-sm text-on-tertiary-fixed-variant mb-1">Above Avg</div>
+</div>
+<div class="mt-4 flex gap-1">
+<div class="h-1.5 flex-1 bg-primary rounded-full"></div>
+<div class="h-1.5 flex-1 bg-primary rounded-full"></div>
+<div class="h-1.5 flex-1 bg-primary rounded-full"></div>
+<div class="h-1.5 flex-1 bg-primary/20 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Qualitative Feedback Section -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<!-- Strengths -->
+<div class="bg-surface-container-lowest border border-outline-variant/10 rounded-3xl p-8 hover:bg-surface-container-low transition-colors group">
+<div class="w-12 h-12 rounded-2xl bg-tertiary-container/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-tertiary">verified</span>
+</div>
+<h4 class="text-lg font-bold text-tertiary mb-3 tracking-tight">Key Strengths</h4>
+<ul class="space-y-4 text-sm text-on-surface-variant">
+<li class="flex gap-3">
+<span class="text-tertiary-fixed">•</span>
+                        Excellent open-ended questioning technique during the initial 3 minutes.
+                    </li>
+<li class="flex gap-3">
+<span class="text-tertiary-fixed">•</span>
+                        Maintained clinical empathy while probing sensitive history.
+                    </li>
+</ul>
+</div>
+<!-- Critical Misses -->
+<div class="bg-surface-container-lowest border border-outline-variant/10 rounded-3xl p-8 hover:bg-surface-container-low transition-colors group">
+<div class="w-12 h-12 rounded-2xl bg-error-container/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-error">warning</span>
+</div>
+<h4 class="text-lg font-bold text-error mb-3 tracking-tight">Critical Misses</h4>
+<ul class="space-y-4 text-sm text-on-surface-variant">
+<li class="flex gap-3">
+<span class="text-error">•</span>
+                        Omitted the "Second Sound" auscultation in the cardiovascular exam.
+                    </li>
+<li class="flex gap-3">
+<span class="text-error">•</span>
+                        Failed to confirm allergies before recommending Ibuprofen.
+                    </li>
+</ul>
+</div>
+<!-- Recommendations -->
+<div class="bg-surface-container-lowest border border-outline-variant/10 rounded-3xl p-8 hover:bg-surface-container-low transition-colors group">
+<div class="w-12 h-12 rounded-2xl bg-primary-container/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">psychology</span>
+</div>
+<h4 class="text-lg font-bold text-primary mb-3 tracking-tight">Path Forward</h4>
+<ul class="space-y-4 text-sm text-on-surface-variant">
+<li class="flex gap-3">
+<span class="text-primary-fixed">•</span>
+                        Review Module 4: Advanced Cardiac Physical Examination.
+                    </li>
+<li class="flex gap-3">
+<span class="text-primary-fixed">•</span>
+                        Practice high-pressure differential diagnosis scripts.
+                    </li>
+</ul>
+</div>
+</section>
+<!-- Detailed Rubric Table -->
+<section class="bg-surface-container-low rounded-3xl overflow-hidden">
+<div class="px-8 py-6 border-b border-outline-variant/10 flex justify-between items-center">
+<h3 class="text-xl font-bold text-on-surface">Detailed Scoring Rubric</h3>
+<button class="text-xs font-bold uppercase tracking-widest text-primary hover:text-primary-container transition-colors">Export PDF</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="text-[10px] font-black uppercase tracking-[0.1em] text-on-surface-variant/60">
+<th class="px-8 py-5">Assessment Criterion</th>
+<th class="px-8 py-5">Performance Indicator</th>
+<th class="px-8 py-5 text-center">Max Pts</th>
+<th class="px-8 py-5 text-right">Awarded</th>
+</tr>
+</thead>
+<tbody class="text-sm">
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="px-8 py-6 font-semibold text-on-surface">Systematic History</td>
+<td class="px-8 py-6 text-on-surface-variant">Comprehensive SOCRATES inquiry followed.</td>
+<td class="px-8 py-6 text-center font-mono">20</td>
+<td class="px-8 py-6 text-right font-black text-primary">18</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/30 transition-colors bg-surface-container-lowest/20">
+<td class="px-8 py-6 font-semibold text-on-surface">Infection Control</td>
+<td class="px-8 py-6 text-on-surface-variant">Sanitized hands and donned equipment correctly.</td>
+<td class="px-8 py-6 text-center font-mono">10</td>
+<td class="px-8 py-6 text-right font-black text-primary">10</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="px-8 py-6 font-semibold text-on-surface">Physical Maneuvers</td>
+<td class="px-8 py-6 text-on-surface-variant">Incorrect positioning for jugular venous pressure.</td>
+<td class="px-8 py-6 text-center font-mono">25</td>
+<td class="px-8 py-6 text-right font-black text-error">15</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/30 transition-colors bg-surface-container-lowest/20">
+<td class="px-8 py-6 font-semibold text-on-surface">Differential Diagnosis</td>
+<td class="px-8 py-6 text-on-surface-variant">Correctly identified top 3 likely causes.</td>
+<td class="px-8 py-6 text-center font-mono">25</td>
+<td class="px-8 py-6 text-right font-black text-primary">22</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/30 transition-colors">
+<td class="px-8 py-6 font-semibold text-on-surface">Patient Safety</td>
+<td class="px-8 py-6 text-on-surface-variant">Validated patient identity and current meds.</td>
+<td class="px-8 py-6 text-center font-mono">20</td>
+<td class="px-8 py-6 text-right font-black text-primary">17</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-8 py-6 bg-surface-container-highest/20 flex justify-between items-center">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Final Result Certification</span>
+<div class="flex items-center gap-4">
+<img class="h-8 opacity-40 grayscale" data-alt="minimalist digital signature of a medical evaluator in clean black ink against a transparent background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIGLkWoJgfHpzGYYwES81Uyp3o905Ns7i1Lyt_RpMS2RfgKjH7N_eoNo_sQHhRmXFvWdimLYOl6kYv5KqE3pLq0snMo8ipHLyco-zDdB5ylzsZM2J1IpU_4DBChT5nNZONNC4xv1yw-kgsRasYWJLgf0xDS4gd3a62Js9arUcjWNIF9zO_5YHwHuH33o0cIJaZ-cpVA-h8SUhntyduohbeqLFqg---1-iR_lus_HKNY_RL5wp8F40KcjofruQBm8K_1Sn4lYzfNfE"/>
+<div class="text-right">
+<p class="text-xs font-bold text-on-surface">Dr. Elena K.</p>
+<p class="text-[10px] text-on-surface-variant">Senior Clinical Evaluator</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer Spacer -->
+<div class="h-16"></div>
+</main>
+<!-- Contextual FAB (Hidden on Report Screen per logic but allowed for new sim) -->
+<!-- Suppression Logic: Suppressed on Report Details -->
+</body></html>

@@ -1,0 +1,444 @@
+<!-- Xtatistix Patient Session -->
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#47e099",
+                        "surface-container-high": "#e8e7f2",
+                        "on-tertiary-fixed-variant": "#872100",
+                        "tertiary-container": "#d4d4d8",
+                        "surface-container": "#eeedf8",
+                        "outline-variant": "#e5e5e5",
+                        "secondary-container": "#69fdb3",
+                        "tertiary-fixed-dim": "#ffb5a0",
+                        "inverse-primary": "#b7c4ff",
+                        "surface-container-low": "#f3f2fe",
+                        "error-container": "#FFF5F5",
+                        "secondary": "#006d44",
+                        "background": "#faf8ff",
+                        "on-surface": "#1a1b23",
+                        "surface-dim": "#dad9e4",
+                        "surface-tint": "#2953d1",
+                        "on-secondary-fixed": "#002111",
+                        "on-tertiary-fixed": "#3b0900",
+                        "primary-container": "#003cbd",
+                        "on-tertiary-container": "#ffa38a",
+                        "tertiary": "#3a3a38",
+                        "error": "#FD2C30",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#2f3038",
+                        "surface-container-highest": "#d4d4d8",
+                        "on-primary-fixed": "#001551",
+                        "on-primary-container": "#1E3A8A",
+                        "on-surface-variant": "#71717a",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-on-surface": "#ffffff",
+                        "surface": "#f5f5f4",
+                        "secondary-fixed": "#69fdb3",
+                        "on-background": "#1a1b23",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "surface-variant": "#e2e1ec",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "surface-bright": "#faf8ff",
+                        "on-secondary-container": "#0A7C5C",
+                        "on-secondary-fixed-variant": "#005232",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#ffdbd1",
+                        "primary": "#002989",
+                        "outline": "#d4d4d8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "3xl": "1.5rem"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "md": "16px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "sidebar-width": "280px",
+                        "sm": "12px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                        "headline-md": ["18px", {"lineHeight": "22px", "fontWeight": "700"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-lg": ["20px", {"lineHeight": "28px", "fontWeight": "700"}],
+                        "body-md": ["13px", {"lineHeight": "21px", "fontWeight": "400"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                        "display": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .sidebar-active {
+            background-color: #003CBD;
+            color: #ffffff;
+            border-radius: 0.5rem;
+            margin: 0 0.75rem;
+            padding: 0.625rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .sidebar-inactive {
+            color: #94a3b8;
+            margin: 0 0.75rem;
+            padding: 0.625rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: color 0.2s, background-color 0.2s;
+        }
+        .sidebar-inactive:hover {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased">
+<!-- Sidebar Navigation -->
+<aside class="w-[280px] h-full fixed left-0 top-0 border-r border-slate-800 bg-[#001B3D] dark:bg-[#000814] flex flex-col py-6 z-50">
+<div class="px-6 mb-8">
+<h1 class="text-lg font-black tracking-tight text-white font-display">Xtatistix Clinical</h1>
+<p class="text-xs text-slate-400 font-label-sm">Precision Simulation</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="sidebar-inactive" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md">Dashboard</span>
+</a>
+<a class="sidebar-active" href="#">
+<span class="material-symbols-outlined" data-icon="clinical_notes" style="font-variation-settings: 'FILL' 1;">clinical_notes</span>
+<span class="font-label-md">Simulations</span>
+</a>
+<a class="sidebar-inactive" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-md">Patient Records</span>
+</a>
+<a class="sidebar-inactive" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="font-label-md">Analytics</span>
+</a>
+<a class="sidebar-inactive" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-label-md">Medical Library</span>
+</a>
+<a class="sidebar-inactive" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-slate-800/50 pt-4">
+<a class="sidebar-inactive" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-md">Help Center</span>
+</a>
+<a class="sidebar-inactive" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md">Log out</span>
+</a>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="h-16 w-[calc(100%-280px)] ml-[280px] sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-slate-200 flex items-center justify-between px-8">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-slate-900">Clinical Intelligence Console</span>
+<div class="h-4 w-px bg-slate-200 mx-2"></div>
+<div class="flex items-center bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant">
+<span class="material-symbols-outlined text-slate-400 mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-48" placeholder="Search case ID..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-slate-500">
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined" data-icon="history">history</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined" data-icon="account_circle">account_circle</span></button>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md hover:bg-on-primary-fixed-variant transition-all">New Session</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-[280px] p-8 max-w-[1600px]">
+<!-- Simulation Header / Patient Metadata -->
+<div class="flex flex-col md:flex-row items-start justify-between mb-8 gap-6">
+<div class="flex items-center gap-6">
+<div class="w-20 h-20 rounded-3xl overflow-hidden border-2 border-white shadow-sm">
+<img alt="Elena R." class="w-full h-full object-cover" data-alt="Professional medical portrait of a young woman with a calm expression, soft cinematic lighting against a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWhvblUTQaWwXNojw3kqZeEoXHUVIqDa-ANSSDozkAjTt4v7RiQ379DSfoWvotiGM4PVmzyMndHnG4teokkhIaXV096nYp7s5Zi2TwJdwRvhQfXWW_VOC7z2887LWUXIjL3ivktuBo52RTvpFjCoT0V7VgWVyiEwT-B85eHSr_S3hXK5q5J7uQVWdfbR37LFEQlshYmz4N3FnALAs4qLQ8uovFkqMoHXwlBvq4P4TL9DN0lnvUhQhr49pt2rym_1iqf8XY-nMEvLc"/>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h2 class="font-display text-on-surface">Elena R.</h2>
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-[10px] font-bold uppercase tracking-wider">Active Simulation</span>
+</div>
+<div class="flex gap-4 text-slate-500 font-body-md">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs" data-icon="person">person</span> 32 Years Old</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs" data-icon="event">event</span> 34 Weeks Gestation</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs" data-icon="clinical_notes">clinical_notes</span> G1P0 (Nulliparous)</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full md:w-auto">
+<div class="bg-surface-bright p-4 rounded-xl border border-outline-variant shadow-sm min-w-[140px]">
+<p class="text-slate-500 font-label-sm mb-1">Blood Pressure</p>
+<p class="font-headline-lg text-error">158/96</p>
+<p class="text-[10px] font-bold text-error uppercase">Hypertensive</p>
+</div>
+<div class="bg-surface-bright p-4 rounded-xl border border-outline-variant shadow-sm min-w-[140px]">
+<p class="text-slate-500 font-label-sm mb-1">Proteinuria</p>
+<p class="font-headline-lg text-primary">3+</p>
+<p class="text-[10px] font-bold text-primary uppercase">Significant</p>
+</div>
+<div class="bg-surface-bright p-4 rounded-xl border border-outline-variant shadow-sm min-w-[140px]">
+<p class="text-slate-500 font-label-sm mb-1">FHR Status</p>
+<p class="font-headline-lg text-secondary">Cat I</p>
+<p class="text-[10px] font-bold text-secondary uppercase">Reassuring</p>
+</div>
+<div class="bg-surface-bright p-4 rounded-xl border border-outline-variant shadow-sm min-w-[140px]">
+<p class="text-slate-500 font-label-sm mb-1">Urine Output</p>
+<p class="font-headline-lg text-on-surface">45ml/hr</p>
+<p class="text-[10px] font-bold text-slate-400 uppercase">Within Range</p>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-16 gap-6">
+<!-- Bento Grid - Left Column (Main Analysis) -->
+<div class="col-span-11 space-y-6">
+<!-- Laboratory Result Matrix -->
+<div class="bg-surface-bright rounded-3xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="px-6 py-4 bg-surface-container-highest flex items-center justify-between border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="biotech">biotech</span>
+<span class="font-headline-md text-on-surface">Laboratory Result Matrix</span>
+</div>
+<span class="text-label-sm text-slate-500 italic">Last update: 14:30 EST</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="px-6 py-3 font-label-md text-slate-500 border-b border-outline-variant">Biomarker</th>
+<th class="px-6 py-3 font-label-md text-slate-500 border-b border-outline-variant text-center">Baseline</th>
+<th class="px-6 py-3 font-label-md text-slate-500 border-b border-outline-variant text-center">Admission</th>
+<th class="px-6 py-3 font-label-md text-slate-500 border-b border-outline-variant text-center">Current (T+4h)</th>
+<th class="px-6 py-3 font-label-md text-slate-500 border-b border-outline-variant">Reference Range</th>
+<th class="px-6 py-3 font-label-md text-slate-500 border-b border-outline-variant text-center">Trend</th>
+</tr>
+</thead>
+<tbody class="text-body-md">
+<tr class="border-b border-outline-variant hover:bg-surface-container transition-colors">
+<td class="px-6 py-4 font-medium text-slate-900">ALT (U/L)</td>
+<td class="px-6 py-4 text-center text-slate-500">24</td>
+<td class="px-6 py-4 text-center text-slate-900">48</td>
+<td class="px-6 py-4 text-center font-bold text-error">92</td>
+<td class="px-6 py-4 text-slate-500">7 - 35 U/L</td>
+<td class="px-6 py-4 text-center"><span class="material-symbols-outlined text-error" data-icon="trending_up">trending_up</span></td>
+</tr>
+<tr class="bg-surface-container-low border-b border-outline-variant hover:bg-surface-container transition-colors">
+<td class="px-6 py-4 font-medium text-slate-900">Platelets (K/µL)</td>
+<td class="px-6 py-4 text-center text-slate-500">210</td>
+<td class="px-6 py-4 text-center text-slate-900">145</td>
+<td class="px-6 py-4 text-center font-bold text-error">98</td>
+<td class="px-6 py-4 text-slate-500">150 - 450 K/µL</td>
+<td class="px-6 py-4 text-center"><span class="material-symbols-outlined text-error" data-icon="trending_down">trending_down</span></td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-container transition-colors">
+<td class="px-6 py-4 font-medium text-slate-900">Creatinine (mg/dL)</td>
+<td class="px-6 py-4 text-center text-slate-500">0.7</td>
+<td class="px-6 py-4 text-center text-slate-900">0.9</td>
+<td class="px-6 py-4 text-center font-bold text-slate-900">1.1</td>
+<td class="px-6 py-4 text-slate-500">0.4 - 0.8 mg/dL</td>
+<td class="px-6 py-4 text-center"><span class="material-symbols-outlined text-slate-400" data-icon="trending_flat">trending_flat</span></td>
+</tr>
+<tr class="bg-surface-container-low border-b border-outline-variant hover:bg-surface-container transition-colors">
+<td class="px-6 py-4 font-medium text-slate-900">Hemoglobin (g/dL)</td>
+<td class="px-6 py-4 text-center text-slate-500">12.2</td>
+<td class="px-6 py-4 text-center text-slate-900">11.8</td>
+<td class="px-6 py-4 text-center font-bold text-slate-900">12.4</td>
+<td class="px-6 py-4 text-slate-500">11.0 - 14.5 g/dL</td>
+<td class="px-6 py-4 text-center"><span class="material-symbols-outlined text-secondary" data-icon="trending_up">trending_up</span></td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-container transition-colors">
+<td class="px-6 py-4 font-medium text-slate-900">LDH (U/L)</td>
+<td class="px-6 py-4 text-center text-slate-500">180</td>
+<td class="px-6 py-4 text-center text-slate-900">420</td>
+<td class="px-6 py-4 text-center font-bold text-error">710</td>
+<td class="px-6 py-4 text-slate-500">140 - 280 U/L</td>
+<td class="px-6 py-4 text-center"><span class="material-symbols-outlined text-error" data-icon="trending_up">trending_up</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Symptom Tracking & Observation -->
+<div class="grid grid-cols-2 gap-6">
+<div class="bg-surface-bright p-6 rounded-3xl border border-outline-variant shadow-sm">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary" data-icon="visibility">visibility</span>
+<h3 class="font-headline-md">Subjective Symptoms</h3>
+</div>
+<ul class="space-y-3">
+<li class="flex items-center gap-3 p-3 bg-error-container rounded-xl border border-error/10">
+<span class="material-symbols-outlined text-error" data-icon="report" style="font-variation-settings: 'FILL' 1;">report</span>
+<div class="flex-1">
+<p class="font-label-md text-on-error-container">Severe Right Upper Quadrant Pain</p>
+<p class="text-[10px] text-error/80 uppercase font-bold">New Onset (T+3h)</p>
+</div>
+</li>
+<li class="flex items-center gap-3 p-3 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-slate-400" data-icon="lens_blur">lens_blur</span>
+<div class="flex-1">
+<p class="font-label-md text-on-surface">Blurry Vision / Scotomata</p>
+<p class="text-[10px] text-slate-400 uppercase font-bold">Intermittent</p>
+</div>
+</li>
+<li class="flex items-center gap-3 p-3 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-slate-400" data-icon="psychology">psychology</span>
+<div class="flex-1">
+<p class="font-label-md text-on-surface">Persistent Frontal Headache</p>
+<p class="text-[10px] text-slate-400 uppercase font-bold">Ongoing</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="bg-surface-bright p-6 rounded-3xl border border-outline-variant shadow-sm relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-5">
+<span class="material-symbols-outlined text-8xl" data-icon="monitoring">monitoring</span>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary" data-icon="neurology">neurology</span>
+<h3 class="font-headline-md">Neuro / Reflex Exam</h3>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center p-3 border-b border-outline-variant">
+<span class="font-body-md text-slate-600">Patellar Reflexes</span>
+<span class="bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-lg font-bold">3+</span>
+</div>
+<div class="flex justify-between items-center p-3 border-b border-outline-variant">
+<span class="font-body-md text-slate-600">Ankle Clonus</span>
+<span class="bg-error-container text-on-error-container px-3 py-1 rounded-lg font-bold">2 Beats</span>
+</div>
+<div class="flex justify-between items-center p-3">
+<span class="font-body-md text-slate-600">GCS Score</span>
+<span class="bg-surface-container-highest px-3 py-1 rounded-lg font-bold">15/15</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Diagnostic Workspace - Right Column -->
+<div class="col-span-5 space-y-6">
+<div class="bg-primary-container p-6 rounded-3xl shadow-lg text-white">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined" data-icon="fact_check" style="font-variation-settings: 'FILL' 1;">fact_check</span>
+<h3 class="font-headline-md">Diagnostic Workspace</h3>
+</div>
+<p class="text-body-md text-primary-fixed mb-4">Review the clinical evidence above and select the primary diagnosis for Elena R.</p>
+<div class="space-y-3">
+<label class="block p-4 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 cursor-pointer transition-all group">
+<div class="flex items-center justify-between">
+<span class="font-label-md">Gestational Hypertension</span>
+<div class="w-5 h-5 rounded-full border-2 border-white/30 flex items-center justify-center group-hover:border-white"></div>
+</div>
+</label>
+<label class="block p-4 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 cursor-pointer transition-all group">
+<div class="flex items-center justify-between">
+<span class="font-label-md">Preeclampsia with Severe Features</span>
+<div class="w-5 h-5 rounded-full border-2 border-white/30 flex items-center justify-center group-hover:border-white"></div>
+</div>
+</label>
+<label class="block p-4 rounded-xl bg-white text-primary cursor-pointer transition-all border-2 border-secondary">
+<div class="flex items-center justify-between">
+<span class="font-label-md font-bold">HELLP Syndrome</span>
+<div class="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-white" data-icon="check">check</span>
+</div>
+</div>
+</label>
+<label class="block p-4 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 cursor-pointer transition-all group">
+<div class="flex items-center justify-between">
+<span class="font-label-md">Eclampsia</span>
+<div class="w-5 h-5 rounded-full border-2 border-white/30 flex items-center justify-center group-hover:border-white"></div>
+</div>
+</label>
+</div>
+<button class="w-full mt-6 bg-white text-primary font-bold py-3 rounded-xl shadow-sm hover:bg-slate-50 transition-colors">
+                        Confirm Clinical Assessment
+                    </button>
+</div>
+<div class="bg-surface-bright p-6 rounded-3xl border border-outline-variant shadow-sm">
+<h3 class="font-headline-md mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="medical_services">medical_services</span>
+                        Orders Queue
+                    </h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="font-body-md text-slate-700">Magnesium Sulfate Bolus</span>
+<span class="material-symbols-outlined text-secondary" data-icon="check_circle">check_circle</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-body-md text-slate-700">Labetalol 20mg IV</span>
+<span class="material-symbols-outlined text-slate-300" data-icon="pending">pending</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-body-md text-slate-700">Type &amp; Cross 2U PRBC</span>
+<span class="material-symbols-outlined text-slate-300" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+</div>
+<div class="h-px bg-outline-variant my-2"></div>
+<button class="w-full text-primary font-label-md flex items-center justify-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span> Add New Order
+                        </button>
+</div>
+</div>
+<!-- Simulation Info -->
+<div class="bg-tertiary-fixed text-on-tertiary-fixed p-6 rounded-3xl">
+<p class="font-label-sm uppercase tracking-widest mb-2 opacity-70 text-center">Simulation Timer</p>
+<div class="text-3xl font-black text-center mb-4">00:42:15</div>
+<div class="flex justify-between gap-4">
+<button class="flex-1 bg-on-tertiary-fixed text-white py-2 rounded-lg font-label-md flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="pause">pause</span> Pause
+                        </button>
+<button class="flex-1 border border-on-tertiary-fixed/30 py-2 rounded-lg font-label-md">End Session</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

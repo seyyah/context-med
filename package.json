@@ -1,0 +1,7 @@
+{
+  "name": "context-med",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ]
+}

@@ -1,0 +1,346 @@
+<!-- Preeclampsia Simulation Interface -->
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Context-Sim | Scenario: Preeclampsia</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#690005",
+                        "secondary-container": "#00c1fd",
+                        "tertiary": "#43d9e9",
+                        "surface-container": "#1e2024",
+                        "on-tertiary-fixed": "#001f23",
+                        "on-tertiary-container": "#002f34",
+                        "on-primary-fixed-variant": "#004493",
+                        "primary": "#adc6ff",
+                        "inverse-on-surface": "#2f3035",
+                        "outline": "#8b90a0",
+                        "secondary-fixed-dim": "#75d1ff",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#adc6ff",
+                        "surface-dim": "#111318",
+                        "on-secondary": "#003548",
+                        "tertiary-container": "#00a0ad",
+                        "on-tertiary-fixed-variant": "#004f56",
+                        "on-background": "#e2e2e8",
+                        "on-secondary-container": "#004b65",
+                        "primary-fixed": "#d8e2ff",
+                        "on-tertiary": "#00363b",
+                        "secondary-fixed": "#c2e8ff",
+                        "error-container": "#93000a",
+                        "on-primary-fixed": "#001a41",
+                        "surface-bright": "#37393e",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-container": "#00285c",
+                        "surface-container-lowest": "#0c0e12",
+                        "tertiary-fixed": "#8bf2ff",
+                        "surface": "#111318",
+                        "secondary": "#8fd8ff",
+                        "inverse-surface": "#e2e2e8",
+                        "on-surface-variant": "#c1c6d7",
+                        "surface-variant": "#333539",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-primary": "#002e69",
+                        "outline-variant": "#414755",
+                        "on-surface": "#e2e2e8",
+                        "surface-container-low": "#1a1c20",
+                        "surface-container-high": "#282a2e",
+                        "on-secondary-fixed-variant": "#004d67",
+                        "inverse-primary": "#005bc1",
+                        "tertiary-fixed-dim": "#43d9e9",
+                        "on-secondary-fixed": "#001e2b",
+                        "surface-container-highest": "#333539",
+                        "primary-container": "#4b8eff",
+                        "background": "#111318"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "display": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #111318; color: #e2e2e8; }
+        .glass { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="overflow-hidden">
+<!-- TopNavBar (Shared Component) -->
+<nav class="fixed top-0 w-full z-50 h-16 bg-slate-950/80 backdrop-blur-2xl bg-gradient-to-b from-slate-900/50 to-transparent shadow-[0_8px_32px_0_rgba(0,122,255,0.08)] flex justify-between items-center px-8 w-full">
+<div class="text-lg font-black tracking-tighter text-slate-100 uppercase">Context-Sim</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-blue-400 border-b-2 border-blue-500 pb-1 font-['Inter'] tracking-tight headline-sm font-bold" href="#">Monitoring</a>
+<a class="text-slate-400 font-medium hover:text-blue-300 hover:bg-slate-800/40 transition-colors" href="#">Live Feed</a>
+<a class="text-slate-400 font-medium hover:text-blue-300 hover:bg-slate-800/40 transition-colors" href="#">Protocols</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-400 hover:text-blue-300 transition-colors active:scale-95 duration-200 ease-in-out">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-slate-400 hover:text-blue-300 transition-colors active:scale-95 duration-200 ease-in-out">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</nav>
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-screen w-72 z-40 bg-slate-950 bg-slate-900/40 flex flex-col pt-24 pb-8 h-full space-y-2">
+<div class="px-6 mb-8">
+<div class="text-blue-400 font-bold tracking-widest uppercase text-xs">Clinical Lens</div>
+<div class="text-slate-500 text-[10px] uppercase tracking-[0.2em] font-semibold">Precision Core V2</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="text-slate-500 px-6 py-3 flex items-center gap-4 hover:bg-slate-900 hover:text-slate-200 transition-all font-['Inter'] label-md tracking-[0.05em] uppercase font-semibold" href="#">
+<span class="material-symbols-outlined">biotech</span>
+<span>Diagnostics</span>
+</a>
+<a class="text-blue-400 bg-blue-500/10 border-l-4 border-blue-500 px-6 py-3 flex items-center gap-4 font-['Inter'] label-md tracking-[0.05em] uppercase font-semibold" href="#">
+<span class="material-symbols-outlined">precision_manufacturing</span>
+<span>Simulation</span>
+</a>
+<a class="text-slate-500 px-6 py-3 flex items-center gap-4 hover:bg-slate-900 hover:text-slate-200 transition-all font-['Inter'] label-md tracking-[0.05em] uppercase font-semibold" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Data Lab</span>
+</a>
+<a class="text-slate-500 px-6 py-3 flex items-center gap-4 hover:bg-slate-900 hover:text-slate-200 transition-all font-['Inter'] label-md tracking-[0.05em] uppercase font-semibold" href="#">
+<span class="material-symbols-outlined">assignment_ind</span>
+<span>Patient Records</span>
+</a>
+<a class="text-slate-500 px-6 py-3 flex items-center gap-4 hover:bg-slate-900 hover:text-slate-200 transition-all font-['Inter'] label-md tracking-[0.05em] uppercase font-semibold" href="#">
+<span class="material-symbols-outlined">science</span>
+<span>Testing Hub</span>
+</a>
+</nav>
+<div class="px-6 mt-auto">
+<button class="w-full py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary-container font-bold rounded-xl active:scale-95 transition-transform">
+                New Simulation
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-72 pt-16 h-screen overflow-hidden flex flex-col bg-surface">
+<!-- Header / Scenario Title -->
+<header class="px-8 py-6 flex justify-between items-end shrink-0">
+<div>
+<span class="text-secondary tracking-[0.2em] uppercase font-bold text-[10px]">Active Simulation Case</span>
+<h1 class="text-3xl font-extrabold tracking-tight text-on-surface">Scenario: Preeclampsia - 28th Week</h1>
+</div>
+<div class="flex gap-4 mb-1">
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full">
+<div class="w-2 h-2 rounded-full bg-error animate-pulse"></div>
+<span class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">High Urgency</span>
+</div>
+<div class="px-3 py-1 bg-surface-container-high rounded-full">
+<span class="text-xs font-bold text-tertiary-fixed-dim uppercase tracking-wider">Time: 08:42 AM</span>
+</div>
+</div>
+</header>
+<!-- Three-Panel Dashboard Grid -->
+<div class="flex-1 px-8 pb-8 grid grid-cols-12 gap-6 overflow-hidden">
+<!-- Left Panel: Patient Presentation -->
+<section class="col-span-3 flex flex-col gap-4 overflow-hidden">
+<div class="bg-surface-container-low rounded-xl p-6 h-full flex flex-col shadow-lg">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container-highest flex items-center justify-center">
+<img alt="Patient Profile" class="w-full h-full object-cover grayscale opacity-80" data-alt="portrait of a 30 year old pregnant woman looking slightly concerned in a medical setting, soft dramatic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjTBz32ODTB3rPRDPLrGOfnFKkAXWS4NFmMEq43lg_QnH551tlNI8MFErC7whAoL-571kbzx5TceC-UfVFKwmyfYcjlm5M9iRFHtNXIHj1HBrg9KKHHzoEvqVuNKLsFeeLGRzzrXW1HM--qJY_MXg3GBdfoEH0n-SLNqBFA8yjMRBa0eYOhjzx7eQyHvahNGalm-7rPpbBeBXOOSKfTc715ngA3PJ_q4zS1B8tLv3TKfYWWO93rs8JSvGXTQAgX2IZWZwmG0fdDD0"/>
+</div>
+<div>
+<div class="font-bold text-on-surface">Elena R.</div>
+<div class="text-xs text-on-surface-variant">Age: 32 | G2P1 | 28w 4d</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto no-scrollbar space-y-6">
+<div>
+<label class="block text-[10px] font-black uppercase tracking-widest text-secondary mb-2">Current Presentation</label>
+<p class="text-sm leading-relaxed text-on-surface font-medium italic">
+                                "I've had this persistent headache for two days that Tylenol won't touch. My rings don't fit anymore, and my feet are so swollen they hurt. I'm also seeing these weird 'spots' when I stand up."
+                            </p>
+</div>
+<div>
+<label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">History &amp; Complaints</label>
+<div class="space-y-4 text-sm text-on-surface-variant">
+<p>Patient reports sudden onset of facial and peripheral edema within last 48 hours. Negative for vaginal bleeding or leakage of fluid. Positive for epigastric discomfort, described as "heartburn that feels different."</p>
+<p>Previous pregnancy (3 years ago) complicated by gestational hypertension at 38 weeks. Family history positive for maternal preeclampsia.</p>
+</div>
+</div>
+<div class="bg-surface-container-highest rounded-lg p-4">
+<label class="block text-[10px] font-black uppercase tracking-widest text-tertiary mb-2">Physical Exam</label>
+<ul class="text-xs space-y-2 text-on-surface">
+<li class="flex justify-between"><span>Deep Tendon Reflexes</span> <span class="font-bold">3+ Bilateral</span></li>
+<li class="flex justify-between"><span>Clonus</span> <span class="font-bold">2 Beats</span></li>
+<li class="flex justify-between"><span>Edema</span> <span class="font-bold text-error">2+ Pitting</span></li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<!-- Center Panel: Test Selection & Results -->
+<section class="col-span-6 flex flex-col gap-6 overflow-hidden">
+<div class="grid grid-cols-4 gap-4">
+<button class="bg-surface-container-high hover:bg-primary/20 transition-all p-4 rounded-xl flex flex-col gap-2 group active:scale-[0.98]">
+<span class="text-[10px] font-bold text-outline-variant uppercase group-hover:text-primary-fixed">BP Systolic</span>
+<div class="flex items-baseline gap-1">
+<span class="text-2xl font-black text-on-surface">---</span>
+<span class="text-[10px] text-outline">mmHg</span>
+</div>
+</button>
+<button class="bg-surface-container-high hover:bg-primary/20 transition-all p-4 rounded-xl flex flex-col gap-2 group active:scale-[0.98]">
+<span class="text-[10px] font-bold text-outline-variant uppercase group-hover:text-primary-fixed">BP Diastolic</span>
+<div class="flex items-baseline gap-1">
+<span class="text-2xl font-black text-on-surface">---</span>
+<span class="text-[10px] text-outline">mmHg</span>
+</div>
+</button>
+<!-- Simulated 'Selected' state -->
+<button class="bg-surface-container-highest border-l-4 border-error p-4 rounded-xl flex flex-col gap-2 transition-all">
+<span class="text-[10px] font-bold text-error uppercase">Protein Urine</span>
+<div class="flex items-baseline gap-1">
+<span class="text-2xl font-black text-error">+++</span>
+<span class="text-[10px] text-on-error-container">Dipstick</span>
+</div>
+</button>
+<button class="bg-surface-container-high hover:bg-primary/20 transition-all p-4 rounded-xl flex flex-col gap-2 group active:scale-[0.98]">
+<span class="text-[10px] font-bold text-outline-variant uppercase group-hover:text-primary-fixed">Platelets (PLT)</span>
+<div class="flex items-baseline gap-1">
+<span class="text-2xl font-black text-on-surface">---</span>
+<span class="text-[10px] text-outline">k/uL</span>
+</div>
+</button>
+</div>
+<!-- Laboratory Spreadsheet Grid -->
+<div class="flex-1 bg-surface-container-low rounded-xl overflow-hidden flex flex-col shadow-2xl">
+<div class="bg-surface-container-highest px-6 py-3 flex justify-between items-center">
+<span class="text-xs font-bold uppercase tracking-widest text-on-surface">Laboratory Result Matrix</span>
+<span class="text-[10px] font-medium text-outline">Last Updated: 08:44:12</span>
+</div>
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant/20">
+<th class="px-6 py-4 text-[10px] font-black text-outline uppercase tracking-widest">Test Parameter</th>
+<th class="px-6 py-4 text-[10px] font-black text-outline uppercase tracking-widest text-center">Reference Range</th>
+<th class="px-6 py-4 text-[10px] font-black text-outline uppercase tracking-widest text-right">Observation</th>
+<th class="px-6 py-4 text-[10px] font-black text-outline uppercase tracking-widest text-right">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-container-highest transition-colors">
+<td class="px-6 py-4 font-semibold text-on-surface">Systolic Blood Pressure</td>
+<td class="px-6 py-4 text-center text-xs text-on-surface-variant">&lt; 140 mmHg</td>
+<td class="px-6 py-4 text-right font-black text-error">158</td>
+<td class="px-6 py-4 text-right">
+<span class="px-2 py-0.5 rounded-full bg-error-container text-[10px] font-bold text-on-error-container uppercase">Critical</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest transition-colors">
+<td class="px-6 py-4 font-semibold text-on-surface">ALT (Alanine Aminotransferase)</td>
+<td class="px-6 py-4 text-center text-xs text-on-surface-variant">7-56 U/L</td>
+<td class="px-6 py-4 text-right font-black text-on-surface">42</td>
+<td class="px-6 py-4 text-right">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-[10px] font-bold text-on-surface-variant uppercase">Normal</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest transition-colors">
+<td class="px-6 py-4 font-semibold text-on-surface">AST (Aspartate Aminotransferase)</td>
+<td class="px-6 py-4 text-center text-xs text-on-surface-variant">10-40 U/L</td>
+<td class="px-6 py-4 text-right font-black text-tertiary">48</td>
+<td class="px-6 py-4 text-right">
+<span class="px-2 py-0.5 rounded-full bg-tertiary-container/20 text-[10px] font-bold text-tertiary uppercase">Elevated</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest transition-colors">
+<td class="px-6 py-4 font-semibold text-on-surface">Serum Creatinine</td>
+<td class="px-6 py-4 text-center text-xs text-on-surface-variant">0.5-1.1 mg/dL</td>
+<td class="px-6 py-4 text-right font-black text-on-surface">0.8</td>
+<td class="px-6 py-4 text-right">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-[10px] font-bold text-on-surface-variant uppercase">Normal</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest transition-colors">
+<td class="px-6 py-4 font-semibold text-on-surface">LDH</td>
+<td class="px-6 py-4 text-center text-xs text-on-surface-variant">140-280 U/L</td>
+<td class="px-6 py-4 text-right font-black text-error">310</td>
+<td class="px-6 py-4 text-right">
+<span class="px-2 py-0.5 rounded-full bg-error-container/20 text-[10px] font-bold text-error uppercase">High</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- Right Panel: Diagnostic Decision -->
+<section class="col-span-3 flex flex-col gap-6">
+<div class="bg-surface-container-high rounded-xl p-6 flex flex-col h-full shadow-lg relative overflow-hidden">
+<!-- Subtle background accent -->
+<div class="absolute -right-16 -top-16 w-48 h-48 bg-primary/5 rounded-full blur-3xl"></div>
+<div class="relative">
+<label class="block text-[10px] font-black uppercase tracking-widest text-primary mb-6">Diagnostic Workspace</label>
+<div class="space-y-3">
+<p class="text-xs text-on-surface-variant mb-4">Select the most accurate diagnosis based on the clinical presentation and laboratory data.</p>
+<!-- Custom Radio List -->
+<div class="space-y-2">
+<label class="flex items-center gap-3 p-4 rounded-lg bg-surface-container-low border-l-2 border-transparent hover:bg-surface-container-highest transition-all cursor-pointer group">
+<input class="w-4 h-4 text-primary bg-surface border-outline-variant focus:ring-0" name="dx" type="radio"/>
+<span class="text-sm font-semibold text-on-surface">Gestational Hypertension</span>
+</label>
+<label class="flex items-center gap-3 p-4 rounded-lg bg-surface-container-low border-l-2 border-primary bg-primary/5 transition-all cursor-pointer">
+<input checked="" class="w-4 h-4 text-primary bg-surface border-outline-variant focus:ring-0" name="dx" type="radio"/>
+<span class="text-sm font-semibold text-on-surface">Preeclampsia with Severe Features</span>
+</label>
+<label class="flex items-center gap-3 p-4 rounded-lg bg-surface-container-low border-l-2 border-transparent hover:bg-surface-container-highest transition-all cursor-pointer">
+<input class="w-4 h-4 text-primary bg-surface border-outline-variant focus:ring-0" name="dx" type="radio"/>
+<span class="text-sm font-semibold text-on-surface">HELLP Syndrome</span>
+</label>
+<label class="flex items-center gap-3 p-4 rounded-lg bg-surface-container-low border-l-2 border-transparent hover:bg-surface-container-highest transition-all cursor-pointer">
+<input class="w-4 h-4 text-primary bg-surface border-outline-variant focus:ring-0" name="dx" type="radio"/>
+<span class="text-sm font-semibold text-on-surface">Chronic Hypertension with Superimposed Preeclampsia</span>
+</label>
+</div>
+</div>
+<div class="mt-8 pt-8 border-t border-outline-variant/10">
+<label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-3">Management Reasoning (Optional)</label>
+<textarea class="w-full bg-surface-container-lowest border-none rounded-lg text-xs text-on-surface placeholder:text-outline-variant p-4 h-32 focus:ring-1 focus:ring-primary transition-all no-scrollbar" placeholder="Justify your selection with supporting evidence..."></textarea>
+</div>
+</div>
+<button class="mt-auto w-full py-4 bg-gradient-to-br from-primary to-primary-container text-on-primary-container font-black uppercase tracking-widest text-sm rounded-xl shadow-[0_12px_24px_-8px_rgba(173,198,255,0.3)] active:scale-95 transition-all">
+                        Submit Decision
+                    </button>
+</div>
+</section>
+</div>
+</main>
+<!-- Visual Polish: Decorative Glass Elements -->
+<div class="fixed bottom-10 right-10 flex gap-4 z-50">
+<div class="glass bg-surface-container-high/40 p-4 rounded-full shadow-2xl flex items-center gap-3">
+<div class="flex flex-col items-end">
+<span class="text-[8px] font-bold text-outline uppercase">System Integrity</span>
+<span class="text-xs font-black text-tertiary">STABLE</span>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-tertiary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary text-sm">shield</span>
+</div>
+</div>
+</div>
+</body></html>

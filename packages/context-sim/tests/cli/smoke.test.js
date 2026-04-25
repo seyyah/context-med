@@ -2,7 +2,7 @@
  * context-sim CLI Smoke Tests
  */
 const path = require('path');
-const { execCli, getBinPath, FIXTURES, setupOutputDir, teardownOutputDir, expectFileExists } = require('../../../tests/helpers/cli-test-utils');
+const { execCli, getBinPath, FIXTURES, setupOutputDir, teardownOutputDir, expectFileExists } = require('../../../../tests/helpers/cli-test-utils');
 
 const PKG = 'context-sim';
 const BIN = getBinPath(PKG);

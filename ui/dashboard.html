@@ -1,0 +1,334 @@
+<!-- Context-Sim Dashboard (Warm Blue) -->
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#8bf2ff",
+                    "on-tertiary-fixed-variant": "#004f56",
+                    "on-tertiary-fixed": "#001f23",
+                    "surface-bright": "#37393e",
+                    "on-secondary-fixed-variant": "#004d67",
+                    "inverse-primary": "#005bc1",
+                    "on-tertiary-container": "#002f34",
+                    "surface": "#111318",
+                    "outline": "#8b90a0",
+                    "background": "#111318",
+                    "error-container": "#93000a",
+                    "on-secondary-fixed": "#001e2b",
+                    "surface-container-highest": "#333539",
+                    "surface-container-low": "#1a1c20",
+                    "on-primary": "#ffffff",
+                    "secondary-container": "#00c1fd",
+                    "primary": "#0072F0",
+                    "surface-variant": "#333539",
+                    "on-tertiary": "#00363b",
+                    "surface-container-high": "#282a2e",
+                    "surface-container-lowest": "#0c0e12",
+                    "on-secondary-container": "#004b65",
+                    "secondary": "#8fd8ff",
+                    "surface-container": "#1e2024",
+                    "surface-dim": "#111318",
+                    "tertiary": "#43d9e9",
+                    "secondary-fixed-dim": "#75d1ff",
+                    "secondary-fixed": "#c2e8ff",
+                    "primary-fixed-dim": "#70a5ff",
+                    "on-primary-container": "#ffffff",
+                    "on-primary-fixed-variant": "#004493",
+                    "on-background": "#e2e2e8",
+                    "on-error": "#690005",
+                    "on-surface": "#e2e2e8",
+                    "error": "#ffb4ab",
+                    "on-primary-fixed": "#001a41",
+                    "on-secondary": "#003548",
+                    "outline-variant": "#414755",
+                    "inverse-surface": "#e2e2e8",
+                    "on-error-container": "#ffdad6",
+                    "inverse-on-surface": "#2f3035",
+                    "surface-tint": "#0072F0",
+                    "on-surface-variant": "#c1c6d7",
+                    "primary-fixed": "#d0e1ff",
+                    "tertiary-container": "#00a0ad",
+                    "tertiary-fixed-dim": "#43d9e9",
+                    "primary-container": "#005ec7"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "display": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: rgba(51, 53, 57, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .active-glow {
+            box-shadow: 0 0 15px rgba(0, 114, 240, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen">
+<!-- SideNavBar -->
+<aside class="h-screen w-72 fixed left-0 top-0 z-40 bg-[#111318]/80 backdrop-blur-[30px] shadow-[4px_0_24px_rgba(0,0,0,0.3)] flex flex-col py-8 pr-4 font-['Inter'] antialiased tracking-tight">
+<div class="px-8 mb-12">
+<h1 class="text-2xl font-black text-[#e2e2e8] tracking-[-0.02em]">Context-Sim</h1>
+<p class="text-[10px] uppercase tracking-[0.2em] text-[#0072F0] mt-1">Clinical Lens v2.0</p>
+</div>
+<nav class="flex-1 space-y-2">
+<!-- Active Tab: Scenarios -->
+<a class="flex items-center gap-4 px-8 py-4 text-[#0072F0] bg-[#0072F0]/10 rounded-r-full font-bold border-l-4 border-[#0072F0] transition-all duration-300" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">clinical_notes</span>
+<span>Scenarios</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-[#c1c6d7] opacity-70 hover:opacity-100 hover:bg-[#c1c6d7]/5 transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined">biotech</span>
+<span>Simulations</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-[#c1c6d7] opacity-70 hover:opacity-100 hover:bg-[#c1c6d7]/5 transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-[#c1c6d7] opacity-70 hover:opacity-100 hover:bg-[#c1c6d7]/5 transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-8">
+<div class="flex items-center gap-3 p-4 rounded-xl bg-surface-container-low">
+<img class="w-10 h-10 rounded-full object-cover border border-outline-variant/30" data-alt="Professional portrait of a male doctor in clinical attire with a soft blue tech background, high-end medical professional aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwVqat1i2mjVZhyaMXbLa8At8LT3FLkhwLc1zyySGBc3x5_n8bn7-7E9TDkk0bZGU2KTuNt2c8-kEEXYxcjYpfuYK9_p5JkVWmHR4AXcDPbETZAhpijTY_upG33FhqInHKyGMsFOEfeSgaA2K0crP4wKgIOLIM-6ChRhojtNYrCLw2Fwj4gGf3ygIknpWUbQNJZ3wuHnbqHusFN1Oia8You3c-MY8HGO_vYWELbwGKRt65pEu2Vb7eaudZujDBA3FyF9KRcFIZ8Bk"/>
+<div class="overflow-hidden">
+<p class="text-sm font-bold truncate">Dr. Smith</p>
+<p class="text-[10px] text-on-surface-variant truncate">Chief Medical Officer</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopAppBar -->
+<header class="w-[calc(100%-18rem)] fixed top-0 right-0 z-30 flex justify-between items-center px-12 h-20 bg-transparent hover:backdrop-blur-lg transition-all">
+<div class="flex items-center">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="bg-surface-container-low border-none rounded-full pl-12 pr-6 py-2 text-[10px] tracking-[0.1em] font-bold text-on-surface w-64 focus:ring-1 focus:ring-primary focus:bg-surface-container-high transition-all outline-none" placeholder="SEARCH SIMULATIONS..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-6">
+<button class="relative text-[#c1c6d7] hover:text-[#e2e2e8] transition-colors">
+<span class="material-symbols-outlined">notifications_active</span>
+<span class="absolute -top-1 -right-1 w-2 h-2 bg-tertiary rounded-full"></span>
+</button>
+<button class="text-[#c1c6d7] hover:text-[#e2e2e8] transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant/20"></div>
+<div class="text-right">
+<p class="text-[10px] font-bold text-primary tracking-[0.05em] uppercase">Status: Online</p>
+<p class="text-[9px] text-on-surface-variant tracking-[0.02em]">Lab Node: North-TX-04</p>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="ml-72 pt-24 px-12 pb-12">
+<!-- Header Section -->
+<section class="mb-12 flex justify-between items-end">
+<div>
+<h2 class="text-4xl font-black tracking-tight text-on-surface mb-2">Welcome Back, Dr. Smith</h2>
+<p class="text-on-surface-variant flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+                    System status operational. 3 active clinical simulations requiring review.
+                </p>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-3 rounded-xl glass-card border border-outline-variant/10 text-on-surface text-sm font-bold flex items-center gap-2 hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined text-lg">history</span>
+                    Session History
+                </button>
+<button class="px-6 py-3 rounded-xl bg-primary text-on-primary text-sm font-bold flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-lg">add_circle</span>
+                    New Simulation
+                </button>
+</div>
+</section>
+<div class="grid grid-cols-12 gap-8">
+<!-- Active Scenarios: Bento Layout -->
+<div class="col-span-12 lg:col-span-8">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-sm font-bold uppercase tracking-[0.15em] text-on-surface-variant flex items-center gap-2">
+<span class="w-6 h-[1px] bg-primary"></span> Active Scenarios
+                    </h3>
+</div>
+<div class="grid grid-cols-3 gap-6">
+<!-- Card 1 -->
+<div class="glass-card p-6 rounded-xl border border-outline-variant/10 hover:border-primary/30 transition-all group relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-secondary-container"></div>
+<div class="flex justify-between items-start mb-6">
+<span class="material-symbols-outlined text-secondary-container text-3xl">ecg_heart</span>
+<span class="px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest bg-secondary-container/10 text-secondary-container">In Progress</span>
+</div>
+<h4 class="text-lg font-bold mb-1 leading-tight">Acute Coronary Syndrome</h4>
+<p class="text-xs text-on-surface-variant mb-4">Patient ID: #4492-X</p>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/10">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full bg-surface-container-highest border border-surface flex items-center justify-center text-[8px] font-bold">JD</div>
+<div class="w-6 h-6 rounded-full bg-primary/20 border border-surface flex items-center justify-center text-[8px] font-bold text-primary">MS</div>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant">84% Success</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-card p-6 rounded-xl border border-outline-variant/10 hover:border-primary/30 transition-all group relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<div class="flex justify-between items-start mb-6">
+<span class="material-symbols-outlined text-primary text-3xl">medical_services</span>
+<span class="px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest bg-primary/10 text-primary">Scheduled</span>
+</div>
+<h4 class="text-lg font-bold mb-1 leading-tight">Appendicitis</h4>
+<p class="text-xs text-on-surface-variant mb-4">Patient ID: #8831-A</p>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/10">
+<span class="text-[10px] font-bold text-on-surface-variant">Tomorrow, 09:00</span>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">more_vert</button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass-card p-6 rounded-xl border border-outline-variant/10 hover:border-primary/30 transition-all group relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-error"></div>
+<div class="flex justify-between items-start mb-6">
+<span class="material-symbols-outlined text-error text-3xl">pregnancy</span>
+<span class="px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest bg-error/10 text-error">High Priority</span>
+</div>
+<h4 class="text-lg font-bold mb-1 leading-tight">Preeclampsia</h4>
+<p class="text-xs text-on-surface-variant mb-4">Patient ID: #2210-C</p>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/10">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+<span class="text-[10px] font-bold text-error">Critical Review</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Performance Chart Section -->
+<div class="mt-8 glass-card p-8 rounded-xl border border-outline-variant/10">
+<div class="flex items-center justify-between mb-10">
+<div>
+<h3 class="text-xl font-bold mb-1">Recent Session Performance</h3>
+<p class="text-sm text-on-surface-variant">Class average scores vs. target benchmarks</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-[10px] font-bold uppercase tracking-wider opacity-60">Scores</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-tertiary"></span>
+<span class="text-[10px] font-bold uppercase tracking-wider opacity-60">Avg</span>
+</div>
+</div>
+</div>
+<!-- Simulated Line Chart -->
+<div class="h-64 w-full relative flex items-end justify-between px-2">
+<!-- Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between opacity-5">
+<div class="w-full h-[1px] bg-on-surface"></div>
+<div class="w-full h-[1px] bg-on-surface"></div>
+<div class="w-full h-[1px] bg-on-surface"></div>
+<div class="w-full h-[1px] bg-on-surface"></div>
+</div>
+<!-- Chart SVG -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<defs>
+<lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#0072F0" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#0072F0" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,80 Q15,40 30,60 T60,30 T100,20 L100,100 L0,100 Z" fill="url(#chartGradient)"></path>
+<path d="M0,80 Q15,40 30,60 T60,30 T100,20" fill="none" stroke="#0072F0" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+<path d="M0,70 Q25,65 50,55 T100,45" fill="none" stroke="#43d9e9" stroke-dasharray="4 2" stroke-width="1.5" vector-effect="non-scaling-stroke"></path>
+</svg>
+<!-- X-Axis Labels -->
+<div class="absolute -bottom-6 w-full flex justify-between text-[10px] font-bold text-on-surface-variant opacity-50 px-2">
+<span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Alerts / Widget Area -->
+<div class="col-span-12 lg:col-span-4 space-y-8">
+<div>
+<h3 class="text-sm font-bold uppercase tracking-[0.15em] text-on-surface-variant flex items-center gap-2 mb-6">
+<span class="w-6 h-[1px] bg-tertiary"></span> Critical Alerts
+                    </h3>
+<div class="space-y-4">
+<!-- Alert 1 -->
+<div class="bg-surface-container-low p-4 rounded-xl border-l-4 border-error flex gap-4">
+<div class="w-10 h-10 rounded-full bg-error/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-error">warning</span>
+</div>
+<div>
+<h5 class="text-sm font-bold mb-1">Character Break Detected</h5>
+<p class="text-xs text-on-surface-variant mb-2">Scenario: ACS Simulation #44</p>
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-black bg-surface-container-high px-2 py-1 rounded">STUDENT: MARK V.</span>
+<span class="text-[9px] text-on-surface-variant">2m ago</span>
+</div>
+</div>
+</div>
+<!-- Alert 2 -->
+<div class="bg-surface-container-low p-4 rounded-xl border-l-4 border-tertiary flex gap-4">
+<div class="w-10 h-10 rounded-full bg-tertiary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-tertiary">speed</span>
+</div>
+<div>
+<h5 class="text-sm font-bold mb-1">High Latency Spike</h5>
+<p class="text-xs text-on-surface-variant mb-2">Sim Node 04 reporting 450ms lag.</p>
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-black bg-surface-container-high px-2 py-1 rounded">SYSTEM AUTO-STABILIZING</span>
+<span class="text-[9px] text-on-surface-variant">15m ago</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Simulation Insight Card -->
+<div class="relative overflow-hidden rounded-2xl aspect-[4/5] group">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="Futuristic medical simulation training room with holograms and advanced monitoring equipment, dark atmosphere with neon blue accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_W74BQwQAifBFSQ_NrTnzmnSdseb5LuXVic81JFiMqR2Rq6fjdAIdR6iQ-3DwxdIx2V3SApa87eiKShnC3lrk9JwBR80WvOFw7J51LBuNicDK2MxJU7wTGwWjh5Fy5iQ5MXHoHWSwd6jIntGN4fp9O-tBcq4DlAWGnuWqXPd-Z4kmm8go6uihXSR4upRI2jLa0fQm5azKx3vsFZtUnifNavE0k8hsG6jzlJYT1MKMpz4giCXcYw5wUC56Mt47Ig9ron06sMRhcxs"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-8">
+<div class="px-3 py-1 rounded-full bg-primary text-on-primary text-[10px] font-black tracking-widest inline-block mb-4">NEW UPDATE</div>
+<h4 class="text-2xl font-black mb-2">Pediatric Trauma Module v4</h4>
+<p class="text-sm text-on-surface-variant mb-6">Enhanced AI-driven patient dialogue and physiological feedback systems now live.</p>
+<button class="w-full py-4 bg-surface-container-highest/80 backdrop-blur-md rounded-xl text-sm font-bold border border-outline-variant/20 hover:bg-primary hover:text-on-primary transition-all">
+                            Review Specifications
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Background Elements for Depth -->
+<div class="fixed top-[20%] right-[-10%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -z-10"></div>
+<div class="fixed bottom-[-10%] left-[20%] w-[400px] h-[400px] bg-tertiary/5 rounded-full blur-[100px] -z-10"></div>
+</body></html>

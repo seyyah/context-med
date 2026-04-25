@@ -1,0 +1,377 @@
+<!-- Design System -->
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Xtatistix Clinical - Context-Sim Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#47e099",
+                        "surface-container-high": "#e8e7f2",
+                        "on-tertiary-fixed-variant": "#872100",
+                        "tertiary-container": "#d4d4d8",
+                        "surface-container": "#eeedf8",
+                        "outline-variant": "#e5e5e5",
+                        "secondary-container": "#69fdb3",
+                        "tertiary-fixed-dim": "#ffb5a0",
+                        "inverse-primary": "#b7c4ff",
+                        "surface-container-low": "#f3f2fe",
+                        "error-container": "#FFF5F5",
+                        "secondary": "#006d44",
+                        "background": "#faf8ff",
+                        "on-surface": "#1a1b23",
+                        "surface-dim": "#dad9e4",
+                        "surface-tint": "#2953d1",
+                        "on-secondary-fixed": "#002111",
+                        "on-tertiary-fixed": "#3b0900",
+                        "primary-container": "#003cbd",
+                        "on-tertiary-container": "#ffa38a",
+                        "tertiary": "#3a3a38",
+                        "error": "#FD2C30",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#2f3038",
+                        "surface-container-highest": "#d4d4d8",
+                        "on-primary-fixed": "#001551",
+                        "on-primary-container": "#1E3A8A",
+                        "on-surface-variant": "#71717a",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-on-surface": "#ffffff",
+                        "surface": "#f5f5f4",
+                        "secondary-fixed": "#69fdb3",
+                        "on-background": "#1a1b23",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "surface-variant": "#e2e1ec",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "surface-bright": "#faf8ff",
+                        "on-secondary-container": "#0A7C5C",
+                        "on-secondary-fixed-variant": "#005232",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#ffdbd1",
+                        "primary": "#002989",
+                        "outline": "#d4d4d8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "3xl": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                        "headline-md": ["18px", {"lineHeight": "22px", "fontWeight": "700"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-lg": ["20px", {"lineHeight": "28px", "fontWeight": "700"}],
+                        "body-md": ["13px", {"lineHeight": "21px", "fontWeight": "400"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                        "display": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(16, minmax(0, 1fr));
+            gap: 24px;
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-background">
+<!-- SideNavBar Shell -->
+<aside class="bg-[#001B3D] dark:bg-[#000814] w-[280px] h-full fixed left-0 top-0 border-r border-slate-800 flex flex-col h-screen py-6 z-50">
+<div class="px-6 mb-8">
+<h1 class="text-lg font-black tracking-tight text-white font-display">Xtatistix Clinical</h1>
+<p class="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">Precision Simulation</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Dashboard Active -->
+<a class="bg-[#003CBD] text-white rounded-lg flex items-center gap-3 px-4 py-2.5 mx-3 shadow-sm font-label-md scale-98 transition-transform duration-150 active:opacity-90" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="text-slate-400 hover:text-white flex items-center gap-3 px-4 py-2.5 mx-3 transition-colors font-label-md hover:bg-white/10" href="#">
+<span class="material-symbols-outlined" data-icon="clinical_notes">clinical_notes</span>
+                Simulations
+            </a>
+<a class="text-slate-400 hover:text-white flex items-center gap-3 px-4 py-2.5 mx-3 transition-colors font-label-md hover:bg-white/10" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+                Patient Records
+            </a>
+<a class="text-slate-400 hover:text-white flex items-center gap-3 px-4 py-2.5 mx-3 transition-colors font-label-md hover:bg-white/10" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+                Analytics
+            </a>
+<a class="text-slate-400 hover:text-white flex items-center gap-3 px-4 py-2.5 mx-3 transition-colors font-label-md hover:bg-white/10" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+                Medical Library
+            </a>
+<a class="text-slate-400 hover:text-white flex items-center gap-3 px-4 py-2.5 mx-3 transition-colors font-label-md hover:bg-white/10" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+</nav>
+<div class="mt-auto pt-6 border-t border-slate-800 space-y-1">
+<a class="text-slate-400 hover:text-white flex items-center gap-3 px-4 py-2.5 mx-3 transition-colors font-label-md hover:bg-white/10" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                Help Center
+            </a>
+<a class="text-slate-400 hover:text-white flex items-center gap-3 px-4 py-2.5 mx-3 transition-colors font-label-md hover:bg-white/10" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Log out
+            </a>
+</div>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="bg-white/95 backdrop-blur-sm h-16 w-full sticky top-0 z-40 flex items-center justify-between px-8 ml-[280px] w-[calc(100%-280px)] border-b border-slate-200">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search simulations or patients..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-slate-500">
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined" data-icon="history">history</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined" data-icon="account_circle">account_circle</span></button>
+</div>
+<button class="bg-primary text-white px-5 py-2 rounded-lg font-label-md hover:opacity-90 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Session
+            </button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] p-8 min-h-screen">
+<!-- Welcome Header -->
+<div class="mb-8">
+<h2 class="text-display font-display text-on-surface">Welcome Back Dr. Smith</h2>
+<p class="text-on-surface-variant font-body-lg">Here's your clinical simulation performance for today.</p>
+</div>
+<div class="bento-grid">
+<!-- Active Scenarios Section (10 cols) -->
+<div class="col-span-10 space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-md font-headline-md text-on-surface">Active Scenarios</h3>
+<button class="text-primary font-label-md hover:underline">View All Scenarios</button>
+</div>
+<div class="grid grid-cols-2 gap-6">
+<!-- Scenario Card 1 -->
+<div class="bg-surface-bright rounded-3xl p-6 border border-outline-variant hover:shadow-lg transition-shadow duration-300">
+<div class="flex justify-between items-start mb-4">
+<span class="bg-primary-fixed text-on-primary-fixed-variant px-3 py-1 rounded-lg text-label-sm uppercase font-bold">ER-204</span>
+<div class="flex -space-x-2">
+<img alt="Team Member" class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="professional male doctor portrait in medical scrubs" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACUQj_YXWM-w0g_P4w9mkpseXC7MEnETaHZ6kO1QycwcAxXoRrXwqmSwS0sb3_9Rs6UHmcj-1Zd7PC4ekN2JlPHXrYdeze_Dunp8Kn8m7EqUIVTsnZFRy_hfUnQ_siFmcsTETSpnjk1SpNKvWMhEaTmg0O-mToWtbZmcRPvBwI5YrKZVVsOvuqTpywRLH9daklRgTo35YBe48mgAYIGUUyfp73XBOD0qLA5DSlh5qwl3dpO08hWFXquxR5_MxMD4kay-miB1BPBiM"/>
+<img alt="Team Member" class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="female surgeon in hospital environment with mask" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDc1d5i0GeFk0vvv7-tGLT9dwUGpytQu63RrviYhbiHBopvdbAaBPtwkpSeQlgsfXdq4DMiVw-R_WioT3KLvB-I5iDblnrGcf4RzP_7DV5B_7Rt5_3e_n7UvEeIpeIFlP4U7aa_MUqMOtoL37vceeI54UvGrW-4oJ5cY0TOL5MyIizWuERHwASuDTofEwgR-KJlPArfzIgTpwSYwTmoNLEChYFyGNAT6zIuzMhRx6aYEkRi1pHVEld1OolNt5akb1HwuprXkImetrY"/>
+</div>
+</div>
+<h4 class="text-headline-md font-headline-md mb-2">Acute Myocardial Infarction</h4>
+<p class="text-on-surface-variant font-body-md mb-6 line-clamp-2">High-fidelity simulation focusing on rapid triage and stabilization protocols in the cardiac ward.</p>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">timer</span>
+<span class="font-label-md">14m remaining</span>
+</div>
+<button class="bg-secondary-container text-on-secondary-container px-4 py-2 rounded-lg font-label-md">Join Session</button>
+</div>
+</div>
+<!-- Scenario Card 2 -->
+<div class="bg-surface-bright rounded-3xl p-6 border border-outline-variant hover:shadow-lg transition-shadow duration-300">
+<div class="flex justify-between items-start mb-4">
+<span class="bg-secondary-fixed text-on-secondary-fixed-variant px-3 py-1 rounded-lg text-label-sm uppercase font-bold">ICU-99</span>
+<div class="flex -space-x-2">
+<img alt="Team Member" class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="focused female doctor in hospital hall" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCUc66ZZ65HLP5ypHLWd9jlolxWmsVpBkuIAd9_HWagktW6NTSY8EOGeN3QyWfoGxpSrDmauV_MrkukToWx4y6pqFv1nxvMum1vv0NvSJdAVyl0k4kmXApgJ_CSx4pzGJUDvNlA-oRSFlfLUtqPRkkbdpPhYUU-22bW8pJSMKqKLBLooV1YA0z8bq5uxse7DbMb_y05KDKtuvNEd4U63jDLUKcTC2qthdTvvmBFHzShc1WiFUEe8YUOnwmtlskgDoIwSmn5ZAmynA"/>
+</div>
+</div>
+<h4 class="text-headline-md font-headline-md mb-2">Pediatric Respiratory Distress</h4>
+<p class="text-on-surface-variant font-body-md mb-6 line-clamp-2">Contextual pediatric simulation involving critical airway management and parent communication.</p>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">group</span>
+<span class="font-label-md">8 Participants</span>
+</div>
+<button class="bg-secondary-container text-on-secondary-container px-4 py-2 rounded-lg font-label-md">Join Session</button>
+</div>
+</div>
+</div>
+<!-- Session Performance Chart -->
+<div class="bg-surface-bright rounded-3xl p-8 border border-outline-variant">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h3 class="text-headline-md font-headline-md">Session Performance</h3>
+<p class="text-on-surface-variant font-body-md">Real-time analytical accuracy across clinical domains.</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Accuracy</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary-fixed-dim"></span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Response Time</span>
+</div>
+</div>
+</div>
+<!-- Simplified Visual Chart Component -->
+<div class="h-64 flex items-end justify-between gap-4 px-4 relative">
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-10">
+<div class="border-t border-on-surface w-full"></div>
+<div class="border-t border-on-surface w-full"></div>
+<div class="border-t border-on-surface w-full"></div>
+<div class="border-t border-on-surface w-full"></div>
+</div>
+<div class="w-full flex items-end justify-around h-full z-10">
+<div class="flex flex-col items-center gap-2 w-12 group">
+<div class="w-full bg-primary/20 rounded-t-lg h-[60%] transition-all group-hover:bg-primary/40"></div>
+<div class="w-full bg-primary rounded-t-lg h-[85%] -mt-12 transition-all"></div>
+<span class="text-label-sm text-on-surface-variant">Mon</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-12 group">
+<div class="w-full bg-primary/20 rounded-t-lg h-[40%] transition-all group-hover:bg-primary/40"></div>
+<div class="w-full bg-primary rounded-t-lg h-[70%] -mt-8 transition-all"></div>
+<span class="text-label-sm text-on-surface-variant">Tue</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-12 group">
+<div class="w-full bg-primary/20 rounded-t-lg h-[80%] transition-all group-hover:bg-primary/40"></div>
+<div class="w-full bg-primary rounded-t-lg h-[95%] -mt-16 transition-all"></div>
+<span class="text-label-sm text-on-surface-variant">Wed</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-12 group">
+<div class="w-full bg-primary/20 rounded-t-lg h-[50%] transition-all group-hover:bg-primary/40"></div>
+<div class="w-full bg-primary rounded-t-lg h-[80%] -mt-10 transition-all"></div>
+<span class="text-label-sm text-on-surface-variant">Thu</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-12 group">
+<div class="w-full bg-primary/20 rounded-t-lg h-[90%] transition-all group-hover:bg-primary/40"></div>
+<div class="w-full bg-primary rounded-t-lg h-[90%] -mt-20 transition-all"></div>
+<span class="text-label-sm text-on-surface-variant">Fri</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-12 group">
+<div class="w-full bg-primary/20 rounded-t-lg h-[30%] transition-all group-hover:bg-primary/40"></div>
+<div class="w-full bg-primary rounded-t-lg h-[40%] -mt-6 transition-all"></div>
+<span class="text-label-sm text-on-surface-variant">Sat</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Critical Alerts & Quick Insights (6 cols) -->
+<div class="col-span-6 space-y-6">
+<div class="bg-error-container border border-error/20 rounded-3xl p-6">
+<div class="flex items-center gap-3 mb-6">
+<div class="bg-error/10 p-2 rounded-lg">
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+</div>
+<h3 class="text-headline-md font-headline-md text-on-error-container">Critical Alerts</h3>
+</div>
+<div class="space-y-4">
+<div class="bg-white/60 p-4 rounded-xl border border-error/5 flex gap-4">
+<div class="mt-1"><span class="material-symbols-outlined text-error text-[20px]">priority_high</span></div>
+<div>
+<p class="text-body-md font-bold text-on-error-container">Low Performance: Triage Timing</p>
+<p class="text-label-sm text-on-surface-variant">3 sessions today fell below the required 4-minute stabilization window.</p>
+</div>
+</div>
+<div class="bg-white/60 p-4 rounded-xl border border-error/5 flex gap-4">
+<div class="mt-1"><span class="material-symbols-outlined text-error text-[20px]">notifications_active</span></div>
+<div>
+<p class="text-body-md font-bold text-on-error-container">System Calibration Required</p>
+<p class="text-label-sm text-on-surface-variant">Simulation Room 4 haptic sensors require re-alignment before next session.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Professional Stat Cards -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low rounded-3xl p-6 flex flex-col justify-between">
+<span class="material-symbols-outlined text-primary mb-4" data-icon="verified">verified</span>
+<div>
+<p class="text-display font-display text-on-primary-container">98%</p>
+<p class="text-label-md text-on-surface-variant uppercase font-bold tracking-wider">Avg Accuracy</p>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-3xl p-6 flex flex-col justify-between">
+<span class="material-symbols-outlined text-secondary mb-4" data-icon="bolt">bolt</span>
+<div>
+<p class="text-display font-display text-on-secondary-container">12</p>
+<p class="text-label-md text-on-surface-variant uppercase font-bold tracking-wider">Daily Sessions</p>
+</div>
+</div>
+</div>
+<!-- Simulation Progress / Activity -->
+<div class="bg-surface-bright rounded-3xl p-6 border border-outline-variant">
+<h3 class="text-headline-md font-headline-md mb-6">Staff Performance</h3>
+<div class="space-y-6">
+<div class="flex items-center gap-4">
+<img alt="User" class="w-10 h-10 rounded-full object-cover" data-alt="professional male doctor in medical uniform portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL_Fh42RsQE1OiHCztcg-wIdHO6xdBBvIXpFLYArZ83aw3PpSaZTL-E9UxgZS6h_ISgNBVcRfE9Q1-KzK0sywLz-oAsDdGh6hQDjhizb2iM0fFaboBqAzPDLLMjVBt5Z6LhGuUsIFLivnnWnx8XjP3dYBOHPXk_S_lLH43bptia1oj_EupNvWS3qW884a9jmfmCBCGbQhn34PjwtoRitfcAIzDPs2UWHJ3STu7W66yCg8WW8IhBrVxUOEnfk9aJx_eqquvO1oN7Ws"/>
+<div class="flex-1">
+<div class="flex justify-between mb-1">
+<span class="text-body-md font-bold">Dr. Elena Rodriguez</span>
+<span class="text-label-md text-secondary">Advanced</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[92%] rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<img alt="User" class="w-10 h-10 rounded-full object-cover" data-alt="focused male medical professional in hospital" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAY3IoxlhXXvKs1aiYrfxF5uvOzKWxft5eeAGGrP0sp2XIpIs7H3SSp7IMRqsOqqP9bF6wqyta_HJZ-KguFZine-ix0lkqdN1oG23M1oqJaQHg1H0z8FOwy9bxMQyDMJ1cnXyXUrosqRXchLwx8IpAZIDnyxSS7GC4x2ZVezregI4WuqI6E6o8d5-PTaXlJDVGEEZ1LzCJ4F3VL7ohEWdjv6pr1U8JPciyTrM9Fb1HSPQkfUVBEM4ar5jLZbJDfoNY-F8SIu-bgGmA"/>
+<div class="flex-1">
+<div class="flex justify-between mb-1">
+<span class="text-body-md font-bold">Nurse James Wilson</span>
+<span class="text-label-md text-primary">Intermediate</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[68%] rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<img alt="User" class="w-10 h-10 rounded-full object-cover" data-alt="smiling female medical doctor in white coat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXtcgrOwNY0NAVCDelcWnoorisLXsnUnU0L3Jl5PdV6hb7lEzWXKxYsGJiMkCvUcru6ZW-VeOnr4-Bf-Ub2zfd18v_Sh4-tMIOJAmQXZOze8if2Fip-JnbbXdKoAWHQr-JPVaAMJmJtka2lopzIARoqrkj6IiWfkaCA9Uw2mn7-gIPTPhKMF7Kt_CtXWXMTFBz8OQ91TL_wGanAc1HRadCd3wt-GL7ao64bJvlBkN7ouy2DGfqvXolNZsM3uacM0wWveaygAOp8hY"/>
+<div class="flex-1">
+<div class="flex justify-between mb-1">
+<span class="text-body-md font-bold">Dr. Sarah Chen</span>
+<span class="text-label-md text-secondary">Expert</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[85%] rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB Component -->
+<button class="fixed bottom-10 right-10 bg-primary text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</body></html>
