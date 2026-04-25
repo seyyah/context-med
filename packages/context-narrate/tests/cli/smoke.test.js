@@ -2,6 +2,7 @@
  * context-narrate CLI Smoke Tests
  */
 const path = require('path');
+const fs = require('fs');
 const { execCli, getBinPath, FIXTURES, setupOutputDir, teardownOutputDir, expectFileExists } = require('../../../tests/helpers/cli-test-utils');
 
 const PKG = 'context-narrate';
@@ -33,6 +34,18 @@ describe('context-narrate CLI', () => {
       const r = execCli(BIN, ['generate', '--input', 'nonexistent.md', '--output', '/tmp/a.mp3']);
       expect(r.exitCode).not.toBe(0);
     });
+
+    test('generate without --output exits non-zero', () => {
+      const r = execCli(BIN, ['generate', '--input', path.join(FIXTURES, 'wiki', 'cardiovascular', 'atrial-fibrillation.md')]);
+      expect(r.exitCode).not.toBe(0);
+    });
+
+    test('generate with invalid JSON input exits non-zero', () => {
+      const invalidPath = path.join(setupOutputDir(PKG, 'invalid'), 'invalid.json');
+      fs.writeFileSync(invalidPath, '{ "title": "Incomplete JSON }');
+      const r = execCli(BIN, ['generate', '--input', invalidPath, '--output', '/tmp/a.mp3']);
+      expect(r.exitCode).not.toBe(0);
+    });
   });
 
   describe('P1 — Dry Run', () => {
@@ -46,12 +59,13 @@ describe('context-narrate CLI', () => {
         '--dry-run',
       ]);
       expect(r.exitCode).toBe(0);
-      expect(require('fs').existsSync(outFile)).toBe(false);
+      expect(fs.existsSync(outFile)).toBe(false);
+      expect(fs.existsSync(path.join(outDir, 'segments.json'))).toBe(false);
     });
   });
 
   describe('P1 — Happy Path', () => {
-    test('generate creates audio file', () => {
+    test('generate creates all audio pipeline files', () => {
       const outDir = setupOutputDir(PKG, 'generate');
       const outFile = path.join(outDir, 'narrate-af.mp3');
       const r = execCli(BIN, [
@@ -61,12 +75,24 @@ describe('context-narrate CLI', () => {
         '--config', path.join(FIXTURES, 'config', 'summary-10min.yaml'),
         '--format', 'mp3',
       ]);
+
       if (r.exitCode === 0) {
         expectFileExists(outFile);
+        expectFileExists(path.join(outDir, 'segments.json'));
+        expectFileExists(path.join(outDir, 'narration.json'));
+        expectFileExists(path.join(outDir, 'transcript.md'));
+        expectFileExists(path.join(outDir, 'show-notes.md'));
+        expectFileExists(path.join(outDir, 'run-report.md'));
+
+        const segments = JSON.parse(fs.readFileSync(path.join(outDir, 'segments.json'), 'utf-8'));
+        expect(segments.length).toBeGreaterThan(0);
+        expect(segments[0]).toHaveProperty('sourceRefs');
+        expect(segments[0].sourceRefs.length).toBeGreaterThan(0);
+        expect(segments[0]).toHaveProperty('estimatedStartSec');
       }
     });
 
-    test('faq generates FAQ-style audio', () => {
+    test('faq generates FAQ-style output with Sources', () => {
       const outDir = setupOutputDir(PKG, 'faq');
       const outFile = path.join(outDir, 'faq.mp3');
       const r = execCli(BIN, [
@@ -75,8 +101,11 @@ describe('context-narrate CLI', () => {
         '--output', outFile,
         '--language', 'en',
       ]);
+
       if (r.exitCode === 0) {
-        expectFileExists(outFile);
+        expectFileExists(path.join(outDir, 'faq.md'));
+        const faqText = fs.readFileSync(path.join(outDir, 'faq.md'), 'utf-8');
+        expect(faqText).toMatch(/Sources:/);
       }
     });
   });
