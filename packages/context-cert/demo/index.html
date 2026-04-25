@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Context-Cert | Medical Certification Dashboard</title>
+    <title>Context-Cert | Klinik Mükemmeliyet Paneli</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,23 +20,23 @@
             <nav class="nav">
                 <a href="#" class="nav-item active" id="nav-dashboard">
                     <svg viewBox="0 0 24 24" width="20" height="20"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-                    Dashboard
+                    Panel
                 </a>
-                <a href="#" class="nav-item" id="nav-cli">
-                    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-9 12H5v-2h6v2zm8-4H5V8h14v4z"/></svg>
-                    CLI Playground
+                <a href="#" class="nav-item" id="nav-play">
+                    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z"/></svg>
+                    Sertifika Al
                 </a>
                 <a href="#" class="nav-item" id="nav-reviewer">
                     <svg viewBox="0 0 24 24" width="20" height="20"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-                    Quiz Reviewer
+                    Yönetici Onayı
                 </a>
                 <a href="#" class="nav-item" id="nav-eval">
                     <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-                    Ratchet Eval
+                    Kalite Değerlendirme
                 </a>
             </nav>
-            <div class="sidebar-footer">
-                <div class="version">v0.1.0-stable</div>
+            <div class="sidebar-footer" style="margin-top: auto; font-size: 11px; opacity: 0.5;">
+                v0.2.0-klinik-alpha
             </div>
         </aside>
 
@@ -44,195 +44,191 @@
         <main class="main">
             <header class="header">
                 <div class="header-title">
-                    <h1 id="page-title">Program Dashboard</h1>
-                    <p id="page-subtitle">Monitoring medical certification excellence pipeline</p>
-                </div>
-                <div class="header-actions">
-                    <button class="btn btn-secondary">Export Logs</button>
-                    <button class="btn btn-primary">+ Generate Quiz</button>
+                    <h1 id="page-title">Program Paneli</h1>
+                    <p id="page-subtitle">Tıbbi sertifikasyon mükemmeliyet hattı izleme</p>
                 </div>
             </header>
 
             <div class="content-area">
-                <!-- Dashboard Tab -->
+                <!-- Dashboard -->
                 <section id="tab-dashboard" class="tab-content active">
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-label">Total Questions</div>
-                            <div class="stat-value">1,248</div>
-                            <div class="stat-trend up">+12% vs last week</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Pending Review</div>
-                            <div class="stat-value">42</div>
-                            <div class="stat-trend">8 programs active</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Avg. Quality Score</div>
-                            <div class="stat-value">0.86</div>
-                            <div class="stat-trend up">Ratchet: PASSED</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Approved Quizzes</div>
-                            <div class="stat-value">156</div>
-                            <div class="stat-trend">98.2% accuracy</div>
-                        </div>
-                    </div>
-
-                    <div class="dashboard-grid">
-                        <div class="card main-visual">
-                            <h3>Certification Programs Overview</h3>
-                            <div class="img-placeholder">
-                                <img src="certification_programs_dash.png" alt="Programs Dashboard">
+                    <div class="card">
+                        <h3>Tıbbi Doğruluk Genel Bakış</h3>
+                        <div style="display: flex; gap: 40px; align-items: center;">
+                            <div style="font-size: 48px; font-weight: 800; color: var(--secondary);">98.4%</div>
+                            <div>
+                                <p style="font-weight: 600;">Sistem İnvariant Durumu</p>
+                                <p style="color: var(--success); font-size: 14px;">● Ayıkla, Asla Üretme: AKTİF</p>
                             </div>
                         </div>
-                        <div class="card secondary-visual">
-                            <h3>Approval Pipeline</h3>
-                            <div class="img-placeholder">
-                                <img src="approval_curation_panel.png" alt="Approval Panel">
+                    </div>
+                    <div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div class="card">
+                            <h3>Aktif Programlar</h3>
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <div>Kardiyoloji <span class="badge badge-success" style="float: right;">Stabil</span></div>
+                                <div>Nöroloji <span class="badge badge-success" style="float: right;">Stabil</span></div>
+                                <div>Pediatri <span class="badge badge-draft" style="float: right;">İncelemede</span></div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Son Etkinlikler</h3>
+                            <div id="activity-list" style="font-size: 13px; line-height: 2;">
+                                <div>[15:10] Quiz Dr. Smith tarafından onaylandı</div>
+                                <div>[14:45] Kalite değerlendirmesi geçti (v0.9)</div>
+                                <div>[14:20] Cardio_MD için yeni jeneratör çalıştırıldı</div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- CLI Playground Tab -->
-                <section id="tab-cli" class="tab-content">
-                    <div class="terminal-container">
-                        <div class="terminal-header">
-                            <div class="terminal-dots">
-                                <span></span><span></span><span></span>
+                <!-- Quiz Player (Configuration & Play) -->
+                <section id="tab-play" class="tab-content">
+                    <!-- Config Phase -->
+                    <div id="quiz-config" class="card">
+                        <h3>Sertifikasyon Sınavını Yapılandır</h3>
+                        <div class="config-grid">
+                            <div class="form-group">
+                                <label>Hedef Uzmanlık Alanı</label>
+                                <select id="config-specialty">
+                                    <option value="cardio">Kardiyovasküler Tıp</option>
+                                    <option value="neuro">İleri Nöroloji</option>
+                                    <option value="peds">Pediatrik Acil</option>
+                                </select>
                             </div>
-                            <div class="terminal-title">bash — context-cert</div>
+                            <div class="form-group">
+                                <label>Zorluk Seviyesi</label>
+                                <select id="config-difficulty">
+                                    <option value="easy">Kolay (Temeller)</option>
+                                    <option value="medium" selected>Orta (Standart)</option>
+                                    <option value="hard">Zor (Uzman Seviyesi)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Soru Sayısı</label>
+                                <select id="config-count">
+                                    <option value="5">5 Soru</option>
+                                    <option value="10" selected>10 Soru</option>
+                                    <option value="20">20 Soru</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="terminal-body" id="terminal-output">
-                            <div class="line"><span class="prompt">$</span> context-cert generate --input cardio.md --output quiz.json</div>
-                            <div class="line">Processing 1 file(s)…</div>
-                            <div class="line">Extracting facts from: cardio.md</div>
-                            <div class="line">  → 14 facts found</div>
-                            <div class="line">Generated 10 question(s)</div>
-                            <div class="line">Output written to: quiz.json</div>
-                            <div class="line"><span class="prompt">$</span> <span class="cursor">_</span></div>
+                        <button class="btn btn-primary" id="btn-start-quiz">Sınavı Başlat</button>
+                    </div>
+
+                    <!-- Play Phase -->
+                    <div id="quiz-player" style="display: none;">
+                        <div class="progress-container">
+                            <div id="quiz-progress" class="progress-fill" style="width: 10%;"></div>
+                        </div>
+                        <div class="quiz-container">
+                            <div class="question-card">
+                                <div class="q-meta">
+                                    <span id="q-number">Soru 1 / 10</span>
+                                    <span id="q-diff-badge" class="badge badge-draft">Orta</span>
+                                </div>
+                                <div class="q-stem" id="q-stem">Soru yükleniyor...</div>
+                                <div class="options-list" id="q-options">
+                                    <!-- Options injected here -->
+                                </div>
+                                <div style="margin-top: 32px; font-size: 12px; color: var(--outline);">
+                                    <a href="#" style="color: var(--secondary); text-decoration: none;">İnceleme için işaretle</a>
+                                </div>
+                            </div>
+                            <div class="quiz-nav">
+                                <button class="btn btn-secondary" id="btn-prev" disabled>Önceki</button>
+                                <span id="q-counter" style="font-weight: 600; font-size: 14px;">1 / 10</span>
+                                <button class="btn btn-primary" id="btn-next">Sonraki Soru</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="cli-docs">
-                        <h3>Command Reference</h3>
-                        <div class="cmd-item">
-                            <code>generate</code>
-                            <p>Extracts MCQ questions from source text with verbatim source quotes.</p>
-                        </div>
-                        <div class="cmd-item">
-                            <code>review</code>
-                            <p>Lists and filters generated quiz drafts for administrative approval.</p>
-                        </div>
-                        <div class="cmd-item">
-                            <code>eval</code>
-                            <p>Ensures new generations match or exceed baseline quality metrics.</p>
+
+                    <!-- Results Phase -->
+                    <div id="quiz-results" style="display: none;" class="results-container">
+                        <div class="card">
+                            <h3>Sınav Tamamlandı</h3>
+                            <div class="score-circle">
+                                <div class="score-value" id="final-score">80</div>
+                                <div class="score-label">PUAN</div>
+                            </div>
+                            <p id="result-message">Tebrikler! Sertifikasyon gerekliliklerini başarıyla geçtiniz.</p>
+                            
+                            <div id="certificate-wrapper" style="display: none; margin-top: 32px;">
+                                <div class="certificate-preview" id="certificate-to-print">
+                                    <div class="cert-title">Tıbbi Sertifikasyon Kurulu</div>
+                                    <p>Bu belge ile tasdik olunur ki,</p>
+                                    <div class="cert-name">ADAY İSMİ</div>
+                                    <p>aşağıdaki sınavı başarıyla tamamlamıştır:</p>
+                                    <div style="font-weight: 700; margin-bottom: 24px;" id="cert-program-name">KARDİYOVASKÜLER TIP SINAVI</div>
+                                    <div style="font-size: 12px; opacity: 0.7;">Doğrulama Kimliği: CC-2026-X892</div>
+                                </div>
+                                <button class="btn btn-primary" id="btn-download-pdf" style="margin-top: 24px; width: 100%;">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align: middle; margin-right: 8px; fill: currentColor;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                                    Resmi Sertifikayı İndir (PDF)
+                                </button>
+                            </div>
+
+                            <button class="btn btn-secondary" style="margin-top: 32px;" id="btn-restart">Yeni Oturum Başlat</button>
                         </div>
                     </div>
                 </section>
 
-                <!-- Reviewer Tab -->
+                <!-- Admin Reviewer -->
                 <section id="tab-reviewer" class="tab-content">
-                    <div class="reviewer-layout">
-                        <div class="card quiz-list">
-                            <h3>Draft Quizzes</h3>
-                            <div class="list-item active">
-                                <div class="item-title">Cardiology_Basic_v1.json</div>
-                                <div class="item-meta">10 Questions • Draft</div>
-                            </div>
-                            <div class="list-item">
-                                <div class="item-title">Neurology_Advanced_v2.json</div>
-                                <div class="item-meta">25 Questions • Approved</div>
-                            </div>
-                            <div class="list-item">
-                                <div class="item-title">Pediatrics_ER_v4.json</div>
-                                <div class="item-meta">15 Questions • Rejected</div>
-                            </div>
-                        </div>
-                        <div class="card quiz-preview">
-                            <div class="preview-header">
-                                <h3>Quiz Preview: Cardiology_Basic_v1</h3>
-                                <span class="badge badge-draft">DRAFT</span>
-                            </div>
-                            <div class="question-container" id="preview-questions">
-                                <!-- Dynamically filled -->
-                                <div class="question-card">
-                                    <div class="q-header">Question #1 <span class="q-difficulty">MEDIUM</span></div>
-                                    <div class="q-stem">Which of the following describes the primary role of the SA node in cardiac conduction?</div>
-                                    <div class="q-options">
-                                        <div class="option">A) Acts as the primary pacemaker</div>
-                                        <div class="option">B) Delays the electrical impulse</div>
-                                        <div class="option">C) Conducts directly to Purkinje fibers</div>
-                                        <div class="option">D) Modulates ventricular contraction strength</div>
-                                    </div>
-                                    <div class="q-source">
-                                        <strong>Source Quote:</strong> "The sinoatrial (SA) node is the primary pacemaker of the heart, initiating the electrical impulse."
-                                    </div>
-                                </div>
-                                
-                                <div class="mockup-view">
-                                    <h4>Candidate View Mockup</h4>
-                                    <div class="img-placeholder">
-                                        <img src="quiz_session_view.png" alt="Quiz Session View">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="card">
+                        <h3>İçerik İnceleme Paneli</h3>
+                        <p>Üretilen soruların kaynak alıntılarla karşılaştırıldığı yönetici görünümü.</p>
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                            <thead style="background: var(--surface-container); text-align: left;">
+                                <tr>
+                                    <th style="padding: 12px;">ID</th>
+                                    <th style="padding: 12px;">Soru Özeti</th>
+                                    <th style="padding: 12px;">İzlenebilirlik</th>
+                                    <th style="padding: 12px;">Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid var(--outline-variant);">
+                                    <td style="padding: 12px;">Q-492</td>
+                                    <td style="padding: 12px;">SA düğümünün birincil görevi nedir...</td>
+                                    <td style="padding: 12px;"><span style="color: var(--success)">100% (Kelimesi Kelimesine)</span></td>
+                                    <td style="padding: 12px;"><span class="badge badge-success">Onaylandı</span></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid var(--outline-variant);">
+                                    <td style="padding: 12px;">Q-493</td>
+                                    <td style="padding: 12px;">Akut inmede, zaman penceresi...</td>
+                                    <td style="padding: 12px;"><span style="color: var(--success)">100% (Kelimesi Kelimesine)</span></td>
+                                    <td style="padding: 12px;"><span class="badge badge-draft">Taslak</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </section>
 
-                <!-- Eval Tab -->
+                <!-- Eval -->
                 <section id="tab-eval" class="tab-content">
-                    <div class="eval-grid">
-                        <div class="card">
-                            <h3>Ratchet Evaluation Results</h3>
-                            <div class="eval-comparison">
-                                <div class="eval-side baseline">
-                                    <div class="side-label">BASELINE</div>
-                                    <div class="side-score">0.78</div>
-                                    <div class="side-details">
-                                        <p>Coverage: 80%</p>
-                                        <p>Options: 3.2 avg</p>
-                                    </div>
-                                </div>
-                                <div class="eval-vs">VS</div>
-                                <div class="eval-side current">
-                                    <div class="side-label">CURRENT</div>
-                                    <div class="side-score highlight">0.86</div>
-                                    <div class="side-details">
-                                        <p>Coverage: 100%</p>
-                                        <p>Options: 4.0 avg</p>
-                                    </div>
-                                </div>
+                    <div class="card">
+                        <h3>Kalite Değerlendirmesi</h3>
+                        <div style="display: flex; gap: 20px; margin-top: 20px;">
+                            <div class="card" style="flex: 1; text-align: center;">
+                                <div style="font-size: 12px; color: var(--outline);">TEMEL ÇİZGİ</div>
+                                <div style="font-size: 32px; font-weight: 700;">0.78</div>
                             </div>
-                            <div class="eval-status-banner pass">
-                                <strong>✅ PASSED</strong> — Current version exceeds baseline quality.
+                            <div style="align-self: center; font-weight: 800;">VS</div>
+                            <div class="card" style="flex: 1; text-align: center; border-color: var(--secondary);">
+                                <div style="font-size: 12px; color: var(--secondary);">GÜNCEL</div>
+                                <div style="font-size: 32px; font-weight: 700; color: var(--secondary);">0.86</div>
                             </div>
                         </div>
-                        <div class="card">
-                            <h3>Quality Metrics Breakdown</h3>
-                            <div class="chart-mockup">
-                                <!-- Simplified bars -->
-                                <div class="bar-row">
-                                    <span>Source Coverage</span>
-                                    <div class="bar-container"><div class="bar" style="width: 100%;"></div></div>
-                                </div>
-                                <div class="bar-row">
-                                    <span>Option Count</span>
-                                    <div class="bar-container"><div class="bar" style="width: 90%;"></div></div>
-                                </div>
-                                <div class="bar-row">
-                                    <span>Zero Fabrication</span>
-                                    <div class="bar-container"><div class="bar" style="width: 100%;"></div></div>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="badge badge-success" style="display: block; text-align: center; padding: 12px;">DEĞERLENDİRME GEÇTİ: KALİTE %10.2 ARTTI</div>
                     </div>
                 </section>
             </div>
         </main>
     </div>
 
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
