@@ -83,7 +83,6 @@ jobs:
 
       - name: Post PR Score Comment
         if: always()
-        continue-on-error: true
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
