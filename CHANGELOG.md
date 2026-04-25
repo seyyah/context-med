@@ -5,6 +5,16 @@ Format: [Keep a Changelog](https://keepachangelog.com) — [Semantic Versioning]
 
 ## [Unreleased]
 
+## [context-cert-v0.1.0] — 2026-04-25
+
+### Katkıda Bulunan
+- Hüseyin Baran Işık
+
+### İyileştirmeler
+- 📦 context-cert paketi güncellendi.
+- feat(context-cert): translate demo to Turkish, add PDF certificate download and quiz hints
+
+
 ## [istabot-nokta-v0.1.0] — 2026-04-25
 
 ### Katkıda Bulunan
