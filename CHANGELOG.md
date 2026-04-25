@@ -5,6 +5,16 @@ Format: [Keep a Changelog](https://keepachangelog.com) — [Semantic Versioning]
 
 ## [Unreleased]
 
+## [istabot-nokta-v0.2.0] — 2026-04-25
+
+### Katkıda Bulunan
+- seyyah
+
+### İyileştirmeler
+- 📦 istabot-nokta paketi güncellendi.
+- Merge branch 'main' into main
+
+
 ## [context-cert-v0.1.0] — 2026-04-25
 
 ### Katkıda Bulunan
