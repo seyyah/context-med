@@ -16,7 +16,7 @@ jobs:
       - name: Checkout PR
         uses: actions/checkout@v4
         with:
-          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
           persist-credentials: false
 
