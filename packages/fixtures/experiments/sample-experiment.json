@@ -1,0 +1,6 @@
+{
+  "id": "exp-001",
+  "description": "Verify wiki can answer a basic design token query",
+  "query": "primary color design token",
+  "expected_keywords": ["primary", "color", "003CBD"]
+}
