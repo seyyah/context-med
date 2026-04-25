@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { runIngest } from '../commands/ingest';
 import { runLint } from '../commands/lint';
+import { runQuery } from '../commands/query';
 import * as path from 'path';
 const pkg = require(path.resolve(__dirname, '../../package.json'));
 
@@ -38,6 +39,22 @@ program
   .action((opts) => {
     runLint({
       input: opts.input,
+      format: opts.format,
+      verbose: opts.verbose,
+    });
+  });
+
+program
+  .command('query')
+  .description('Query the wiki for an answer')
+  .requiredOption('-i, --input <path>', 'Wiki directory path')
+  .requiredOption('-q, --query <text>', 'Query string')
+  .option('-f, --format <type>', 'Output format: md | json', 'json')
+  .option('-v, --verbose', 'Verbose output', false)
+  .action((opts) => {
+    runQuery({
+      input: opts.input,
+      query: opts.query,
       format: opts.format,
       verbose: opts.verbose,
     });
