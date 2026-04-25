@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Social-Agent - Packages</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#bbbab7",
+                    "surface-tint": "#2953d1",
+                    "inverse-surface": "#303033",
+                    "on-secondary": "#ffffff",
+                    "surface-container-high": "#e5e7eb",
+                    "surface-variant": "#e4e1e6",
+                    "inverse-primary": "#b7c4ff",
+                    "on-surface": "#1b1b1e",
+                    "surface-container-low": "#f6f2f7",
+                    "inverse-on-surface": "#f3f0f4",
+                    "secondary-container": "#EBF7F2",
+                    "primary-fixed": "#dce1ff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-dim": "#e5e5e5",
+                    "primary-container": "#EBF2FF",
+                    "primary": "#002989",
+                    "secondary": "#006d44",
+                    "secondary-fixed-dim": "#47e099",
+                    "on-primary-fixed": "#001551",
+                    "on-tertiary-fixed-variant": "#474745",
+                    "on-surface-variant": "#71717a",
+                    "on-secondary-container": "#007349",
+                    "on-secondary-fixed-variant": "#005232",
+                    "tertiary-fixed-dim": "#c8c6c3",
+                    "tertiary": "#343432",
+                    "outline": "#d4d4d8",
+                    "error": "#FD2C30",
+                    "on-tertiary-fixed": "#1b1c1a",
+                    "surface-container-highest": "#e4e1e6",
+                    "secondary-fixed": "#69fdb3",
+                    "on-primary": "#ffffff",
+                    "outline-variant": "#c4c5d6",
+                    "on-error": "#ffffff",
+                    "surface": "#ffffff",
+                    "background": "#fbf8fc",
+                    "on-primary-container": "#a6b7ff",
+                    "on-primary-fixed-variant": "#0039b5",
+                    "on-background": "#1b1b1e",
+                    "tertiary-fixed": "#e4e2df",
+                    "on-error-container": "#93000a",
+                    "surface-bright": "#fbf8fc",
+                    "primary-fixed-dim": "#b7c4ff",
+                    "surface-container": "#f0edf1",
+                    "tertiary-container": "#4a4a48",
+                    "on-secondary-fixed": "#002111",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sm": "12px",
+                    "base": "8px",
+                    "xl": "32px",
+                    "lg": "24px",
+                    "md": "16px",
+                    "xs": "4px",
+                    "sidebar-width": "280px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display": ["Inter"],
+                    "headline-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-md": ["18px", {"lineHeight": "22px", "fontWeight": "700"}],
+                    "body-md": ["13px", {"lineHeight": "21px", "fontWeight": "400"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                    "display": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-lg": ["20px", {"lineHeight": "28px", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-lg min-h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-screen w-[280px] bg-[#1E3A8A] dark:bg-slate-950 font-['Inter'] antialiased border-r border-slate-200/10 shadow-xl flex flex-col h-full py-6 z-50">
+<!-- Header -->
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">terminal</span>
+</div>
+<div>
+<h1 class="text-xl font-bold text-white tracking-tight">Social-Agent</h1>
+<p class="text-blue-200/70 text-xs font-medium uppercase tracking-wider mt-0.5">CLI Operations</p>
+</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex flex-col gap-1 overflow-y-auto px-2">
+<a class="flex items-center gap-3 text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-sm font-medium">Overview</span>
+</a>
+<a class="flex items-center gap-3 text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">workspaces</span>
+<span class="text-sm font-medium">Workspace</span>
+</a>
+<a class="flex items-center gap-3 text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">event_note</span>
+<span class="text-sm font-medium">Plan</span>
+</a>
+<a class="flex items-center gap-3 text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">drafts</span>
+<span class="text-sm font-medium">Drafts</span>
+</a>
+<a class="flex items-center gap-3 text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">gavel</span>
+<span class="text-sm font-medium">Moderation</span>
+</a>
+<a class="flex items-center gap-3 text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">queue_play_next</span>
+<span class="text-sm font-medium">Review Queue</span>
+</a>
+<!-- ACTIVE TAB -->
+<a class="flex items-center gap-3 bg-[#003CBD] text-white rounded-lg mx-2 px-4 py-2 font-semibold scale-98 active:opacity-80 transition-transform shadow-md" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="text-sm">Packages</span>
+</a>
+<a class="flex items-center gap-3 text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">save_as</span>
+<span class="text-sm font-medium">Writeback</span>
+</a>
+<a class="flex items-center gap-3 text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors scale-98 active:opacity-80 transition-transform mt-auto" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 ml-[280px] flex flex-col h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-white dark:bg-slate-900 font-['Inter'] text-sm border-b border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center px-8 z-40">
+<!-- Left Side: Search -->
+<div class="flex-1 flex items-center">
+<div class="flex items-center bg-slate-100 dark:bg-slate-800/50 rounded-full px-4 py-2 w-72 border border-transparent focus-within:border-[#003CBD]/30 transition-colors">
+<span class="material-symbols-outlined text-slate-400 text-[18px] mr-2">search</span>
+<input class="bg-transparent border-none outline-none text-sm w-full text-slate-700 dark:text-slate-300 placeholder-slate-400/80" placeholder="Search packages, IDs, or metadata..." type="text"/>
+</div>
+</div>
+<!-- Right Side: Actions -->
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-6 h-16">
+<button class="text-slate-500 dark:text-slate-400 hover:text-[#003CBD] dark:hover:text-blue-400 transition-colors cursor-pointer opacity-90 hover:opacity-100 font-medium">
+                        Standalone CLI Mode
+                    </button>
+<button class="text-[#003CBD] font-bold border-b-2 border-[#003CBD] h-full flex items-center cursor-pointer opacity-90 hover:opacity-100">
+                        Integration-ready
+                    </button>
+</div>
+<div class="flex items-center gap-3 pl-6 border-l border-slate-200 dark:border-slate-700 h-8">
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#003CBD] transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#003CBD] transition-colors">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#003CBD] to-blue-400 ml-2 shadow-sm border border-white/20 cursor-pointer"></div>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 mt-16 p-xl overflow-y-auto bg-surface-container-low">
+<!-- Page Header -->
+<div class="flex items-end justify-between mb-lg">
+<div>
+<h2 class="font-display text-display text-on-surface mb-xs">Exported Packages</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage portable content artifacts ready for CLI deployment or external integration.</p>
+</div>
+<div class="flex gap-md">
+<button class="flex items-center gap-base px-md py-sm rounded-lg border border-outline bg-surface text-on-surface font-label-md text-label-md hover:bg-surface-dim transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Filter
+                    </button>
+<button class="flex items-center gap-base px-md py-sm rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        New Package
+                    </button>
+</div>
+</div>
+<!-- Dashboard Grid -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-lg h-[calc(100%-80px)] min-h-[600px]">
+<!-- Main Content Panel (List/Table) -->
+<div class="xl:col-span-2 bg-surface rounded-xl border border-outline shadow-sm flex flex-col overflow-hidden">
+<div class="px-md py-sm border-b border-outline bg-surface-bright flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md text-on-surface text-sm">Artifact Directory</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2 py-1 rounded-md border border-outline-variant">Total: 124 Items</span>
+</div>
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left border-collapse">
+<thead class="sticky top-0 bg-surface z-10 border-b border-outline shadow-[0_1px_0_0_theme(colors.outline)]">
+<tr>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant w-10"></th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant">Package ID</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant">Task Type</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant">Platforms</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant">Status</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface">
+<!-- Active Row Example -->
+<tr class="border-b border-outline-variant hover:bg-surface-container-highest cursor-pointer bg-primary-container/20 transition-colors group">
+<td class="px-md py-sm">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">folder_zip</span>
+</td>
+<td class="px-md py-sm font-medium">PKG-202310-A1</td>
+<td class="px-md py-sm">Product Launch Sequence</td>
+<td class="px-md py-sm flex gap-xs">
+<div class="w-6 h-6 rounded bg-surface-container border border-outline flex items-center justify-center text-xs text-on-surface-variant" title="Twitter">𝕏</div>
+<div class="w-6 h-6 rounded bg-surface-container border border-outline flex items-center justify-center text-xs text-on-surface-variant" title="LinkedIn">in</div>
+</td>
+<td class="px-md py-sm">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm border border-secondary-container/50">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary mr-1.5"></span>
+                                            Approved
+                                        </span>
+</td>
+<td class="px-md py-sm text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1 opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Standard Row -->
+<tr class="border-b border-outline-variant hover:bg-surface-container-highest cursor-pointer transition-colors group">
+<td class="px-md py-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">folder_zip</span>
+</td>
+<td class="px-md py-sm font-medium">PKG-202310-A2</td>
+<td class="px-md py-sm">Crisis Comms PR-12</td>
+<td class="px-md py-sm flex gap-xs">
+<div class="w-6 h-6 rounded bg-surface-container border border-outline flex items-center justify-center text-xs text-on-surface-variant" title="All Platforms">All</div>
+</td>
+<td class="px-md py-sm">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm border border-error-container/50">
+<span class="w-1.5 h-1.5 rounded-full bg-error mr-1.5"></span>
+                                            High Risk
+                                        </span>
+</td>
+<td class="px-md py-sm text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1 opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Standard Row -->
+<tr class="border-b border-outline-variant hover:bg-surface-container-highest cursor-pointer transition-colors group">
+<td class="px-md py-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">folder_zip</span>
+</td>
+<td class="px-md py-sm font-medium">PKG-202310-B4</td>
+<td class="px-md py-sm">Weekly Tech Newsletter</td>
+<td class="px-md py-sm flex gap-xs">
+<div class="w-6 h-6 rounded bg-surface-container border border-outline flex items-center justify-center text-xs text-on-surface-variant" title="Twitter">𝕏</div>
+<div class="w-6 h-6 rounded bg-surface-container border border-outline flex items-center justify-center text-xs text-on-surface-variant" title="Discord">DC</div>
+</td>
+<td class="px-md py-sm">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-dim text-on-surface-variant font-label-sm text-label-sm border border-outline-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-on-surface-variant mr-1.5"></span>
+                                            Pending
+                                        </span>
+</td>
+<td class="px-md py-sm text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1 opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Detail / Inspector Panel -->
+<div class="xl:col-span-1 bg-surface rounded-xl border border-outline shadow-sm flex flex-col overflow-hidden h-full">
+<!-- Detail Header -->
+<div class="p-md border-b border-outline bg-surface-bright flex flex-col gap-sm">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">inventory</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">PKG-202310-A1</h3>
+</div>
+<span class="bg-primary-container text-on-primary-container font-label-sm text-label-sm px-2 py-1 rounded-md font-medium uppercase tracking-wider">v1.0.4</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Product Launch Sequence for Q4 Feature Drop. Ready for CLI ingest.</p>
+</div>
+<!-- Metadata JSON View -->
+<div class="flex-1 p-md overflow-y-auto bg-surface-container-lowest">
+<div class="flex items-center justify-between mb-xs">
+<span class="font-label-md text-label-md text-on-surface font-semibold uppercase tracking-wider">Metadata Schema</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">manifest.json</span>
+</div>
+<div class="bg-[#1E1E1E] rounded-lg p-sm font-mono text-[12px] leading-relaxed text-[#D4D4D4] overflow-x-auto border border-outline shadow-inner">
+<pre class="m-0 text-left"><code><span class="text-[#9CDCFE]">"packageId"</span>: <span class="text-[#CE9178]">"PKG-202310-A1"</span>,
+<span class="text-[#9CDCFE]">"version"</span>: <span class="text-[#B5CEA8]">"1.0.4"</span>,
+<span class="text-[#9CDCFE]">"taskType"</span>: <span class="text-[#CE9178]">"CAMPAIGN_SEQUENCE"</span>,
+<span class="text-[#9CDCFE]">"status"</span>: <span class="text-[#CE9178]">"APPROVED"</span>,
+<span class="text-[#9CDCFE]">"riskLevel"</span>: <span class="text-[#B5CEA8]">0</span>,
+<span class="text-[#9CDCFE]">"platforms"</span>: [
+  <span class="text-[#CE9178]">"TWITTER_X"</span>,
+  <span class="text-[#CE9178]">"LINKEDIN"</span>
+],
+<span class="text-[#9CDCFE]">"artifacts"</span>: [
+  {
+    <span class="text-[#9CDCFE]">"type"</span>: <span class="text-[#CE9178]">"TEXT_COPY"</span>,
+    <span class="text-[#9CDCFE]">"file"</span>: <span class="text-[#CE9178]">"copy_variants.json"</span>
+  },
+  {
+    <span class="text-[#9CDCFE]">"type"</span>: <span class="text-[#CE9178]">"MEDIA"</span>,
+    <span class="text-[#9CDCFE]">"file"</span>: <span class="text-[#CE9178]">"assets/hero.png"</span>
+  }
+],
+<span class="text-[#9CDCFE]">"checksum"</span>: <span class="text-[#CE9178]">"sha256:a8f93d..."</span></code></pre>
+</div>
+<!-- Quick Stats -->
+<div class="grid grid-cols-2 gap-sm mt-md">
+<div class="bg-surface-container rounded-lg p-sm border border-outline">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-1">Total Size</div>
+<div class="font-headline-md text-headline-md text-on-surface text-sm">4.2 MB</div>
+</div>
+<div class="bg-surface-container rounded-lg p-sm border border-outline">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-1">Exported By</div>
+<div class="font-headline-md text-headline-md text-on-surface text-sm">CLI System</div>
+</div>
+</div>
+</div>
+<!-- Actions Footer -->
+<div class="p-md border-t border-outline bg-surface-bright flex flex-col gap-sm">
+<button class="w-full flex items-center justify-center gap-base px-md py-sm rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                            Export Package
+                        </button>
+<div class="grid grid-cols-2 gap-sm">
+<button class="flex items-center justify-center gap-base px-sm py-sm rounded-lg border border-outline bg-surface text-on-surface font-label-md text-label-md hover:bg-surface-dim transition-colors">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+                                Copy JSON
+                            </button>
+<button class="flex items-center justify-center gap-base px-sm py-sm rounded-lg border border-outline bg-surface text-on-surface font-label-md text-label-md hover:bg-surface-dim transition-colors">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+                                Open Folder
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

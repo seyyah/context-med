@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Review Queue - Social-Agent</title>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#bbbab7",
+                        "surface-tint": "#2953d1",
+                        "inverse-surface": "#303033",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#e5e7eb",
+                        "surface-variant": "#e4e1e6",
+                        "inverse-primary": "#b7c4ff",
+                        "on-surface": "#1b1b1e",
+                        "surface-container-low": "#f6f2f7",
+                        "inverse-on-surface": "#f3f0f4",
+                        "secondary-container": "#EBF7F2",
+                        "primary-fixed": "#dce1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#e5e5e5",
+                        "primary-container": "#EBF2FF",
+                        "primary": "#002989",
+                        "secondary": "#006d44",
+                        "secondary-fixed-dim": "#47e099",
+                        "on-primary-fixed": "#001551",
+                        "on-tertiary-fixed-variant": "#474745",
+                        "on-surface-variant": "#71717a",
+                        "on-secondary-container": "#007349",
+                        "on-secondary-fixed-variant": "#005232",
+                        "tertiary-fixed-dim": "#c8c6c3",
+                        "tertiary": "#343432",
+                        "outline": "#d4d4d8",
+                        "error": "#FD2C30",
+                        "on-tertiary-fixed": "#1b1c1a",
+                        "surface-container-highest": "#e4e1e6",
+                        "secondary-fixed": "#69fdb3",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#c4c5d6",
+                        "on-error": "#ffffff",
+                        "surface": "#ffffff",
+                        "background": "#fbf8fc",
+                        "on-primary-container": "#a6b7ff",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "on-background": "#1b1b1e",
+                        "tertiary-fixed": "#e4e2df",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#fbf8fc",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "surface-container": "#f0edf1",
+                        "tertiary-container": "#4a4a48",
+                        "on-secondary-fixed": "#002111",
+                        "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "12px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "sidebar-width": "280px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-md": ["18px", { "lineHeight": "22px", "fontWeight": "700" }],
+                        "body-md": ["13px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+                        "display": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-lg": ["20px", { "lineHeight": "28px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for data density feel */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-hidden selection:bg-primary-container selection:text-primary">
+<!-- JSON Component: SideNavBar -->
+<nav class="fixed left-0 top-0 h-screen w-[280px] bg-[#1E3A8A] dark:bg-slate-950 text-white font-['Inter'] antialiased border-r border-slate-200/10 shadow-xl flex flex-col h-full py-6 z-50">
+<!-- Header -->
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0 border border-white/30" data-alt="User Profile avatar placeholder showing a simple geometric shape">
+<span class="material-symbols-outlined text-white">person</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xl font-bold text-white tracking-tight">Social-Agent</span>
+<span class="text-blue-200/80 font-label-sm uppercase tracking-wider">CLI Operations</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex flex-col gap-1 flex-1 overflow-y-auto px-2">
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-label-md">Overview</span>
+</a>
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">workspaces</span>
+<span class="font-label-md">Workspace</span>
+</a>
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">event_note</span>
+<span class="font-label-md">Plan</span>
+</a>
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">drafts</span>
+<span class="font-label-md">Drafts</span>
+</a>
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">gavel</span>
+<span class="font-label-md">Moderation</span>
+</a>
+<!-- Active State -->
+<a class="bg-[#003CBD] text-white rounded-lg mx-2 px-4 py-2 font-semibold flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">queue_play_next</span>
+<span class="font-label-md">Review Queue</span>
+</a>
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span class="font-label-md">Packages</span>
+</a>
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">save_as</span>
+<span class="font-label-md">Writeback</span>
+</a>
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform mt-auto" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-label-md">Settings</span>
+</a>
+</div>
+</nav>
+<!-- JSON Component: TopAppBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-white dark:bg-slate-900 text-[#003CBD] dark:text-blue-400 font-['Inter'] text-sm border-b border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center px-8 z-40">
+<div class="flex items-center gap-6">
+<span class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Social-Agent Demo</span>
+<!-- Search Bar (on_left) -->
+<div class="relative hidden lg:flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">search</span>
+<input class="bg-surface-container-low border border-outline-variant text-on-surface font-body-md rounded-full py-1.5 pl-9 pr-4 w-[280px] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Search queues, IDs, or content..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-3 py-1.5 rounded-md font-label-md text-slate-500 hover:bg-surface-container-low transition-colors cursor-pointer opacity-90 hover:opacity-100">Standalone CLI Mode</button>
+<button class="px-4 py-1.5 rounded-md font-label-md bg-primary-container text-on-primary-container hover:bg-primary/10 transition-colors cursor-pointer opacity-90 hover:opacity-100">Integration-ready</button>
+<div class="flex items-center gap-2 border-l border-outline-variant pl-4 ml-2">
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:bg-surface-container-low transition-colors cursor-pointer opacity-90 hover:opacity-100 relative">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full border border-white"></span>
+</button>
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:bg-surface-container-low transition-colors cursor-pointer opacity-90 hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Workspace Canvas -->
+<main class="ml-[280px] pt-[64px] h-screen flex flex-col p-lg gap-md bg-surface-container-low">
+<!-- Header area for the workspace -->
+<div class="flex justify-between items-end mb-2 shrink-0">
+<div>
+<h1 class="font-headline-lg text-on-surface mb-1">Human-in-the-loop Review</h1>
+<p class="font-body-md text-on-surface-variant">Manage pending artifacts and manual moderation tasks.</p>
+</div>
+<div class="flex gap-2">
+<button class="border border-outline-variant bg-surface text-on-surface rounded-md px-3 py-1.5 font-label-md flex items-center gap-2 hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[16px]">filter_list</span>
+                    Filter
+                </button>
+<button class="border border-outline-variant bg-surface text-on-surface rounded-md px-3 py-1.5 font-label-md flex items-center gap-2 hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[16px]">sort</span>
+                    Sort
+                </button>
+</div>
+</div>
+<!-- Split Layout Wrapper -->
+<div class="flex flex-1 overflow-hidden gap-md">
+<!-- Left Side: Table & Tabs (Bento-style card) -->
+<section class="flex-1 flex flex-col bg-surface rounded-xl border border-outline-variant shadow-sm overflow-hidden min-w-0">
+<!-- Tabs -->
+<div class="flex border-b border-outline-variant px-2 shrink-0 bg-surface-container-lowest">
+<button class="px-4 py-3 font-label-md text-on-surface-variant hover:text-on-surface transition-colors">All</button>
+<button class="px-4 py-3 font-label-md text-primary border-b-2 border-primary">Pending</button>
+<button class="px-4 py-3 font-label-md text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1">
+                        Approved <span class="bg-surface-container-high text-on-surface px-1.5 py-0.5 rounded-full text-[10px]">12</span>
+</button>
+<button class="px-4 py-3 font-label-md text-on-surface-variant hover:text-on-surface transition-colors">Changes Requested</button>
+<button class="px-4 py-3 font-label-md text-on-surface-variant hover:text-on-surface transition-colors">Rejected</button>
+</div>
+<!-- Table Container -->
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left border-collapse whitespace-nowrap">
+<thead class="sticky top-0 bg-surface z-10 shadow-[0_1px_0_0_#d4d4d8]">
+<tr>
+<th class="font-label-md text-on-surface-variant px-md py-3 font-medium w-[100px]">Review ID</th>
+<th class="font-label-md text-on-surface-variant px-md py-3 font-medium">Artifact</th>
+<th class="font-label-md text-on-surface-variant px-md py-3 font-medium">Platform</th>
+<th class="font-label-md text-on-surface-variant px-md py-3 font-medium w-[120px]">Risk</th>
+<th class="font-label-md text-on-surface-variant px-md py-3 font-medium w-[140px]">Status</th>
+<th class="font-label-md text-on-surface-variant px-md py-3 font-medium text-right w-[80px]">Action</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-on-surface">
+<!-- Selected Row -->
+<tr class="bg-primary/5 hover:bg-primary/10 border-b border-outline-variant/50 transition-colors cursor-pointer group">
+<td class="px-md py-3 font-label-md text-primary">#RQ-8422</td>
+<td class="px-md py-3">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface">Q3 Earnings Social Thread</span>
+<span class="text-[11px] text-on-surface-variant truncate w-[200px]">Financial disclosure compliance check</span>
+</div>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center gap-1 border border-outline-variant bg-surface-container-lowest px-2 py-1 rounded text-xs text-on-surface-variant">
+<svg class="w-3 h-3 text-[#1DA1F2]" fill="currentColor" viewbox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"></path></svg>
+                                        Twitter
+                                    </span>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm border border-error/20">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> High
+                                    </span>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary-container text-on-primary-container font-label-sm">
+                                        Pending Review
+                                    </span>
+</td>
+<td class="px-md py-3 text-right">
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</td>
+</tr>
+<!-- Standard Row (Zebra striped) -->
+<tr class="even:bg-surface-container-low/50 hover:bg-surface-container-high/50 border-b border-outline-variant/50 transition-colors cursor-pointer group">
+<td class="px-md py-3 font-label-md text-on-surface-variant">#RQ-8421</td>
+<td class="px-md py-3">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface">Product Launch Video Cap...</span>
+<span class="text-[11px] text-on-surface-variant truncate w-[200px]">Standard brand voice check</span>
+</div>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center gap-1 border border-outline-variant bg-surface-container-lowest px-2 py-1 rounded text-xs text-on-surface-variant">
+<svg class="w-3 h-3 text-[#0A66C2]" fill="currentColor" viewbox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path></svg>
+                                        LinkedIn
+                                    </span>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm border border-outline-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></span> Low
+                                    </span>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary-container text-on-primary-container font-label-sm">
+                                        Pending Review
+                                    </span>
+</td>
+<td class="px-md py-3 text-right">
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container-highest transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[18px]">open_in_new</span>
+</button>
+</td>
+</tr>
+<!-- Standard Row -->
+<tr class="even:bg-surface-container-low/50 hover:bg-surface-container-high/50 border-b border-outline-variant/50 transition-colors cursor-pointer group">
+<td class="px-md py-3 font-label-md text-on-surface-variant">#RQ-8420</td>
+<td class="px-md py-3">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface">CEO Keynote Highlights</span>
+<span class="text-[11px] text-on-surface-variant truncate w-[200px]">Executive comms review</span>
+</div>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center gap-1 border border-outline-variant bg-surface-container-lowest px-2 py-1 rounded text-xs text-on-surface-variant">
+<svg class="w-3 h-3 text-[#1DA1F2]" fill="currentColor" viewbox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"></path></svg>
+                                        Twitter
+                                    </span>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm border border-secondary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Medium
+                                    </span>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary-container text-on-primary-container font-label-sm">
+                                        Pending Review
+                                    </span>
+</td>
+<td class="px-md py-3 text-right">
+<button class="p-1 rounded text-on-surface-variant hover:bg-surface-container-highest transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[18px]">open_in_new</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Right Side: Detail Drawer (Review Workspace) -->
+<aside class="w-[420px] flex flex-col bg-surface rounded-xl border border-outline-variant shadow-lg overflow-hidden shrink-0 transform transition-transform duration-300">
+<!-- Drawer Header -->
+<div class="p-lg border-b border-outline-variant bg-surface-container-lowest shrink-0">
+<div class="flex justify-between items-start mb-4">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<h2 class="font-headline-md text-on-surface">Review #RQ-8422</h2>
+<span class="bg-error-container text-on-error-container text-[10px] px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">High Risk</span>
+</div>
+<p class="font-body-md text-on-surface-variant">Generated by Policy Agent v2.4</p>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded p-1 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-4 bg-surface-container-low p-3 rounded-lg border border-outline-variant/50">
+<div>
+<span class="block text-[11px] text-on-surface-variant uppercase font-medium mb-1">Target Platform</span>
+<span class="font-body-md text-on-surface flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-[#1DA1F2]" fill="currentColor" viewbox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"></path></svg>
+                                Twitter / X
+                            </span>
+</div>
+<div>
+<span class="block text-[11px] text-on-surface-variant uppercase font-medium mb-1">Scheduled For</span>
+<span class="font-body-md text-on-surface">Oct 24, 14:00 EST</span>
+</div>
+</div>
+</div>
+<!-- Drawer Body (Scrollable) -->
+<div class="flex-1 overflow-y-auto p-lg flex flex-col gap-xl">
+<!-- Policy Violation Alert -->
+<div class="bg-error-container/40 border border-error/30 rounded-lg p-md">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-error mt-0.5">warning</span>
+<div>
+<h3 class="font-label-md text-on-error-container mb-1">Financial Disclosure Flag</h3>
+<p class="font-body-md text-on-surface-variant text-sm">The drafted content mentions specific revenue percentages ("up 24% YoY") prior to the official 8-K filing window. This violates <a class="text-surface-tint underline hover:text-primary" href="#">Policy SEC-04</a>.</p>
+</div>
+</div>
+</div>
+<!-- Draft Preview -->
+<div>
+<h3 class="font-label-md text-on-surface mb-2 flex items-center justify-between">
+                            Draft Content Preview
+                            <button class="text-surface-tint hover:underline text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">edit</span> Edit Source
+                            </button>
+</h3>
+<div class="bg-surface-container-lowest border border-outline rounded-lg p-md shadow-sm relative">
+<!-- Faux Twitter Card styling -->
+<div class="flex gap-3 mb-3">
+<div class="w-10 h-10 rounded-full bg-primary-container shrink-0" data-alt="Corporate logo placeholder for Acme Corp"></div>
+<div>
+<div class="font-bold text-sm text-on-surface">Acme Corp <span class="material-symbols-outlined text-[14px] text-[#1DA1F2] align-middle">verified</span></div>
+<div class="text-xs text-on-surface-variant">@AcmeCorp · Draft</div>
+</div>
+</div>
+<p class="font-body-md text-on-surface mb-3 whitespace-pre-wrap">Incredible momentum in Q3! 🚀 Our enterprise cloud segment is up <span class="bg-error-container text-on-error-container px-1 rounded font-medium">24% YoY</span>, reflecting massive adoption of our new AI suite. 
+
+Huge thanks to the team. Full earnings report drops tomorrow at 8am EST. 
+
+#Earnings #TechGrowth #AI</p>
+<div class="w-full h-32 bg-surface-container-high rounded border border-outline-variant flex items-center justify-center text-on-surface-variant text-xs" data-alt="Abstract generic bar chart graphic indicating growth">
+                                [ Attached Media: Q3_Growth_Chart_Draft.png ]
+                            </div>
+</div>
+</div>
+<!-- Reviewer Notes -->
+<div>
+<h3 class="font-label-md text-on-surface mb-2">Reviewer Notes</h3>
+<textarea class="w-full h-24 bg-surface-container-lowest border border-outline-variant rounded-lg p-3 font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none transition-colors" placeholder="Add justification for rejection or requested changes..."></textarea>
+</div>
+</div>
+<!-- Drawer Footer (Actions) -->
+<div class="p-md border-t border-outline-variant bg-surface-container-lowest shrink-0 flex items-center gap-3">
+<button class="px-4 py-2 rounded font-label-md bg-error-container text-on-error-container hover:bg-error hover:text-white transition-colors">
+                        Reject
+                    </button>
+<button class="px-4 py-2 rounded font-label-md border border-outline-variant text-on-surface hover:bg-surface-container-high transition-colors">
+                        Request Changes
+                    </button>
+<button class="px-5 py-2 rounded font-label-md bg-primary text-on-primary hover:bg-on-primary-fixed-variant transition-colors ml-auto flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+                        Approve
+                    </button>
+</div>
+</aside>
+</div>
+</main>
+</body></html>

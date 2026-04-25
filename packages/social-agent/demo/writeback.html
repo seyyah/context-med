@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Writeback - Social-Agent</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#bbbab7",
+                        "surface-tint": "#2953d1",
+                        "inverse-surface": "#303033",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#e5e7eb",
+                        "surface-variant": "#e4e1e6",
+                        "inverse-primary": "#b7c4ff",
+                        "on-surface": "#1b1b1e",
+                        "surface-container-low": "#f6f2f7",
+                        "inverse-on-surface": "#f3f0f4",
+                        "secondary-container": "#EBF7F2",
+                        "primary-fixed": "#dce1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#e5e5e5",
+                        "primary-container": "#EBF2FF",
+                        "primary": "#002989",
+                        "secondary": "#006d44",
+                        "secondary-fixed-dim": "#47e099",
+                        "on-primary-fixed": "#001551",
+                        "on-tertiary-fixed-variant": "#474745",
+                        "on-surface-variant": "#71717a",
+                        "on-secondary-container": "#007349",
+                        "on-secondary-fixed-variant": "#005232",
+                        "tertiary-fixed-dim": "#c8c6c3",
+                        "tertiary": "#343432",
+                        "outline": "#d4d4d8",
+                        "error": "#FD2C30",
+                        "on-tertiary-fixed": "#1b1c1a",
+                        "surface-container-highest": "#e4e1e6",
+                        "secondary-fixed": "#69fdb3",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#c4c5d6",
+                        "on-error": "#ffffff",
+                        "surface": "#ffffff",
+                        "background": "#fbf8fc",
+                        "on-primary-container": "#a6b7ff",
+                        "on-primary-fixed-variant": "#0039b5",
+                        "on-background": "#1b1b1e",
+                        "tertiary-fixed": "#e4e2df",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#fbf8fc",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "surface-container": "#f0edf1",
+                        "tertiary-container": "#4a4a48",
+                        "on-secondary-fixed": "#002111",
+                        "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "12px",
+                        "base": "8px",
+                        "xl": "32px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "sidebar-width": "280px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-md": ["18px", { "lineHeight": "22px", "fontWeight": "700" }],
+                        "body-md": ["13px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+                        "display": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-lg": ["20px", { "lineHeight": "28px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen w-full overflow-hidden flex selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar (From JSON) -->
+<nav class="fixed left-0 top-0 h-screen w-[280px] bg-[#1E3A8A] border-r border-slate-200/10 shadow-xl flex flex-col py-6 z-50">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-white flex items-center justify-center">
+<span class="material-symbols-outlined text-[#1E3A8A]" data-icon="smart_toy">smart_toy</span>
+</div>
+<div>
+<h1 class="text-xl font-bold text-white tracking-tight">Social-Agent</h1>
+<p class="text-blue-100/70 font-label-sm text-label-sm">CLI Operations</p>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto flex flex-col gap-1">
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Overview</span>
+</a>
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="workspaces">workspaces</span>
+<span class="font-label-md text-label-md">Workspace</span>
+</a>
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+<span class="font-label-md text-label-md">Plan</span>
+</a>
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="drafts">drafts</span>
+<span class="font-label-md text-label-md">Drafts</span>
+</a>
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+<span class="font-label-md text-label-md">Moderation</span>
+</a>
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="queue_play_next">queue_play_next</span>
+<span class="font-label-md text-label-md">Review Queue</span>
+</a>
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-label-md text-label-md">Packages</span>
+</a>
+<!-- Active State Navigation -->
+<a class="bg-[#003CBD] text-white rounded-lg mx-2 px-4 py-2 font-semibold flex items-center gap-3 scale-98 active:opacity-80 transition-transform shadow-sm" href="#">
+<span class="material-symbols-outlined" data-icon="save_as" data-weight="fill" style="font-variation-settings: 'FILL' 1;">save_as</span>
+<span class="font-label-md text-label-md">Writeback</span>
+</a>
+<a class="text-blue-100/70 hover:bg-white/10 rounded-lg mx-2 px-4 py-2 transition-colors flex items-center gap-3 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+<div class="px-6 mt-auto flex items-center gap-3">
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-white/20" data-alt="close up portrait of a professional man in a bright modern office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBck3-INzFDtZCGL9m2SReZsI4kJatfmTFuiqUyYVT7fI5A_U233z72sIFInKRvngzfMjWzYPfATx2DPH4c2px02xYsuMElRnyY7xp5mCvJaSC2jimmji055B9myDNsbqdB656d0NuDHVrJzV8NqDjHOKBQt3V-iLk7JOkxl2oHluaPlVhqav5rVssnxe-eAfeEt3escvebdeil4XRQdabNdgg5fUJe_u3PVYWhp670ZFHJzzN1Znc2unPM9KeGOXK5rCAAB7J_wg"/>
+<div class="flex flex-col">
+<span class="text-white font-label-md text-label-md">Admin User</span>
+<span class="text-blue-100/50 font-label-sm text-label-sm">System</span>
+</div>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 ml-[280px] flex flex-col h-screen relative bg-surface-container-low">
+<!-- TopAppBar (From JSON) -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-white border-b border-slate-200 shadow-sm flex justify-between items-center px-8 z-40">
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-bold text-slate-900 tracking-tight">Social-Agent Demo</h2>
+</div>
+<div class="flex items-center gap-lg">
+<div class="flex items-center gap-md">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider bg-surface-container px-2 py-1 rounded">Standalone CLI Mode</span>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider bg-secondary-container px-2 py-1 rounded">Integration-ready</span>
+</div>
+<div class="h-6 w-px bg-outline-variant"></div>
+<div class="flex items-center gap-sm">
+<button class="text-slate-500 hover:text-[#003CBD] transition-colors cursor-pointer opacity-90 hover:opacity-100 p-2 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-slate-500 hover:text-[#003CBD] transition-colors cursor-pointer opacity-90 hover:opacity-100 p-2 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<main class="flex-1 mt-16 p-xl overflow-y-auto">
+<div class="mb-lg flex justify-between items-end">
+<div>
+<h1 class="font-display text-display text-on-surface mb-xs">Pending Insights</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Review extracted learnings before committing them to the organizational memory wiki.</p>
+</div>
+<button class="bg-surface border border-outline text-on-surface font-label-md text-label-md px-md py-base rounded-lg flex items-center gap-sm hover:bg-surface-container transition-colors shadow-sm">
+<span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+                    Filter Queue
+                </button>
+</div>
+<!-- Summary Cards -->
+<div class="grid grid-cols-3 gap-md mb-xl">
+<div class="bg-surface rounded-xl border border-outline p-lg shadow-sm flex flex-col justify-between h-[120px] relative overflow-hidden">
+<div class="absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4"></div>
+<div class="flex items-center justify-between z-10">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Pending Review</span>
+<span class="material-symbols-outlined text-primary" data-icon="hourglass_empty">hourglass_empty</span>
+</div>
+<div class="z-10">
+<span class="font-display text-display text-on-surface">24</span>
+<span class="font-body-md text-body-md text-on-surface-variant ml-2">+3 since last login</span>
+</div>
+</div>
+<div class="bg-surface rounded-xl border border-outline p-lg shadow-sm flex flex-col justify-between h-[120px]">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Accepted Insights</span>
+<span class="material-symbols-outlined text-secondary" data-icon="check_circle">check_circle</span>
+</div>
+<div>
+<span class="font-display text-display text-on-surface">1,402</span>
+<span class="font-body-md text-body-md text-secondary ml-2 flex items-center inline-flex">
+<span class="material-symbols-outlined text-[16px]" data-icon="trending_up">trending_up</span> 12%
+                        </span>
+</div>
+</div>
+<div class="bg-surface rounded-xl border border-outline p-lg shadow-sm flex flex-col justify-between h-[120px]">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Rejected</span>
+<span class="material-symbols-outlined text-error" data-icon="cancel">cancel</span>
+</div>
+<div>
+<span class="font-display text-display text-on-surface">89</span>
+<span class="font-body-md text-body-md text-on-surface-variant ml-2">Mostly low confidence</span>
+</div>
+</div>
+</div>
+<!-- Workspace: Table + Detail Panel -->
+<div class="grid grid-cols-16 gap-lg h-[calc(100vh-340px)] min-h-[500px]">
+<!-- Main Table Area -->
+<div class="col-span-10 bg-surface rounded-xl border border-outline shadow-sm flex flex-col overflow-hidden">
+<div class="px-md py-sm border-b border-outline bg-surface-bright flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md text-on-surface">Extraction Queue</h3>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container border border-outline rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-[240px]" placeholder="Search statements..." type="text"/>
+</div>
+</div>
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left border-collapse">
+<thead class="sticky top-0 bg-surface z-10 shadow-[0_1px_0_0_#d4d4d8]">
+<tr>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant w-24">Insight ID</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant">Extracted Statement</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant w-32">Platform</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant w-32">Confidence</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant w-24">Status</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface divide-y divide-outline-variant">
+<!-- Selected Row -->
+<tr class="bg-primary-container/30 hover:bg-primary-container/50 cursor-pointer transition-colors relative">
+<td class="py-md px-md align-top">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<span class="font-label-md text-label-md text-primary">INS-882</span>
+</td>
+<td class="py-md px-md align-top pr-lg">
+<div class="line-clamp-2 leading-relaxed">Founder-style narrative posts generate significantly higher sustained engagement on technical subreddits compared to standard product announcements.</div>
+</td>
+<td class="py-md px-md align-top">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-[#FF4500]" data-icon="forum">forum</span>
+                                            Reddit
+                                        </div>
+</td>
+<td class="py-md px-md align-top">
+<div class="flex items-center gap-2 mt-1">
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 92%"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">92%</span>
+</div>
+</td>
+<td class="py-md px-md align-top">
+<span class="bg-surface-variant text-on-surface px-2 py-0.5 rounded font-label-sm text-label-sm">Pending</span>
+</td>
+</tr>
+<!-- Standard Rows -->
+<tr class="hover:bg-surface-container-low cursor-pointer transition-colors">
+<td class="py-md px-md align-top"><span class="font-label-md text-label-md text-on-surface-variant">INS-881</span></td>
+<td class="py-md px-md align-top pr-lg">
+<div class="line-clamp-2 leading-relaxed text-on-surface-variant">Users consistently request dark mode support during the onboarding phase, citing eye strain in late-night sessions.</div>
+</td>
+<td class="py-md px-md align-top">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-[#1DA1F2]" data-icon="flutter_dash">flutter_dash</span>
+                                            Twitter
+                                        </div>
+</td>
+<td class="py-md px-md align-top">
+<div class="flex items-center gap-2 mt-1">
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 88%"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">88%</span>
+</div>
+</td>
+<td class="py-md px-md align-top">
+<span class="bg-surface-variant text-on-surface px-2 py-0.5 rounded font-label-sm text-label-sm">Pending</span>
+</td>
+</tr>
+<tr class="bg-surface-container-low/50 hover:bg-surface-container-low cursor-pointer transition-colors">
+<td class="py-md px-md align-top"><span class="font-label-md text-label-md text-on-surface-variant">INS-880</span></td>
+<td class="py-md px-md align-top pr-lg">
+<div class="line-clamp-2 leading-relaxed text-on-surface-variant">Pricing complaints have spiked by 15% following the introduction of the new enterprise tier, specifically regarding feature gating.</div>
+</td>
+<td class="py-md px-md align-top">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant" data-icon="support_agent">support_agent</span>
+                                            Zendesk
+                                        </div>
+</td>
+<td class="py-md px-md align-top">
+<div class="flex items-center gap-2 mt-1">
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-[#F59E0B] h-1.5 rounded-full" style="width: 74%"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">74%</span>
+</div>
+</td>
+<td class="py-md px-md align-top">
+<span class="bg-surface-variant text-on-surface px-2 py-0.5 rounded font-label-sm text-label-sm">Pending</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low cursor-pointer transition-colors">
+<td class="py-md px-md align-top"><span class="font-label-md text-label-md text-on-surface-variant">INS-879</span></td>
+<td class="py-md px-md align-top pr-lg">
+<div class="line-clamp-2 leading-relaxed text-on-surface-variant">Competitor X's recent downtime event led to a noticeable influx of trial signups mentioning 'stability' as a primary driver.</div>
+</td>
+<td class="py-md px-md align-top">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="public">public</span>
+                                            Web
+                                        </div>
+</td>
+<td class="py-md px-md align-top">
+<div class="flex items-center gap-2 mt-1">
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 95%"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">95%</span>
+</div>
+</td>
+<td class="py-md px-md align-top">
+<span class="bg-surface-variant text-on-surface px-2 py-0.5 rounded font-label-sm text-label-sm">Pending</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Detail Panel -->
+<div class="col-span-6 bg-surface rounded-xl border border-outline shadow-sm flex flex-col h-full overflow-hidden">
+<div class="px-md py-sm border-b border-outline bg-surface-bright flex justify-between items-center shrink-0">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="memory">memory</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Insight Context</h3>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">INS-882</span>
+</div>
+<div class="flex-1 overflow-y-auto p-md flex flex-col gap-lg">
+<!-- Statement Block -->
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-xs block">Extracted Statement</label>
+<p class="font-body-lg text-body-lg text-on-surface bg-surface-container-low p-sm rounded-lg border border-outline-variant leading-relaxed">
+                                Founder-style narrative posts generate significantly higher sustained engagement on technical subreddits compared to standard product announcements.
+                            </p>
+</div>
+<!-- Evidence / Source Data -->
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-xs block flex items-center justify-between">
+                                Source Evidence
+                                <span class="text-secondary flex items-center gap-1 normal-case tracking-normal"><span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span> 92% Conf</span>
+</label>
+<div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-sm relative">
+<span class="material-symbols-outlined absolute top-sm right-sm text-outline-variant" data-icon="format_quote">format_quote</span>
+<div class="font-body-md text-body-md text-on-surface-variant mb-2">
+<span class="font-label-md text-label-md text-on-surface">r/MachineLearning</span> · 2 days ago
+                                </div>
+<p class="font-body-md text-body-md text-on-surface italic mb-3">
+                                    "Honestly, I skip past all the polished corporate PR drops here. But when the CTO wrote that raw postmortem about their database migration last week? I read every word. It builds so much more trust."
+                                </p>
+<div class="flex gap-2">
+<span class="bg-surface border border-outline px-2 py-1 rounded text-[10px] font-label-sm text-on-surface-variant uppercase">Sentiment: Positive</span>
+<span class="bg-surface border border-outline px-2 py-1 rounded text-[10px] font-label-sm text-on-surface-variant uppercase">Intent: Feedback</span>
+</div>
+</div>
+</div>
+<!-- Target Destination -->
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-xs block">Suggested Wiki Target</label>
+<div class="flex items-center gap-sm bg-primary-container/20 border border-primary/20 rounded-lg p-sm">
+<div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="folder_special">folder_special</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-on-surface">Marketing Playbook / Content Strategy</div>
+<div class="font-body-sm text-[12px] text-on-surface-variant">Will append as a new 'Core Principle' node.</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="p-md border-t border-outline bg-surface-bright mt-auto shrink-0 flex gap-sm">
+<button class="flex-1 bg-primary hover:bg-primary/90 text-on-primary font-label-md text-label-md py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]" data-icon="done_all">done_all</span>
+                            Accept into Wiki
+                        </button>
+<button class="px-lg bg-surface border border-outline hover:bg-error-container hover:text-error hover:border-error text-on-surface font-label-md text-label-md py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="close">close</span>
+                            Reject
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
