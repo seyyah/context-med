@@ -63,3 +63,32 @@ export interface WritebackOptions {
   force: boolean;
   dryRun: boolean;
 }
+
+export interface ExperimentSpec {
+  id: string;
+  description: string;
+  query: string;
+  expected_keywords: string[];
+}
+
+export interface ExperimentResult {
+  id: string;
+  description: string;
+  query: string;
+  expected_keywords: string[];
+  answer: string;
+  source: string;
+  confidence: 'high' | 'low' | 'none';
+  score: number;
+  max_score: number;
+  passed: boolean;
+  run_at: string;
+  human_reviewed: boolean;
+}
+
+export interface AutoresearchOptions {
+  spec: string;
+  wikiDir: string;
+  dryRun: boolean;
+  verbose: boolean;
+}
