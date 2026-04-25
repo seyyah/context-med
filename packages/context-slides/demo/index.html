@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeckForge | Context-Slides Studio</title>
+  <link rel="stylesheet" href="index.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="theme-dark">
+  <!-- Dynamic Background Glow -->
+  <div class="ambient-glow bg-glow-blue"></div>
+  <div class="ambient-glow bg-glow-green"></div>
+
+  <div class="app-layout">
+    <!-- Premium Glassmorphic Sidebar -->
+    <aside class="sidebar-glass">
+      <div class="brand">
+        <div class="logo-orb"></div>
+        <span class="brand-text">DeckForge</span>
+      </div>
+      
+      <div class="nav-section">
+        <h3 class="nav-title">WORKSPACE</h3>
+        <nav class="nav-menu">
+          <a href="#" class="nav-item active">
+            <span class="nav-icon">⎔</span>
+            Pipeline Dashboard
+          </a>
+          <a href="#" class="nav-item">
+            <span class="nav-icon">⚡</span>
+            Active Agents
+          </a>
+          <a href="#" class="nav-item">
+            <span class="nav-icon">≡</span>
+            Slide Configurations
+          </a>
+        </nav>
+      </div>
+
+      <div class="nav-section mt-auto">
+        <div class="status-card">
+          <div class="status-header">
+            <span class="pulse-dot green"></span>
+            <span class="status-text">System Online</span>
+          </div>
+          <div class="status-metric">
+            <span class="metric-label">Memory</span>
+            <span class="metric-val">12%</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-workspace">
+      
+      <header class="header">
+        <div class="header-content">
+          <h1 class="page-title">Context-Slides Compilation</h1>
+          <p class="page-subtitle">Multi-Agent Academic Presentation Engine</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-ghost">Load config.yaml</button>
+          <button class="btn btn-primary btn-glow">
+            <span class="btn-icon">▶</span> Run Compilation
+          </button>
+        </div>
+      </header>
+
+      <!-- Agent Pipeline Visualization -->
+      <section class="pipeline-section">
+        <h2 class="section-title">Agent Pipeline Status</h2>
+        
+        <div class="pipeline-grid">
+          
+          <!-- Agent Card: Data Ingestion -->
+          <div class="agent-card complete">
+            <div class="card-glow"></div>
+            <div class="agent-header">
+              <span class="agent-badge badge-green">COMPLETED</span>
+              <span class="agent-time">0.4s</span>
+            </div>
+            <h3 class="agent-name">Data Ingestion Agent</h3>
+            <p class="agent-desc">Parsed 1,240 tokens from source clinical text.</p>
+            <div class="progress-track"><div class="progress-fill fill-green" style="width: 100%"></div></div>
+          </div>
+
+          <!-- Agent Card: Title Slide -->
+          <div class="agent-card complete">
+            <div class="card-glow"></div>
+            <div class="agent-header">
+              <span class="agent-badge badge-green">COMPLETED</span>
+              <span class="agent-time">1.2s</span>
+            </div>
+            <h3 class="agent-name">TitleSlide Agent</h3>
+            <p class="agent-desc">Synthesized academic title and presenter metadata.</p>
+            <div class="progress-track"><div class="progress-fill fill-green" style="width: 100%"></div></div>
+          </div>
+
+          <!-- Agent Card: Results (Active) -->
+          <div class="agent-card active">
+            <div class="card-glow active-glow"></div>
+            <div class="agent-header">
+              <span class="agent-badge badge-blue pulse">PROCESSING</span>
+              <span class="agent-time">Elapsed: 3.8s</span>
+            </div>
+            <h3 class="agent-name">ResultsSlide Agent</h3>
+            <p class="agent-desc text-highlight">Extracting P-values and generating chart contexts...</p>
+            <div class="progress-track"><div class="progress-fill fill-blue shimmer-anim" style="width: 65%"></div></div>
+          </div>
+
+          <!-- Agent Card: Speaker Notes (Waiting) -->
+          <div class="agent-card waiting">
+            <div class="agent-header">
+              <span class="agent-badge badge-gray">WAITING</span>
+              <span class="agent-time">--</span>
+            </div>
+            <h3 class="agent-name">SpeakerNotes Agent</h3>
+            <p class="agent-desc">Pending completion of slide structure generation.</p>
+            <div class="progress-track"><div class="progress-fill" style="width: 0%"></div></div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Generated Assets Preview -->
+      <section class="assets-section mt-xl">
+        <h2 class="section-title">Compiled Assets</h2>
+        
+        <div class="data-table-wrapper">
+          <table class="premium-table">
+            <thead>
+              <tr>
+                <th>ASSET TYPE</th>
+                <th>FILE NAME</th>
+                <th>STATUS</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="asset-icon json-icon">JSON</div> Context Plan</td>
+                <td class="font-mono text-muted">presentation_plan.json</td>
+                <td><span class="status-pill success">Ready</span></td>
+                <td><button class="btn-link">View</button></td>
+              </tr>
+              <tr>
+                <td><div class="asset-icon md-icon">MD</div> Speaker Script</td>
+                <td class="font-mono text-muted">speaker_notes.md</td>
+                <td><span class="status-pill processing">Compiling...</span></td>
+                <td><button class="btn-link disabled">View</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</body>
+</html>

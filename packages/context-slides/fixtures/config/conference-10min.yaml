@@ -1,0 +1,16 @@
+# DeckForge Conference Configuration
+
+# The target duration of the presentation in minutes
+duration_min: 10
+
+# Expected number of slides
+slide_count: 10-12
+
+# The audience profile to tailor the language and depth
+target_audience: "klinik uzmanlar"
+
+# Design theme preferences for the output
+theme:
+  color_mode: "dark"
+  font: "Inter"
+  primary_color: "#003CBD"

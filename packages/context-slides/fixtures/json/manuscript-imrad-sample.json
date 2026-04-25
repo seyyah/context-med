@@ -1,0 +1,11 @@
+{
+  "title": "Sample Manuscript",
+  "authors": ["Author 1", "Author 2"],
+  "abstract": "This is a sample abstract.",
+  "imrad": {
+    "introduction": "Intro content",
+    "methods": "Methods content",
+    "results": "Results content",
+    "discussion": "Discussion content"
+  }
+}

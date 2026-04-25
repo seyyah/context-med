@@ -1,0 +1,49 @@
+{
+  "metadata": {
+    "generatedAt": "2026-04-25T10:49:12.980Z",
+    "configUsed": {
+      "duration_min": 10,
+      "slide_count": "10-12",
+      "target_audience": "klinik uzmanlar",
+      "theme": {
+        "color_mode": "dark",
+        "font": "Inter",
+        "primary_color": "#003CBD"
+      }
+    }
+  },
+  "slides": [
+    {
+      "type": "title",
+      "content": {
+        "title": "Impact of NOAC Therapy on Ischemic Stroke Rates in Atrial Fibrillation",
+        "authors": [
+          "Research Team"
+        ],
+        "date": "2026-04-25"
+      }
+    },
+    {
+      "type": "results",
+      "content": {
+        "heading": "Key Findings",
+        "points": [
+          "NOAC: 3.2% event rate",
+          "Warfarin: 7.7% event rate",
+          "None: 13.5% event rate"
+        ],
+        "chartType": "bar"
+      }
+    }
+  ],
+  "speakerNotes": [
+    {
+      "slideIndex": 1,
+      "notes": "(Pause for 2 seconds) This slide discusses title. Ensure to mention the key metric..."
+    },
+    {
+      "slideIndex": 2,
+      "notes": "(Pause for 2 seconds) This slide discusses results. Ensure to mention the key metric..."
+    }
+  ]
+}
