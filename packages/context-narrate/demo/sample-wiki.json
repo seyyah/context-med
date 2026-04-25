@@ -1,0 +1,16 @@
+{
+  "title": "Atrial Fibrillation",
+  "content": "Atrial fibrillation (AF or A-fib) is an abnormal heart rhythm characterized by rapid and irregular beating of the atrial chambers of the heart. It often begins as short periods of abnormal beating, which become longer or continuous over time.",
+  "symptoms": [
+    "Heart palpitations",
+    "Fainting",
+    "Lightheadedness",
+    "Shortness of breath",
+    "Chest pain"
+  ],
+  "clinical_implications": "AF is associated with an increased risk of heart failure, dementia, and stroke. It requires clinical management to control heart rate and prevent clot formation.",
+  "references": [
+    "ref-wiki-af-2023",
+    "ref-clinical-guidelines-01"
+  ]
+}

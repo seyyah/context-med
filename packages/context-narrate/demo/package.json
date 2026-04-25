@@ -1,0 +1,15 @@
+{
+  "name": "context-narrate-demo",
+  "version": "1.0.0",
+  "description": "Demo package and UI runner for context-narrate",
+  "scripts": {
+    "dev": "node server.js",
+    "demo:generate": "context-narrate generate --input sample-wiki.json --output ./output",
+    "demo:dry-run": "context-narrate generate --input sample-wiki.json --output ./output --dry-run",
+    "demo:faq": "context-narrate faq --input sample-wiki.json --output ./output",
+    "demo:all": "npm run demo:generate && npm run demo:faq && npm run demo:dry-run"
+  },
+  "dependencies": {
+    "context-narrate": "file:.."
+  }
+}
