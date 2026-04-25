@@ -1,0 +1,34 @@
+A retrospective cohort study was conducted at Ankara University Faculty of Medicine
+between January 2022 and December 2024. A total of 245 patients diagnosed with
+atrial fibrillation were enrolled.
+
+Patient demographics:
+- Mean age: 62.3 ± 11.7 years
+- Male/Female ratio: 142/103 (57.9% / 42.1%)
+- Hypertension prevalence: 68.2% (n=167)
+- Diabetes mellitus: 23.7% (n=58)
+- Prior stroke/TIA: 8.6% (n=21)
+
+CHA₂DS₂-VASc Score Distribution:
+- Score 0-1: 31 patients (12.7%)
+- Score 2-3: 89 patients (36.3%)
+- Score ≥4: 125 patients (51.0%)
+
+Anticoagulation at admission:
+- NOAC: 156 (63.7%)
+- Warfarin: 52 (21.2%)
+- None: 37 (15.1%)
+
+Primary outcome (ischemic stroke at 12 months): 14 events (5.7%)
+- In NOAC group: 5/156 (3.2%)
+- In warfarin group: 4/52 (7.7%)
+- In no-anticoagulation group: 5/37 (13.5%)
+
+p-value (NOAC vs no anticoagulation): 0.012
+p-value (warfarin vs no anticoagulation): 0.048
+
+Conclusion: NOAC therapy was associated with significantly lower ischemic stroke
+rates compared to no anticoagulation (p=0.012). Warfarin showed a trend toward
+benefit but did not reach the same level of significance when compared to NOACs.
+
+Ethics approval: Ankara University Ethics Committee, Decision No: 2022/01/15-234

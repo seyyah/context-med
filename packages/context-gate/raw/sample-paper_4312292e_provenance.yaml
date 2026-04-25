@@ -1,0 +1,9 @@
+source_file: sample-paper.txt
+source_path: C:\Users\esmse\Masaüstü\AI-Day\context-medd\fixtures\raw\sample-paper.txt
+notebook: default-notebook
+domain: cardiovascular
+ingested_at: '2026-04-25T12:13:18.753430+00:00'
+sha256_hash: 4312292e007054715897d2dad50e5f3362d6717b1c8d5cd913e8713e8c78062b
+metrics:
+  word_count: 180
+  quality_status: middle-risk
