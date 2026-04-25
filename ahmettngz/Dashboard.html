@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#c4abff",
+                        "tertiary": "#4cd7f6",
+                        "surface-bright": "#333946",
+                        "tertiary-fixed-dim": "#4cd7f6",
+                        "on-primary": "#003825",
+                        "on-secondary-fixed": "#23005c",
+                        "on-background": "#dde2f3",
+                        "surface": "#0d131f",
+                        "surface-container-high": "#242a36",
+                        "primary-fixed-dim": "#68dba9",
+                        "tertiary-fixed": "#acedff",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed": "#001f26",
+                        "on-primary-fixed": "#002114",
+                        "surface-container-low": "#161c27",
+                        "error": "#ffb4ab",
+                        "on-surface": "#dde2f3",
+                        "surface-tint": "#68dba9",
+                        "on-secondary-fixed-variant": "#5516be",
+                        "on-tertiary-container": "#002f38",
+                        "surface-container-lowest": "#080e1a",
+                        "surface-variant": "#2f3542",
+                        "primary-fixed": "#85f8c4",
+                        "inverse-on-surface": "#2a303d",
+                        "on-tertiary-fixed-variant": "#004e5c",
+                        "secondary-fixed-dim": "#d0bcff",
+                        "tertiary-container": "#009eb9",
+                        "on-primary-fixed-variant": "#005137",
+                        "outline": "#87948b",
+                        "primary-container": "#25a475",
+                        "inverse-primary": "#006c4a",
+                        "on-error": "#690005",
+                        "on-secondary": "#3c0091",
+                        "surface-container": "#1a202c",
+                        "secondary": "#d0bcff",
+                        "secondary-fixed": "#e9ddff",
+                        "secondary-container": "#571bc1",
+                        "on-primary-container": "#00311f",
+                        "primary": "#68dba9",
+                        "outline-variant": "#3d4a42",
+                        "on-surface-variant": "#bccac0",
+                        "inverse-surface": "#dde2f3",
+                        "surface-dim": "#0d131f",
+                        "on-tertiary": "#003640",
+                        "background": "#0d131f",
+                        "surface-container-highest": "#2f3542"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "grid-gutter": "1.5rem",
+                        "sidebar-width": "260px",
+                        "stack-gap": "1rem",
+                        "header-height": "72px",
+                        "container-padding": "2rem"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-md": ["Space Grotesk"],
+                        "headline-xl": ["Space Grotesk"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "headline-xl": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080e1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2f3542;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary selection:text-on-primary overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- SideNavBar -->
+<aside class="bg-[#0B0E14] border-r border-white/10 flex flex-col h-full w-20 lg:w-64 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.5)] transition-all duration-300">
+<!-- Brand Section -->
+<div class="px-6 h-16 flex items-center gap-3 shrink-0">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-xl" data-icon="smart_toy">smart_toy</span>
+</div>
+<div class="hidden lg:block">
+<h1 class="font-headline-md text-primary leading-none tracking-tighter">SadeApp</h1>
+<p class="font-label-sm text-slate-500 uppercase tracking-widest text-[10px] mt-1">Spatial Intelligence</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 py-6 overflow-y-auto">
+<div class="px-3 space-y-2">
+<a class="text-slate-500 flex items-center px-4 py-3 hover:bg-white/5 hover:text-emerald-300 transition-colors duration-200 group rounded-lg" href="#">
+<span class="material-symbols-outlined mr-4 group-hover:scale-110 transition-transform" data-icon="home">home</span>
+<span class="font-label-sm hidden lg:block uppercase tracking-widest">Home</span>
+</a>
+<a class="bg-emerald-500/10 text-emerald-400 border-l-4 border-emerald-500 flex items-center px-4 py-3 rounded-r-lg group" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="layers" style="font-variation-settings: 'FILL' 1;">layers</span>
+<span class="font-label-sm hidden lg:block uppercase tracking-widest">Contexts</span>
+</a>
+<a class="text-slate-500 flex items-center px-4 py-3 hover:bg-white/5 hover:text-emerald-300 transition-colors duration-200 group rounded-lg" href="#">
+<span class="material-symbols-outlined mr-4 group-hover:scale-110 transition-transform" data-icon="smart_toy">smart_toy</span>
+<span class="font-label-sm hidden lg:block uppercase tracking-widest">AI Agents</span>
+</a>
+<a class="text-slate-500 flex items-center px-4 py-3 hover:bg-white/5 hover:text-emerald-300 transition-colors duration-200 group rounded-lg" href="#">
+<span class="material-symbols-outlined mr-4 group-hover:scale-110 transition-transform" data-icon="integration_instructions">integration_instructions</span>
+<span class="font-label-sm hidden lg:block uppercase tracking-widest">Integrations</span>
+</a>
+</div>
+</nav>
+<!-- Footer Links -->
+<div class="mt-auto p-4 border-t border-white/5 space-y-1">
+<a class="text-slate-500 flex items-center px-4 py-2 hover:bg-white/5 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined text-xl mr-4" data-icon="help">help</span>
+<span class="font-label-sm hidden lg:block uppercase tracking-widest">Help</span>
+</a>
+<a class="text-slate-500 flex items-center px-4 py-2 hover:bg-white/5 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined text-xl mr-4" data-icon="logout">logout</span>
+<span class="font-label-sm hidden lg:block uppercase tracking-widest">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Workspace Area -->
+<main class="flex-1 flex flex-col relative min-w-0 bg-surface">
+<!-- TopNavBar -->
+<header class="bg-[#1A202C]/70 backdrop-blur-md border-b border-white/5 h-16 flex justify-between items-center w-full px-6 z-40 sticky top-0 shadow-none">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="account_tree">account_tree</span>
+<h2 class="font-headline-md text-emerald-500 tracking-tighter text-lg lg:text-xl">Active Workspace</h2>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-400 hover:bg-white/5 hover:text-emerald-400 transition-all duration-300 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-slate-400 hover:bg-white/5 hover:text-emerald-400 transition-all duration-300 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-[1px] bg-white/10 mx-2"></div>
+<button class="flex items-center gap-3 p-1 pr-3 rounded-full hover:bg-white/5 transition-colors group">
+<img alt="User profile" class="h-8 w-8 rounded-full border border-primary/20 object-cover" data-alt="Close up portrait of a professional male architect in a modern studio environment with soft cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbxDRjlGQaPBdfe75Rsz3a-sN45CUVum6azFoRCCYU8H7Gl9FWH7kJInzvaWOTD11e2j-2_YL3KYqagb2goy3H9bM2v6UT91gtEV7M1nsDR1Ew0-p86kK9abK-96feDSJfH5rGLSWVcAi3InhIU9-tHHZQ_H6p1msEOvVVum2pGDZGJPbXjLMhKFqeG65ADAQFFiWBGK3j0jhhk3iARo65b52hfoHgEP8cU60QZ49VBT-6UpGOxGG31d-mr_I0eI7wtIgSk2KEkaY"/>
+<span class="hidden md:block font-label-sm text-on-background uppercase tracking-wider text-[11px]">Dev Profile</span>
+</button>
+</div>
+</header>
+<!-- Content Area (3D Viewport) -->
+<section class="flex-1 p-6 relative overflow-hidden flex flex-col">
+<div class="flex-1 rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-surface-container relative group">
+
+<!-- The actual iframe running Claw3D -->
+<iframe class="w-full h-full border-none z-10 relative bg-black" src="http://localhost:3000/office" title="3D Office Workspace"></iframe>
+
+<!-- Floating Action Menu (Bottom Center) -->
+<div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20">
+<div class="bg-surface-container/80 backdrop-blur-xl p-2 rounded-full border border-white/10 shadow-2xl flex items-center gap-2">
+<button class="bg-primary text-on-primary px-5 py-2.5 rounded-full font-label-sm uppercase flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-lg" data-icon="fullscreen">fullscreen</span>
+<span>Maximize 3D</span>
+</button>
+<button class="bg-surface-container-high text-emerald-400 px-5 py-2.5 rounded-full font-label-sm uppercase flex items-center gap-2 hover:bg-white/10 active:scale-95 transition-all border border-white/5">
+<span class="material-symbols-outlined text-lg" data-icon="sync" style="font-variation-settings: 'wght' 600;">sync</span>
+<span>Sync AI</span>
+</button>
+</div>
+</div>
+<!-- HUD Overlays (Glassmorphic corners) -->
+<div class="absolute top-4 left-4 z-20 flex flex-col gap-2">
+<div class="bg-surface-container/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/5 flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="font-label-sm text-[10px] text-on-surface/60 uppercase">Live Rendering</span>
+</div>
+</div>
+<div class="absolute top-4 right-4 z-20 flex flex-col gap-2">
+<button class="w-10 h-10 bg-surface-container/60 backdrop-blur-md rounded-lg border border-white/5 flex items-center justify-center text-on-surface/70 hover:text-primary hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined" data-icon="zoom_in">zoom_in</span>
+</button>
+<button class="w-10 h-10 bg-surface-container/60 backdrop-blur-md rounded-lg border border-white/5 flex items-center justify-center text-on-surface/70 hover:text-primary hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined" data-icon="zoom_out">zoom_out</span>
+</button>
+<button class="w-10 h-10 bg-surface-container/60 backdrop-blur-md rounded-lg border border-white/5 flex items-center justify-center text-on-surface/70 hover:text-primary hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined" data-icon="refresh">refresh</span>
+</button>
+</div>
+<!-- Subtle Internal Glow for framing -->
+<div class="absolute inset-0 pointer-events-none shadow-[inset_0_0_80px_rgba(104,219,169,0.05)]"></div>
+</div>
+<!-- Secondary Info Bar -->
+<div class="mt-4 flex justify-between items-center px-2">
+<div class="flex gap-6">
+<div class="flex flex-col">
+<span class="font-label-sm text-slate-500 text-[10px] uppercase">Environment</span>
+<span class="font-body-md text-on-background">Corporate Office Alpha</span>
+</div>
+<div class="flex flex-col border-l border-white/5 pl-6">
+<span class="font-label-sm text-slate-500 text-[10px] uppercase">Entity Count</span>
+<span class="font-body-md text-on-background">1,429 Assets</span>
+</div>
+<div class="flex flex-col border-l border-white/5 pl-6">
+<span class="font-label-sm text-slate-500 text-[10px] uppercase">AI Latency</span>
+<span class="font-body-md text-emerald-400">14ms</span>
+</div>
+</div>
+<div class="flex gap-2">
+<div class="flex -space-x-2">
+<img alt="Active AI Agent 1" class="h-6 w-6 rounded-full border border-surface bg-surface" data-alt="Cybernetic humanoid agent icon with glowing blue circuitry lines on dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBS7xiu65u-zpUiv5V1IDaSNbxYn-rLlOrWTc6hKMWTJ2mmdnSjYOLBTEZ4-JBwLbHtDK-KMWmDbquPFSBaA3xG30JJ-AL1i90gQZBg0HvvfA-n9VMfO4S-O3XlWu4BMWQELJpYMTgSttcvru48HCoduOUsB1BKb6xpi1X6JM-D8BABjZ903jrW3R4GjX9UMb4HACkgygFGT_VC5Q9xe-M0XRtDujnEK7XyAGMa8cb7vzWH3ueW4zUWK65jGzW9Cp2dO5EDbJUBYIg"/>
+<img alt="Active AI Agent 2" class="h-6 w-6 rounded-full border border-surface bg-surface" data-alt="Abstract neural network visualization with neon green nodes and thin connections on black" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPp0HKOORyXsEym1ZpRe7UdoGl29j8haA2CySQWgH76WOG91zV6IBeNiZyfMdY9TlSniegA2hmnBtKZfn8TToujq5lB88mvbU8LzoI_4Ly-48Z6rCAbHpPpHkF5GEHyH-bIAz819Ms_P8GP53P4zaoAFREerqpAqTXD2AMN47teUSQ-1ZJpDXJgyuaPHWNRG7rNxHay0UcHS-sZ1MlD7MSBVGjqxLW99XfMY27G4Jd3clWqqg9N5hXhfAZhYWt2RfhXXSspA5C8lk"/>
+<div class="h-6 w-6 rounded-full border border-surface bg-surface-container-highest flex items-center justify-center font-label-sm text-[8px]">+3</div>
+</div>
+<span class="font-label-sm text-slate-500 flex items-center ml-2">Agents active in context</span>
+</div>
+</div>
+</section>
+</main>
+</div>
+</body></html>

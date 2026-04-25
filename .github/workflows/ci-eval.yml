@@ -5,6 +5,7 @@ on:
     branches: [main]
 
 permissions:
+  pull-requests: write
   contents: read
 
 jobs:
@@ -77,26 +78,41 @@ jobs:
              echo "conclusion=success" >> $GITHUB_OUTPUT
           fi
 
-      - name: Prepare Score Summary
-        if: always() && steps.pack.outputs.target != ''
-        run: |
-          cat > score-summary.json <<EOF
-          {
-            "pr_number": "${{ github.event.pull_request.number }}",
-            "pack": "${{ steps.pack.outputs.target }}",
-            "passed": "${{ steps.test.outputs.passed || 0 }}",
-            "failed": "${{ steps.test.outputs.failed || 0 }}",
-            "score": "${{ steps.test.outputs.score || 0 }}",
-            "conclusion": "${{ steps.test.outputs.conclusion || 'skipped' }}"
-          }
-          EOF
-
-      - name: Upload Score Summary
-        if: always() && steps.pack.outputs.target != ''
-        uses: actions/upload-artifact@v4
+      - name: Post PR Score Comment
+        if: steps.pack.outputs.target != ''
+        uses: actions/github-script@v7
         with:
-          name: score-summary
-          path: score-summary.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const passed = parseInt(`${{ steps.test.outputs.passed || 0 }}`);
+            const failed = parseInt(`${{ steps.test.outputs.failed || 0 }}`);
+            const score = parseInt(`${{ steps.test.outputs.score || 0 }}`);
+            const conclusion = `${{ steps.test.outputs.conclusion }}`;
+            const packName = `${{ steps.pack.outputs.target }}`;
+
+            let emoji = conclusion === 'success' ? '✅' : '❌';
+            let message = `## Test & Gamification Skor Tablosu 🏆\n\n`;
+            message += `**Hedef Paket:** \`${packName}\`\n`;
+            message += `**Durum:** ${emoji}\n\n`;
+            
+            message += `| Metrik | Değer |\n`;
+            message += `| :--- | :--- |\n`;
+            message += `| 🟢 Geçen Testler | **${passed}** |\n`;
+            message += `| 🔴 Kalan Testler | **${failed}** |\n`;
+            message += `| ⭐ **Kazanılan Puan** | **${score} XP** |\n\n`;
+            
+            if (conclusion !== 'success') {
+                message += `**⚠️ PR'ın Merge edilebilmesi için tüm testlerin geçmesi zorunludur!** Lütfen paketinizi düzeltin.`;
+            } else {
+                message += `🎉 Tebrikler! Tüm testler başarıyla geçti.`;
+            }
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
 
       - name: Gate Check
         if: steps.test.outputs.conclusion == 'failure'
