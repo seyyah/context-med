@@ -1,0 +1,113 @@
+.sa-package-demo {
+  border-top: 1px solid #d9dde7;
+  background: #f8fafc;
+  color: #202124;
+  padding: 24px;
+}
+
+.sa-package-demo__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.sa-package-demo__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.sa-package-demo__eyebrow {
+  color: #4f5f7a;
+  font: 600 12px/1.4 Inter, system-ui, sans-serif;
+  letter-spacing: 0;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+
+.sa-package-demo__title {
+  color: #15171c;
+  font: 700 22px/1.2 Inter, system-ui, sans-serif;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.sa-package-demo__meta {
+  color: #4f5f7a;
+  font: 500 13px/1.5 Inter, system-ui, sans-serif;
+  margin: 4px 0 0;
+}
+
+.sa-package-demo__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.sa-package-demo__tile {
+  background: #ffffff;
+  border: 1px solid #d9dde7;
+  border-radius: 8px;
+  padding: 14px;
+  min-height: 120px;
+}
+
+.sa-package-demo__label {
+  color: #526173;
+  font: 600 12px/1.4 Inter, system-ui, sans-serif;
+  letter-spacing: 0;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.sa-package-demo__value {
+  color: #15171c;
+  font: 700 18px/1.25 Inter, system-ui, sans-serif;
+  letter-spacing: 0;
+  margin: 0 0 6px;
+}
+
+.sa-package-demo__body {
+  color: #3f4858;
+  font: 400 14px/1.5 Inter, system-ui, sans-serif;
+  margin: 0;
+}
+
+.sa-package-demo__status {
+  border-radius: 999px;
+  display: inline-flex;
+  font: 700 12px/1 Inter, system-ui, sans-serif;
+  padding: 6px 9px;
+}
+
+.sa-package-demo__status--high,
+.sa-package-demo__status--escalate,
+.sa-package-demo__status--needs_review {
+  background: #ffdad6;
+  color: #9b1c1c;
+}
+
+.sa-package-demo__status--medium,
+.sa-package-demo__status--reply {
+  background: #fff0c2;
+  color: #7c4a03;
+}
+
+.sa-package-demo__status--low,
+.sa-package-demo__status--ready,
+.sa-package-demo__status--draft,
+.sa-package-demo__status--ignore {
+  background: #dff5e6;
+  color: #146334;
+}
+
+@media (max-width: 640px) {
+  .sa-package-demo {
+    padding: 18px;
+  }
+
+  .sa-package-demo__header {
+    display: block;
+  }
+}

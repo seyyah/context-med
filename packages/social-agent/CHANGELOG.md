@@ -5,6 +5,25 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.2.2] - 2026-04-25
+
+### Contributors
+
+- Akbulut55
+
+### Added
+
+- Added public package API for generating a comprehensive Social-Agent demo payload.
+- Added `npm run demo:build` for writing package-generated demo JSON.
+- Added demo UI assets that render package output inside the accepted demo screens.
+- Added `/api/demo` to the local demo server.
+
+### Changed
+
+- Bumped package metadata to `0.2.2`.
+- Extended comprehensive CLI coverage for package API, demo builder, and demo API behavior.
+- Moved accepted demo HTML screens under `demo/screens/` while keeping existing demo routes stable.
+
 ## [social-agent-v0.2.1] - 2026-04-25
 
 ### Contributors

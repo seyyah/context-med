@@ -39,7 +39,7 @@ New package-local test files may be added under `packages/social-agent/tests/`. 
 - Root `DESIGN.md`: canonical Xtatistix UI design language.
 - Root `README.md1`: Context-Med product context.
 - Local `IDEA.md`: canonical product concept for `social-agent`.
-- Local `demo/`: accepted Stitch UI reference screens.
+- Local `demo/screens/`: accepted Stitch UI reference screens.
 - Local `tests/cli/smoke.test.js`: locked smoke behavior reference.
 - Local comprehensive tests: package-local test files may be added without editing smoke.
 
@@ -125,6 +125,7 @@ packages/social-agent/
     cli.js
   src/
     index.js
+    api.js
     commands/
       plan.js
       draft.js
@@ -146,15 +147,20 @@ packages/social-agent/
         writeback.js
         settings.js
   demo/
-    overview.html
-    workspace.html
-    plan.html
-    drafts.html
-    moderation.html
-    review-queue.html
-    packages.html
-    writeback.html
-    settings.html
+    comprehensive-demo.js
+    assets/
+      social-agent-demo.css
+      social-agent-demo.js
+    screens/
+      overview.html
+      workspace.html
+      plan.html
+      drafts.html
+      moderation.html
+      review-queue.html
+      packages.html
+      writeback.html
+      settings.html
   tests/
     cli/
       smoke.test.js
@@ -164,9 +170,11 @@ packages/social-agent/
 Rules:
 
 - `src/index.js` owns shared domain helpers and output builders.
+- `src/api.js` exposes the package API used by demos and future UI code.
 - `src/commands/*` exposes CLI commands.
 - `src/ui/` is the working standalone UI implementation for now.
-- `demo/` remains the accepted Stitch reference.
+- `demo/screens/` keeps the accepted Stitch reference HTML screens.
+- `demo/assets/` keeps package-backed browser demo assets.
 - Existing `smoke.test.js` is locked.
 - New package-local tests may be added for comprehensive CLI coverage.
 
@@ -340,7 +348,7 @@ social-agent serve --port 3000
 **Design source:**
 
 - `packages/social-agent/DESIGN.md`
-- accepted `packages/social-agent/demo/*.html`
+- accepted `packages/social-agent/demo/screens/*.html`
 
 **UI screens:**
 
@@ -368,6 +376,8 @@ social-agent serve --port 3000
 - `serve` starts a local server.
 - Overview screen loads.
 - Navigation reaches all accepted screens.
+- `/api/demo` returns a package-generated demo payload.
+- `npm run demo:build` writes comprehensive demo JSON from the npm package API.
 - Plan, drafts, moderation, and review queue views map to CLI/domain outputs.
 - UI follows the accepted Stitch visual flow.
 
@@ -454,8 +464,9 @@ Note: `smoke.test.js` is locked for now. New package-local test files can be add
 4. Add `plan`, `draft`, `moderate`, and `serve` command modules.
 5. Implement deterministic JSON output.
 6. Add local `serve` command.
-7. Build `src/ui/` using accepted `demo/` screens as reference.
-8. Verify commands without editing the locked smoke test.
+7. Add package-backed demo payload and accepted demo screen bindings.
+8. Build `src/ui/` using accepted `demo/` screens as reference.
+9. Verify commands without editing the locked smoke test.
 
 ---
 

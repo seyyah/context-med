@@ -12,6 +12,7 @@ const { spawn, spawnSync } = require('child_process');
 const PKG_ROOT = path.resolve(__dirname, '../..');
 const REPO_ROOT = path.resolve(PKG_ROOT, '../..');
 const CLI = path.join(PKG_ROOT, 'bin', 'cli.js');
+const DEMO_SCRIPT = path.join(PKG_ROOT, 'demo', 'comprehensive-demo.js');
 const FIXTURES = path.join(REPO_ROOT, 'fixtures');
 
 function runCli(args, options = {}) {
@@ -232,6 +233,46 @@ describe('social-agent CLI comprehensive behavior', () => {
     expect(empty.stderr).toMatch(/empty/i);
   });
 
+  test('package API creates a comprehensive demo payload', () => {
+    const socialAgent = require('@context-med/social-agent');
+    const payload = socialAgent.createSocialAgentDemo();
+
+    expect(payload).toMatchObject({
+      type: 'social_agent_demo',
+      schema_version: 'social-agent.v1',
+      package: {
+        name: '@context-med/social-agent'
+      }
+    });
+    expect(payload.plan.items.length).toBeGreaterThanOrEqual(4);
+    expect(payload.drafts.drafts.length).toBeGreaterThanOrEqual(2);
+    expect(payload.moderation.reports.length).toBeGreaterThanOrEqual(4);
+    expect(payload.review_queue.length).toBeGreaterThan(0);
+    expect(payload.settings).toMatchObject({
+      deterministic_mode: true,
+      llm_api_calls: false,
+      direct_publishing: false
+    });
+  });
+
+  test('demo builder script writes package-generated JSON', () => {
+    const output = path.join(tempDir, 'social-agent-demo.json');
+    const result = spawnSync(process.execPath, [DEMO_SCRIPT, '--output', output], {
+      cwd: PKG_ROOT,
+      encoding: 'utf8',
+      timeout: 30000
+    });
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toMatch(/@context-med\/social-agent/);
+    const payload = readJson(output);
+    expect(payload.type).toBe('social_agent_demo');
+    expect(payload.packages[0]).toMatchObject({
+      format: 'json',
+      status: 'ready'
+    });
+  });
+
   test('serve exposes accepted demo screens with extensionless routes', async () => {
     const port = 3300 + Math.floor(Math.random() * 300);
     const child = spawn(process.execPath, [CLI, 'serve', '--port', String(port), '--quiet'], {
@@ -242,6 +283,7 @@ describe('social-agent CLI comprehensive behavior', () => {
     try {
       const overview = await waitForServer(`http://127.0.0.1:${port}/`);
       expect(overview.body).toMatch(/Social-Agent/);
+      expect(overview.body).toMatch(/assets\/social-agent-demo\.js/);
 
       const plan = await requestText(`http://127.0.0.1:${port}/plan`);
       expect(plan.statusCode).toBe(200);
@@ -250,6 +292,23 @@ describe('social-agent CLI comprehensive behavior', () => {
       const drafts = await requestText(`http://127.0.0.1:${port}/drafts`);
       expect(drafts.statusCode).toBe(200);
       expect(drafts.body).toMatch(/Drafts/);
+
+      const demoApi = await requestText(`http://127.0.0.1:${port}/api/demo`);
+      expect(demoApi.statusCode).toBe(200);
+      expect(JSON.parse(demoApi.body)).toMatchObject({
+        type: 'social_agent_demo',
+        package: {
+          name: '@context-med/social-agent'
+        }
+      });
+
+      const demoAsset = await requestText(`http://127.0.0.1:${port}/assets/social-agent-demo.js`);
+      expect(demoAsset.statusCode).toBe(200);
+      expect(demoAsset.body).toMatch(/api\/demo/);
+
+      const directScreen = await requestText(`http://127.0.0.1:${port}/screens/overview.html`);
+      expect(directScreen.statusCode).toBe(200);
+      expect(directScreen.body).toMatch(/Social-Agent/);
 
       const post = await requestText(`http://127.0.0.1:${port}/plan`, 'POST');
       expect(post.statusCode).toBe(405);
