@@ -1,12 +1,11 @@
 name: "CI Eval & Gamification"
 
 on:
-  pull_request_target:
+  pull_request:
     branches: [main]
 
 permissions:
   pull-requests: write
-  issues: write
   contents: read
 
 jobs:
@@ -17,14 +16,17 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
-          ref: refs/pull/${{ github.event.pull_request.number }}/merge
           fetch-depth: 0
-          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
 
       - name: Install Dependencies
         run: |
@@ -35,12 +37,12 @@ jobs:
           if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
 
       - name: Fetch base branch
-        run: git fetch origin ${{ github.event.pull_request.base.ref }}
+        run: git fetch origin ${{ github.base_ref }}
 
       - name: Detect target pack
         id: pack
         run: |
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}...HEAD)
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
           # Get the primary package being touched
           TARGET_PACK=$(echo "$CHANGED_FILES" | grep '^packages/' | cut -d '/' -f 2 | sort | uniq | head -n 1)
           echo "target=$TARGET_PACK" >> $GITHUB_OUTPUT
@@ -52,32 +54,72 @@ jobs:
         run: |
           PACK_DIR="packages/${{ steps.pack.outputs.target }}"
           echo "Running tests for $PACK_DIR"
+
+          # Go to pack dir and run test
           cd $PACK_DIR || exit 0
 
+          # Detect project type and run appropriate tests
+          PASS_COUNT=0
+          FAIL_COUNT=0
+
+          # Check if it's a Node.js/JavaScript project
           if [ -f "package.json" ]; then
-            echo "Node.js package detected."
-            npm install
-            npm test > test_output.txt 2>&1 || true
-            
-            # Extract scores from Jest output
-            PASS_COUNT=$(grep -oP '\d+(?= passed)' test_output.txt | tail -n 1 || echo "0")
-            FAIL_COUNT=$(grep -oP '\d+(?= failed)' test_output.txt | tail -n 1 || echo "0")
+            echo "📦 Detected Node.js project (package.json found)"
+
+            # Install dependencies
+            npm install || true
+
+            # Check if Jest is configured
+            if grep -q '"jest"' package.json || [ -f "jest.config.js" ]; then
+              echo "🧪 Running Jest tests..."
+              npm test -- --json --outputFile=jest_output.json || true
+
+              # Parse Jest JSON output
+              if [ -f "jest_output.json" ]; then
+                PASS_COUNT=$(jq -r '.numPassedTests // 0' jest_output.json 2>/dev/null || echo "0")
+                FAIL_COUNT=$(jq -r '.numFailedTests // 0' jest_output.json 2>/dev/null || echo "0")
+                echo "✅ Passed: $PASS_COUNT, ❌ Failed: $FAIL_COUNT"
+              else
+                # Fallback: try to parse from stdout
+                npm test > test_output.txt 2>&1 || true
+                PASS_COUNT=$(grep -oP '\d+(?= passed)' test_output.txt | tail -n 1 || echo "0")
+                FAIL_COUNT=$(grep -oP '\d+(?= failed)' test_output.txt | tail -n 1 || echo "0")
+              fi
+            else
+              echo "⚠️ No test framework detected in package.json"
+            fi
+
+          # Check if it's a Python project
+          elif [ -f "pyproject.toml" ] || [ -f "setup.py" ] || ls tests/test_*.py 2>/dev/null || ls tests/*_test.py 2>/dev/null; then
+            echo "🐍 Detected Python project"
+
+            # If we have a local src we install it
+            if [ -f "pyproject.toml" ]; then
+              pip install -e . || true
+            fi
+
+            echo "🧪 Running pytest..."
+            pytest tests/ --junitxml=pytest.xml > pytest_output.txt 2>&1 || true
+
+            # Basic gamification point extraction (Count passes/fails from text)
+            PASS_COUNT=$(grep -oP '\d+(?= passed)' pytest_output.txt | tail -n 1 || echo "0")
+            FAIL_COUNT=$(grep -oP '\d+(?= failed)' pytest_output.txt | tail -n 1 || echo "0")
+            echo "✅ Passed: $PASS_COUNT, ❌ Failed: $FAIL_COUNT"
+
           else
-            echo "Python package assumed."
-            if [ -f "pyproject.toml" ]; then pip install -e .; fi
-            pytest tests/ --junitxml=pytest.xml > test_output.txt || true
-            
-            PASS_COUNT=$(grep -oP '\d+(?= passed)' test_output.txt || echo "0")
-            FAIL_COUNT=$(grep -oP '\d+(?= failed)' test_output.txt || echo "0")
+            echo "⚠️ Could not detect project type (no package.json, pyproject.toml, or Python tests found)"
           fi
-          
+
+          # GitHub Outputs
           echo "passed=$PASS_COUNT" >> $GITHUB_OUTPUT
           echo "failed=$FAIL_COUNT" >> $GITHUB_OUTPUT
-          
+
+          # Basic score formula (10 per pass, -5 per fail)
           SCORE=$(( PASS_COUNT * 10 - FAIL_COUNT * 5 ))
           if [ $SCORE -lt 0 ]; then SCORE=0; fi
           echo "score=$SCORE" >> $GITHUB_OUTPUT
-          
+
+          # For step success check
           if [ "$PASS_COUNT" = "0" ] && [ "$FAIL_COUNT" = "0" ]; then
              echo "conclusion=failure" >> $GITHUB_OUTPUT
           elif [ "$FAIL_COUNT" != "0" ]; then
@@ -87,38 +129,39 @@ jobs:
           fi
 
       - name: Post PR Score Comment
-        if: always()
+        if: steps.pack.outputs.target != ''
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const passed = parseInt(`${{ steps.test.outputs.passed || 0 }}`, 10);
-            const failed = parseInt(`${{ steps.test.outputs.failed || 0 }}`, 10);
-            const score = parseInt(`${{ steps.test.outputs.score || 0 }}`, 10);
-            const conclusion = `${{ steps.test.outputs.conclusion || 'skipped' }}`;
-            const packName = `${{ steps.pack.outputs.target || 'paket tespit edilemedi' }}`;
+            const passed = parseInt(`${{ steps.test.outputs.passed || 0 }}`);
+            const failed = parseInt(`${{ steps.test.outputs.failed || 0 }}`);
+            const score = parseInt(`${{ steps.test.outputs.score || 0 }}`);
+            const conclusion = `${{ steps.test.outputs.conclusion }}`;
+            const packName = `${{ steps.pack.outputs.target }}`;
 
-            const emoji = conclusion === 'success' ? '✅' : '❌';
+            let emoji = conclusion === 'success' ? '✅' : '❌';
             let message = `## Test & Gamification Skor Tablosu 🏆\n\n`;
             message += `**Hedef Paket:** \`${packName}\`\n`;
             message += `**Durum:** ${emoji}\n\n`;
+            
             message += `| Metrik | Değer |\n`;
             message += `| :--- | :--- |\n`;
             message += `| 🟢 Geçen Testler | **${passed}** |\n`;
             message += `| 🔴 Kalan Testler | **${failed}** |\n`;
             message += `| ⭐ **Kazanılan Puan** | **${score} XP** |\n\n`;
-
+            
             if (conclusion !== 'success') {
-              message += `**⚠️ PR'ın Merge edilebilmesi için tüm testlerin geçmesi zorunludur!** Lütfen paketinizi düzeltin.`;
+                message += `**⚠️ PR'ın Merge edilebilmesi için tüm testlerin geçmesi zorunludur!** Lütfen paketinizi düzeltin.`;
             } else {
-              message += `🎉 Tebrikler! Tüm testler başarıyla geçti.`;
+                message += `🎉 Tebrikler! Tüm testler başarıyla geçti.`;
             }
-
+            
             await github.rest.issues.createComment({
-              issue_number: ${{ github.event.pull_request.number }},
+              issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: message,
+              body: message
             });
 
       - name: Gate Check
