@@ -1,0 +1,13 @@
+{
+  "name": "context-wiki-demo",
+  "version": "0.1.0",
+  "description": "Interactive demo for context-wiki CLI",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
