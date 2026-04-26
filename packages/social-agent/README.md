@@ -158,6 +158,41 @@ http://127.0.0.1:3000
 
 The Workspace screen accepts source context and community comments. Generated output is reused across Plan, Drafts, Moderation, Review Queue, Packages, Writeback, and Settings screens.
 
+## React UI Scaffold
+
+A new empty React/Vite app has been started under:
+
+```text
+demo/standalone-ui/
+```
+
+This is intentionally separate from the current CLI-served demo. It is the starting point for rebuilding the standalone UI as a component-based app without moving the existing CLI or core package logic.
+
+Run the React dev server:
+
+```bash
+npm run ui:dev
+```
+
+Build the React app:
+
+```bash
+npm run ui:build
+```
+
+Preview the built React app:
+
+```bash
+npm run ui:preview
+```
+
+Current status:
+
+- The React app is only a scaffold.
+- It does not replace `npm start`.
+- It does not yet call `/api/demo`.
+- The existing CLI, package API, and static demo remain unchanged.
+
 Example Workspace source:
 
 ```md

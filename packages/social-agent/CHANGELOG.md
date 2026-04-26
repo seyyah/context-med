@@ -5,9 +5,20 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.4.0] - 2026-04-26
+
+### Contributors
+
+- Akbulut55
+
 ### Added
 
 - Added package-local `README.md` with setup, CLI, demo, and test instructions.
+- Added an empty React/Vite UI scaffold under `demo/standalone-ui/` with separate `ui:dev`, `ui:build`, and `ui:preview` scripts.
+
+### Changed
+
+- Bumped package metadata to `0.4.0`.
 
 ## [social-agent-v0.3.1] - 2026-04-25
 

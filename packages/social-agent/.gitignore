@@ -1,6 +1,7 @@
 node_modules/
 coverage/
 out/
+demo/dist/
 tmp/
 tmp-check/
 test-results/

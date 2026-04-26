@@ -1,0 +1,19 @@
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+const appDir = dirname(fileURLToPath(import.meta.url));
+
+export default defineConfig({
+  root: appDir,
+  plugins: [react()],
+  build: {
+    outDir: resolve(appDir, '../dist'),
+    emptyOutDir: true
+  },
+  server: {
+    host: '127.0.0.1',
+    port: 5173
+  }
+});
