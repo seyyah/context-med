@@ -158,15 +158,15 @@ http://127.0.0.1:3000
 
 The Workspace screen accepts source context and community comments. Generated output is reused across Plan, Drafts, Moderation, Review Queue, Packages, Writeback, and Settings screens.
 
-## React UI Scaffold
+## React Standalone UI
 
-A new empty React/Vite app has been started under:
+A React/Vite standalone UI lives under:
 
 ```text
 demo/standalone-ui/
 ```
 
-This is intentionally separate from the current CLI-served demo. It is the starting point for rebuilding the standalone UI as a component-based app without moving the existing CLI or core package logic.
+This is intentionally separate from the current CLI-served demo. It keeps the CLI and package API in place while rebuilding the UI as a component-based app.
 
 Run the React dev server:
 
@@ -188,8 +188,10 @@ npm run ui:preview
 
 Current status:
 
-- The React app is only a scaffold.
-- It does not replace `npm start`.
+- The React app has separate pages for Overview, Workspace, Plan, Drafts, Moderation, Review Queue, Packages, Writeback, and Settings.
+- Shared shell, navigation, draft cards, panels, badges, and metric components live under `demo/standalone-ui/src/components/`.
+- Page-level UI lives under `demo/standalone-ui/src/pages/`.
+- It does not replace `npm start` yet.
 - It does not yet call `/api/demo`.
 - The existing CLI, package API, and static demo remain unchanged.
 

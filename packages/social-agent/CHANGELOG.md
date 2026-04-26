@@ -5,6 +5,21 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.4.1] - 2026-04-26
+
+### Contributors
+
+- Akbulut55
+
+### Changed
+
+- Reworked the React/Vite standalone UI scaffold into a multi-page static app with shared shell components and separate Overview, Workspace, Plan, Drafts, Moderation, Review Queue, Packages, Writeback, and Settings pages.
+- Updated the React Plan, Moderation, and Review Queue pages to follow the accepted HTML reference layouts more closely.
+- Updated the React Packages and Writeback pages to follow the accepted HTML reference layouts more closely.
+- Updated the React Settings page to follow the accepted HTML reference layout more closely.
+- Simplified the React topbar by removing the centered page title and notification/help icons.
+- Bumped package metadata to `0.4.1`.
+
 ## [social-agent-v0.4.0] - 2026-04-26
 
 ### Contributors
