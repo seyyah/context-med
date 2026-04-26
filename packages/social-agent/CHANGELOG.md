@@ -5,6 +5,26 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.4.2] - 2026-04-26
+
+### Contributors
+
+- Akbulut55
+
+### Added
+
+- Added a deterministic React Workspace mock generator for source-based LinkedIn and X output generation.
+
+### Changed
+
+- Replaced the React Workspace community comments input with a vertical platform selection list for draft generation.
+- Renamed React Plan table labels to emphasize weekly scheduling, channel, message focus, review gates, and draft packages.
+- Split the React Plan page into a source content queue and a selected-content weekly schedule with multiple non-package content examples.
+- Made React Plan schedule rows selectable so the rationale panel reflects the selected daily slot.
+- Replaced the React Plan pillar filter with functional week and platform filters for the content queue.
+- Updated React Plan regeneration so it applies to the selected content item without resetting filters.
+- Bumped package metadata to `0.4.2`.
+
 ## [social-agent-v0.4.1] - 2026-04-26
 
 ### Contributors
