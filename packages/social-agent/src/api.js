@@ -25,6 +25,11 @@ const {
   getGeminiApiKey,
   getGeminiModel
 } = require('./gemini');
+const {
+  createLlmProvider,
+  getLlmConfig,
+  providerMetadata
+} = require('./llm');
 
 const DEFAULT_DEMO_SOURCE = [
   '# Context-Med social launch briefing',
@@ -651,6 +656,9 @@ module.exports = {
   buildDraftPayload,
   buildModerationPayload,
   buildPlanPayload,
+  createLlmProvider,
   createSocialAgentDemo,
-  createSocialAgentDemoPayload
+  createSocialAgentDemoPayload,
+  getLlmConfig,
+  providerMetadata
 };

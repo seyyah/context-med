@@ -50,7 +50,9 @@ addCommonOptions(
   program
     .command('draft')
     .description('Create platform-specific social drafts from source context.')
-).action(handle(runDraft));
+)
+  .option('--platform <platform>', 'Target platform for draft output: linkedin or x')
+  .action(handle(runDraft));
 
 addCommonOptions(
   program

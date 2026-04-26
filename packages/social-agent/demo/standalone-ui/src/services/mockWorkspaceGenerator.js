@@ -1,6 +1,6 @@
 const platformMetadata = {
   linkedin: {
-    platform: 'Output for LinkedIn',
+    platform: 'LinkedIn adaptation draft',
     tone: 'linkedin',
     riskLabel: 'LinkedIn',
     lengthTarget: 'Medium post',
@@ -11,7 +11,7 @@ const platformMetadata = {
     hashtags: ['#CareOperations', '#HealthTech', '#PatientSafety']
   },
   x: {
-    platform: 'Output for X',
+    platform: 'X adaptation draft',
     tone: 'x',
     riskLabel: 'X',
     lengthTarget: 'Under 280 characters',
@@ -180,22 +180,116 @@ function buildAdaptationDetails(platformId, parts, sourceText, risk, hashtags) {
   ];
 }
 
-export function generateWorkspaceDrafts({ sourceText, platforms }) {
+function buildPlanSeeds(adaptations, parts, risk) {
+  const dayByPlatform = {
+    linkedin: ['Monday', 'Wednesday'],
+    x: ['Tuesday', 'Thursday']
+  };
+
+  return adaptations.flatMap((adaptation) => {
+    const platformId = adaptation.tone;
+    const days = dayByPlatform[platformId] || ['Monday'];
+
+    return days.map((day, index) => ({
+      id: `plan-${platformId}-${index + 1}`,
+      day,
+      platform: platformId === 'linkedin' ? 'LinkedIn' : 'X',
+      contentPillar: index === 0 ? 'Operational Visibility' : 'Human Review',
+      messageFocus:
+        index === 0
+          ? `Adapt "${parts.title}" into a ${platformId === 'linkedin' ? 'professional narrative' : 'short-form update'}.`
+          : `Keep the review boundary visible before this ${platformId === 'linkedin' ? 'LinkedIn' : 'X'} post moves forward.`,
+      cta: adaptation.cta || platformMetadata[platformId].cta,
+      risk,
+      status: statusForRisk(risk)
+    }));
+  });
+}
+
+function buildDraftSeeds(adaptations, planSeeds) {
+  return planSeeds.map((planSeed, index) => {
+    const adaptation = adaptations.find((item) => item.tone === planSeed.platform.toLowerCase()) || adaptations[0];
+
+    return {
+      id: `draft-seed-${index + 1}`,
+      planId: planSeed.id,
+      platform: planSeed.platform,
+      title: adaptation.hook,
+      copyPreview: adaptation.body.slice(0, 2).join(' '),
+      cta: planSeed.cta,
+      risk: planSeed.risk,
+      status: planSeed.status
+    };
+  });
+}
+
+function buildReviewItems(planSeeds, draftSeeds) {
+  const planReviewItems = planSeeds
+    .filter((planSeed) => planSeed.status !== 'Draft')
+    .map((planSeed) => ({
+      id: `review-${planSeed.id}`,
+      source: 'plan',
+      label: planSeed.messageFocus,
+      platform: planSeed.platform,
+      risk: planSeed.risk,
+      action: 'Review',
+      status: 'Needs Review'
+    }));
+  const draftReviewItems = draftSeeds
+    .filter((draftSeed) => draftSeed.status !== 'Draft')
+    .map((draftSeed) => ({
+      id: `review-${draftSeed.id}`,
+      source: 'draft',
+      label: draftSeed.title,
+      platform: draftSeed.platform,
+      risk: draftSeed.risk,
+      action: 'Review',
+      status: 'Needs Review'
+    }));
+
+  return [...planReviewItems, ...draftReviewItems];
+}
+
+function emptyWorkspaceRun(sourceText = '') {
+  return {
+    sourcePreview: trimToCharacters(sourceText, 140),
+    adaptations: [],
+    planSeeds: [],
+    draftSeeds: [],
+    reviewItems: []
+  };
+}
+
+export function generateWorkspaceRun({ sourceText, platforms }) {
   const normalized = normalizeText(sourceText);
 
   if (!normalized) {
-    return [];
+    return emptyWorkspaceRun(sourceText);
   }
 
   const selectedPlatforms = platforms.filter((platform) => supportedPlatforms.includes(platform));
   const parts = extractSourceParts(normalized);
   const risk = detectRisk(normalized);
-
-  return selectedPlatforms.map((platform) => {
+  const adaptations = selectedPlatforms.map((platform) => {
     if (platform === 'linkedin') {
       return buildLinkedInDraft(parts, normalized, risk);
     }
 
     return buildXDraft(parts, normalized, risk);
   });
+  const planSeeds = buildPlanSeeds(adaptations, parts, risk);
+  const draftSeeds = buildDraftSeeds(adaptations, planSeeds);
+  const reviewItems = buildReviewItems(planSeeds, draftSeeds);
+
+  return {
+    sourcePreview: trimToCharacters(parts.opener || normalized, 140),
+    adaptations,
+    planSeeds,
+    draftSeeds,
+    reviewItems
+  };
+}
+
+export function generateWorkspaceDrafts({ sourceText, platforms }) {
+  return generateWorkspaceRun({ sourceText, platforms }).adaptations;
 }

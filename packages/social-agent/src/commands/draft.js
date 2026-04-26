@@ -1,12 +1,14 @@
 'use strict';
 
 const {
+  PLATFORMS,
   SCHEMA_VERSION,
   approvalRequired,
   assertJsonFormat,
   assertLanguage,
   buildProvenance,
   cleanText,
+  createCliError,
   extractTitle,
   readInputFile,
   riskLevel,
@@ -104,6 +106,19 @@ function appendHashtags(body, hashtags, platform) {
   return `${body}\n\n${tagLine}`;
 }
 
+function normalizeTargetPlatform(platform) {
+  if (!platform) {
+    return '';
+  }
+
+  const normalized = String(platform).toLowerCase().trim();
+  if (!PLATFORMS.includes(normalized)) {
+    throw createCliError(`Unsupported platform: ${platform}. Supported platforms: ${PLATFORMS.join(', ')}.`, 1);
+  }
+
+  return normalized;
+}
+
 function buildDraftPayload(inputPath, content, options = {}) {
   const title = extractTitle(content);
   const quote = sourceQuote(content);
@@ -131,41 +146,47 @@ function buildDraftPayload(inputPath, content, options = {}) {
     'x'
   );
 
+  const allDrafts = [
+    {
+      id: 'draft-linkedin-01',
+      platform: 'linkedin',
+      hook: `A practical takeaway from ${title}`,
+      body: linkedInBody,
+      cta: 'What would your team need to review before publishing this?',
+      risk_level: level,
+      approval_required: needsApproval,
+      source_quote: quote,
+      status: needsApproval ? 'needs_review' : 'draft',
+      adaptation: platformAdaptation('linkedin'),
+      hashtags: linkedInHashtags,
+      hashtag_policy: hashtagPolicyFor('linkedin')
+    },
+    {
+      id: 'draft-x-01',
+      platform: 'x',
+      hook: cleanText(title, 100),
+      body: xBody,
+      cta: 'Review before posting.',
+      risk_level: level,
+      approval_required: needsApproval,
+      source_quote: quote,
+      status: needsApproval ? 'needs_review' : 'draft',
+      adaptation: platformAdaptation('x'),
+      hashtags: xHashtags,
+      hashtag_policy: hashtagPolicyFor('x')
+    }
+  ];
+  const targetPlatform = normalizeTargetPlatform(options.platform);
+  const drafts = targetPlatform
+    ? allDrafts.filter((draft) => draft.platform === targetPlatform)
+    : allDrafts;
+
   return {
     type: 'social_draft_package',
     schema_version: SCHEMA_VERSION,
     language: options.language || 'en',
     topic: title,
-    drafts: [
-      {
-        id: 'draft-linkedin-01',
-        platform: 'linkedin',
-        hook: `A practical takeaway from ${title}`,
-        body: linkedInBody,
-        cta: 'What would your team need to review before publishing this?',
-        risk_level: level,
-        approval_required: needsApproval,
-        source_quote: quote,
-        status: needsApproval ? 'needs_review' : 'draft',
-        adaptation: platformAdaptation('linkedin'),
-        hashtags: linkedInHashtags,
-        hashtag_policy: hashtagPolicyFor('linkedin')
-      },
-      {
-        id: 'draft-x-01',
-        platform: 'x',
-        hook: cleanText(title, 100),
-        body: xBody,
-        cta: 'Review before posting.',
-        risk_level: level,
-        approval_required: needsApproval,
-        source_quote: quote,
-        status: needsApproval ? 'needs_review' : 'draft',
-        adaptation: platformAdaptation('x'),
-        hashtags: xHashtags,
-        hashtag_policy: hashtagPolicyFor('x')
-      }
-    ],
+    drafts,
     provenance: buildProvenance(inputPath, 'draft')
   };
 }
@@ -184,5 +205,6 @@ module.exports = {
   hashtagPolicyFor,
   hashtagsFor,
   PLATFORM_ADAPTATION_RULES,
+  normalizeTargetPlatform,
   runDraft
 };

@@ -5,6 +5,27 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.4.3] - 2026-04-27
+
+### Contributors
+
+- Akbulut55
+
+### Added
+
+- Added a staged React Workspace generation pipeline that mock-generates adaptations, plan seeds, draft seeds, and review items.
+- Added a package-local CLI LLM provider layer with mock, Gemini, Groq, and OpenRouter provider stubs.
+- Added optional `social-agent draft --platform <platform>` filtering for single-platform draft output.
+
+### Changed
+
+- Renamed React Workspace output labels so generated content is presented as adaptation drafts instead of final publish-ready copy.
+- Reordered the React sidebar to follow the social-agent workflow from Workspace through review, package handoff, writeback, and moderation.
+- Reworked the React Drafts page around selectable weekly plan slots, editable platform copy, and selected-slot review context.
+- Reworked the React Review Queue page around selectable review items, functional status filters, reviewer notes, and mock approval decisions.
+- Updated `.env.example` to document `LLM_PROVIDER`, `LLM_MODEL`, and provider-specific API key variables.
+- Bumped package metadata to `0.4.3`.
+
 ## [social-agent-v0.4.2] - 2026-04-26
 
 ### Contributors

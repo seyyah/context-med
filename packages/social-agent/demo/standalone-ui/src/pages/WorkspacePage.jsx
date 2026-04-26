@@ -1,9 +1,9 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { Badge } from '../components/Badge.jsx';
 import { Icon } from '../components/Icon.jsx';
 import { Panel } from '../components/Panel.jsx';
 import { sourceContext } from '../data/mockData.js';
-import { generateWorkspaceDrafts } from '../services/mockWorkspaceGenerator.js';
+import { generateWorkspaceRun } from '../services/mockWorkspaceGenerator.js';
 
 const platformOptions = [
   ['linkedin', 'LinkedIn', 'Professional narrative, thought leadership, operational detail', true, false],
@@ -18,6 +18,78 @@ const initialSelectedPlatforms = platformOptions
   .filter(([, , , checked, disabled]) => checked && !disabled)
   .map(([id]) => id);
 
+const providerStage = {
+  id: 'provider',
+  label: 'Provider: mock',
+  description: 'LLM_PROVIDER=mock · local deterministic generation · no API key required.',
+  completedLabel: 'Mock ready',
+  runningLabel: 'Checking',
+  pendingLabel: 'Not checked'
+};
+
+const generationStages = [
+  {
+    id: 'adaptations',
+    label: 'Raw adaptations',
+    description: 'Rewrite source for selected platforms.',
+    completedLabel: 'Complete',
+    runningLabel: 'Generating',
+    pendingLabel: 'Waiting'
+  },
+  {
+    id: 'planSeeds',
+    label: 'Plan seeds',
+    description: 'Create weekly schedule candidates.',
+    completedLabel: 'Complete',
+    runningLabel: 'Generating',
+    pendingLabel: 'Waiting'
+  },
+  {
+    id: 'draftSeeds',
+    label: 'Draft seeds',
+    description: 'Build draft copy from plan slots.',
+    completedLabel: 'Complete',
+    runningLabel: 'Generating',
+    pendingLabel: 'Waiting'
+  },
+  {
+    id: 'reviewItems',
+    label: 'Review items',
+    description: 'Route risky items to review.',
+    completedLabel: 'Complete',
+    runningLabel: 'Generating',
+    pendingLabel: 'Waiting'
+  }
+];
+const pipelineStages = [providerStage, ...generationStages];
+
+function createPipelineStatus(status = 'completed') {
+  return pipelineStages.reduce((statuses, stage) => ({ ...statuses, [stage.id]: status }), {});
+}
+
+function createPendingPipelineStatus() {
+  return {
+    provider: 'completed',
+    ...generationStages.reduce((statuses, stage) => ({ ...statuses, [stage.id]: 'pending' }), {})
+  };
+}
+
+function createEmptyRun(sourceText = '') {
+  return {
+    sourcePreview: sourceText.slice(0, 140),
+    adaptations: [],
+    planSeeds: [],
+    draftSeeds: [],
+    reviewItems: []
+  };
+}
+
+function wait(milliseconds) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, milliseconds);
+  });
+}
+
 function riskTone(risk) {
   if (risk === 'High Risk') {
     return 'danger';
@@ -31,15 +103,18 @@ function riskTone(risk) {
 }
 
 export function WorkspacePage() {
+  const activeRunRef = useRef(0);
+  const initialRun = generateWorkspaceRun({
+    sourceText: sourceContext,
+    platforms: initialSelectedPlatforms
+  });
   const [workspaceSource, setWorkspaceSource] = useState(sourceContext);
   const [selectedPlatforms, setSelectedPlatforms] = useState(initialSelectedPlatforms);
-  const [workspaceDrafts, setWorkspaceDrafts] = useState(() =>
-    generateWorkspaceDrafts({
-      sourceText: sourceContext,
-      platforms: initialSelectedPlatforms
-    })
-  );
+  const [workspaceRun, setWorkspaceRun] = useState(initialRun);
+  const [pipelineStatus, setPipelineStatus] = useState(() => createPipelineStatus('completed'));
+  const [isGenerating, setIsGenerating] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const workspaceDrafts = workspaceRun.adaptations;
 
   function togglePlatform(platformId) {
     setSelectedPlatforms((currentPlatforms) =>
@@ -49,38 +124,73 @@ export function WorkspacePage() {
     );
   }
 
-  function generateOutput() {
+  async function generateOutput() {
     if (!workspaceSource.trim()) {
-      setFeedback('Add source content before generating platform outputs.');
-      setWorkspaceDrafts([]);
+      setFeedback('Add source content before generating the workspace run.');
+      setWorkspaceRun(createEmptyRun(''));
+      setPipelineStatus(createPendingPipelineStatus());
       return;
     }
 
     if (!selectedPlatforms.length) {
       setFeedback('Select at least one supported platform.');
-      setWorkspaceDrafts([]);
+      setWorkspaceRun(createEmptyRun(workspaceSource));
+      setPipelineStatus(createPendingPipelineStatus());
       return;
     }
 
-    const nextDrafts = generateWorkspaceDrafts({
+    const runId = activeRunRef.current + 1;
+    activeRunRef.current = runId;
+    const nextRun = generateWorkspaceRun({
       sourceText: workspaceSource,
       platforms: selectedPlatforms
     });
 
-    setWorkspaceDrafts(nextDrafts);
-    setFeedback(`Generated ${nextDrafts.length} platform output${nextDrafts.length === 1 ? '' : 's'} from the current source.`);
+    setIsGenerating(true);
+    setFeedback('Starting mock workspace pipeline.');
+    setWorkspaceRun(createEmptyRun(workspaceSource));
+    setPipelineStatus(createPendingPipelineStatus());
+
+    for (const stage of generationStages) {
+      if (activeRunRef.current !== runId) {
+        return;
+      }
+
+      setPipelineStatus((currentStatus) => ({ ...currentStatus, [stage.id]: 'running' }));
+      setFeedback(`Generating ${stage.label.toLowerCase()}...`);
+      await wait(520);
+
+      if (activeRunRef.current !== runId) {
+        return;
+      }
+
+      setWorkspaceRun((currentRun) => ({
+        ...currentRun,
+        [stage.id]: nextRun[stage.id]
+      }));
+      setPipelineStatus((currentStatus) => ({ ...currentStatus, [stage.id]: 'completed' }));
+    }
+
+    setWorkspaceRun(nextRun);
+    setIsGenerating(false);
+    setFeedback(
+      `Workspace run complete: ${nextRun.adaptations.length} adaptations, ${nextRun.planSeeds.length} plan seeds, ${nextRun.draftSeeds.length} draft seeds, ${nextRun.reviewItems.length} review items.`
+    );
   }
 
   function resetWorkspace() {
+    const resetRun = generateWorkspaceRun({
+      sourceText: sourceContext,
+      platforms: initialSelectedPlatforms
+    });
+
+    activeRunRef.current += 1;
     setWorkspaceSource(sourceContext);
     setSelectedPlatforms(initialSelectedPlatforms);
-    setWorkspaceDrafts(
-      generateWorkspaceDrafts({
-        sourceText: sourceContext,
-        platforms: initialSelectedPlatforms
-      })
-    );
-    setFeedback('Workspace input reset to the default source.');
+    setWorkspaceRun(resetRun);
+    setPipelineStatus(createPipelineStatus('completed'));
+    setIsGenerating(false);
+    setFeedback('Workspace input reset to the default source and mock run.');
   }
 
   return (
@@ -126,22 +236,77 @@ export function WorkspacePage() {
           </section>
         </div>
         <div className="input-actions">
-          <button className="primary" onClick={generateOutput} type="button">
+          <button className="primary" disabled={isGenerating} onClick={generateOutput} type="button">
             <Icon name="refresh" />
-            Generate Output
+            {isGenerating ? 'Generating...' : 'Generate Output'}
           </button>
-          <button onClick={resetWorkspace} type="button">
+          <button disabled={isGenerating} onClick={resetWorkspace} type="button">
             <Icon name="restart_alt" />
             Reset Input
           </button>
         </div>
       </Panel>
 
+      <section className="workspace-pipeline" aria-live="polite">
+        <header>
+          <div>
+            <span className="kicker">Generation Pipeline</span>
+            <h2>Workspace run</h2>
+            <p>Mock generation moves from source adaptation to planning, draft creation, and review routing.</p>
+          </div>
+          <span className={isGenerating ? 'pipeline-run-state running' : 'pipeline-run-state'}>
+            {isGenerating ? 'Running' : 'Ready'}
+          </span>
+        </header>
+        <div className="pipeline-track">
+          {pipelineStages.map((stage, index) => {
+            const status = pipelineStatus[stage.id];
+
+            return (
+              <article className={`pipeline-step ${status}`} key={stage.id}>
+                <div className="pipeline-marker">
+                  {status === 'completed' ? <Icon name="check" /> : status === 'running' ? <Icon name="sync" /> : index + 1}
+                </div>
+                <div>
+                  <h3>{stage.label}</h3>
+                  <p>{stage.description}</p>
+                  <span>
+                    {status === 'completed'
+                      ? stage.completedLabel
+                      : status === 'running'
+                        ? stage.runningLabel
+                        : stage.pendingLabel}
+                  </span>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
       <Panel
-        title="Final platform outputs"
-        description="The source input is rewritten into platform-native copy instead of being copied across channels."
+        title="Workspace run output"
+        description="Generated run data includes platform adaptation drafts, plan seeds, draft seeds, and review queue items."
       >
         {feedback ? <p className="workspace-feedback">{feedback}</p> : null}
+        <div className="workspace-run-summary">
+          <article>
+            <span>Raw adaptations</span>
+            <strong>{workspaceRun.adaptations.length}</strong>
+          </article>
+          <article>
+            <span>Plan seeds</span>
+            <strong>{workspaceRun.planSeeds.length}</strong>
+          </article>
+          <article>
+            <span>Draft seeds</span>
+            <strong>{workspaceRun.draftSeeds.length}</strong>
+          </article>
+          <article>
+            <span>Review items</span>
+            <strong>{workspaceRun.reviewItems.length}</strong>
+          </article>
+        </div>
         {workspaceDrafts.length ? (
           <div className="platform-output-grid">
             {workspaceDrafts.map((draft) => (
