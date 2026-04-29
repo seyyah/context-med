@@ -4,7 +4,7 @@ import { Badge } from '../components/Badge.jsx';
 import { Icon } from '../components/Icon.jsx';
 import { useWorkflowStore } from '../state/WorkflowStoreContext.jsx';
 
-const tabs = ['All', 'Pending', 'Approved', 'Changes Requested', 'Rejected'];
+const tabs = ['All', 'Pending', 'Approved', 'Changes Requested', 'Escalated', 'Rejected'];
 
 const riskTone = {
   Low: 'success',
@@ -17,6 +17,7 @@ const statusTone = {
   'In Review': 'warning',
   Approved: 'success',
   'Changes Requested': 'warning',
+  Escalated: 'danger',
   Rejected: 'danger'
 };
 
@@ -40,10 +41,10 @@ function isPending(status) {
 }
 
 export function ReviewQueuePage() {
-  const { workflowState } = useWorkflowStore();
+  const { persistWorkflowItem, updateDrafts, workflowState } = useWorkflowStore();
   const queueItems = workflowState.snapshot.reviewQueueItems;
   const [activeTab, setActiveTab] = useState('Pending');
-  const [selectedItemId, setSelectedItemId] = useState(queueItems[0].id);
+  const [selectedItemId, setSelectedItemId] = useState(queueItems[0]?.id || '');
   const [decisionsByItem, setDecisionsByItem] = useState({});
   const [notesByItem, setNotesByItem] = useState({});
   const [feedback, setFeedback] = useState('Select an item, inspect the draft package context, then approve or request changes.');
@@ -77,13 +78,14 @@ export function ReviewQueuePage() {
   }, [filteredItems, selectedItemId]);
 
   const selected = itemsWithDecision.find((item) => item.id === selectedItemId) ?? filteredItems[0] ?? itemsWithDecision[0];
-  const selectedNote = notesByItem[selected.id] ?? '';
+  const selectedNote = selected ? notesByItem[selected.id] ?? '' : '';
 
   const tabCounts = {
     All: itemsWithDecision.length,
     Pending: itemsWithDecision.filter((item) => isPending(item.status)).length,
     Approved: itemsWithDecision.filter((item) => item.status === 'Approved').length,
     'Changes Requested': itemsWithDecision.filter((item) => item.status === 'Changes Requested').length,
+    Escalated: itemsWithDecision.filter((item) => item.status === 'Escalated').length,
     Rejected: itemsWithDecision.filter((item) => item.status === 'Rejected').length
   };
 
@@ -94,7 +96,22 @@ export function ReviewQueuePage() {
     ['Approved', tabCounts.Approved, 'Ready for package handoff']
   ];
 
-  function recordDecision(status, decision) {
+  async function recordDecision(status, decision) {
+    const reviewerNote = notesByItem[selected.id] ?? '';
+    const matchingDraft = workflowState.snapshot.drafts.find((draft) =>
+      draft.id === selected.draftId || draft.slotId === selected.slotId || draft.packageTarget === selected.packageTarget
+    );
+    const matchingPlan = workflowState.snapshot.contentPlans.find((plan) =>
+      plan.id === selected.planId || plan.runId === selected.runId
+    );
+    const updatedItem = {
+      ...selected,
+      status,
+      decision,
+      reviewerNote,
+      decidedAt: new Date().toISOString()
+    };
+
     setDecisionsByItem((current) => ({
       ...current,
       [selected.id]: {
@@ -102,14 +119,90 @@ export function ReviewQueuePage() {
         decision
       }
     }));
-    setFeedback(`${selected.id} marked as ${status}. Decision context stays attached to the review item.`);
+    await persistWorkflowItem({
+      id: selected.id,
+      type: 'review_item',
+      title: selected.title,
+      status,
+      payload: updatedItem
+    });
+
+    if (matchingDraft) {
+      await persistWorkflowItem({
+        id: matchingDraft.id,
+        type: 'draft',
+        title: matchingDraft.title,
+        status,
+        payload: {
+          ...matchingDraft,
+          status,
+          reviewDecision: decision,
+          reviewItemId: selected.id,
+          decidedAt: updatedItem.decidedAt
+        }
+      });
+      updateDrafts((currentDrafts) => ({
+        ...currentDrafts,
+        statusBySlot: {
+          ...currentDrafts.statusBySlot,
+          [matchingDraft.slotId]: status
+        }
+      }));
+    }
+
+    if (matchingPlan && selected.slotId) {
+      await persistWorkflowItem({
+        id: matchingPlan.id,
+        type: 'content_plan',
+        title: matchingPlan.title,
+        status: 'active',
+        payload: {
+          ...matchingPlan,
+          slots: matchingPlan.slots.map((slot) =>
+            slot.id === selected.slotId
+              ? {
+                ...slot,
+                status,
+                reviewDecision: decision,
+                reviewItemId: selected.id
+              }
+              : slot
+          )
+        }
+      });
+    }
+
+    setFeedback(`${selected.id} marked as ${status}. Matching draft and plan slot were synchronized for package export.`);
   }
 
   function updateNote(value) {
+    if (!selected) {
+      return;
+    }
+
     setNotesByItem((current) => ({
       ...current,
       [selected.id]: value
     }));
+  }
+
+  if (!itemsWithDecision.length || !selected) {
+    return (
+      <div className="review-queue-page">
+        <header className="review-workspace-header">
+          <div>
+            <span className="kicker">Review Queue</span>
+            <h1>Human review before package handoff</h1>
+            <p>Generate Workspace output or route a Draft to Review to create stored review records.</p>
+          </div>
+        </header>
+        <section className="empty-workflow-state">
+          <Icon name="fact_check" />
+          <h2>No review items</h2>
+          <p>Items that need approval, changes, escalation, or rejection will appear here after generation or Drafts routing.</p>
+        </section>
+      </div>
+    );
   }
 
   return (
@@ -304,6 +397,9 @@ export function ReviewQueuePage() {
             </button>
             <button onClick={() => recordDecision('Changes Requested', 'Reviewer requested edits before this item can move forward.')} type="button">
               Request Changes
+            </button>
+            <button onClick={() => recordDecision('Escalated', 'Reviewer escalated this item for clinical or policy review.')} type="button">
+              Escalate
             </button>
             <button className="primary" onClick={() => recordDecision('Approved', 'Reviewer approved this item for package handoff.')} type="button">
               <Icon name="check_circle" />

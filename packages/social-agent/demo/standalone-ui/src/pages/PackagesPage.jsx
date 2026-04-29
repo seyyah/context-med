@@ -11,16 +11,32 @@ function PlatformSquare({ label }) {
 export function PackagesPage() {
   const { workflowState } = useWorkflowStore();
   const packages = workflowState.snapshot.packages;
+  const [activeFilter, setActiveFilter] = useState('all');
   const [selectedPackageId, setSelectedPackageId] = useState(packages[0]?.id);
-  const selectedPackage = packages.find((item) => item.id === selectedPackageId) || packages[0];
+  const filteredPackages = packages.filter((item) => {
+    if (activeFilter === 'all') {
+      return true;
+    }
+    return item.manifest?.exportType === activeFilter;
+  });
+  const selectedPackage = filteredPackages.find((item) => item.id === selectedPackageId) || filteredPackages[0] || null;
   const manifest = useMemo(() => JSON.stringify(selectedPackage?.manifest || {}, null, 2), [selectedPackage]);
+  const packageCounts = {
+    approved: packages.filter((item) => item.manifest?.exportType === 'approved').length,
+    review: packages.filter((item) => item.manifest?.exportType === 'review_required').length,
+    blocked: packages.filter((item) => item.manifest?.exportType === 'blocked').length
+  };
 
   function exportPackage() {
+    if (!selectedPackage) {
+      return;
+    }
+
     const blob = new Blob([`${manifest}\n`], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `${selectedPackage.id}.manifest.json`;
+    anchor.download = `${selectedPackage.id}.${selectedPackage.manifest?.exportType || 'manifest'}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
   }
@@ -28,6 +44,13 @@ export function PackagesPage() {
   async function copyPackageJson() {
     await navigator.clipboard?.writeText(manifest);
   }
+
+  const filters = [
+    ['all', 'All', packages.length],
+    ['approved', 'Approved exports', packageCounts.approved],
+    ['review_required', 'Needs review', packageCounts.review],
+    ['blocked', 'Blocked', packageCounts.blocked]
+  ];
 
   return (
     <div className="page packages-page original-packages-page">
@@ -52,49 +75,75 @@ export function PackagesPage() {
         <section className="artifact-directory-card">
           <header>
             <h2>Artifact Directory</h2>
-            <span>Total: {packages.length} Items</span>
+            <span>
+              Total: {packages.length} Items / Approved: {packageCounts.approved} / Review: {packageCounts.review} / Blocked: {packageCounts.blocked}
+            </span>
           </header>
+          <nav className="package-filter-tabs" aria-label="Package export filters">
+            {filters.map(([id, label, count]) => (
+              <button
+                className={activeFilter === id ? 'active' : ''}
+                key={id}
+                onClick={() => {
+                  setActiveFilter(id);
+                  setSelectedPackageId('');
+                }}
+                type="button"
+              >
+                {label}
+                <span>{count}</span>
+              </button>
+            ))}
+          </nav>
           <div className="table-wrap">
-            <table className="dense-table package-table">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>Package ID</th>
-                  <th>Task Type</th>
-                  <th>Platforms</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {packages.map((item, index) => (
-                  <tr className={item.id === selectedPackage?.id ? 'selected-row' : ''} key={item.id} onClick={() => setSelectedPackageId(item.id)}>
-                    <td>
-                      <Icon name="folder_zip" filled={index === 0} />
-                    </td>
-                    <td>
-                      <strong>{item.id}</strong>
-                    </td>
-                    <td>{item.task}</td>
-                    <td>
-                      <div className="package-platforms">
-                        {item.platforms.map((platform) => (
-                          <PlatformSquare key={`${item.id}-${platform}`} label={platform} />
-                        ))}
-                      </div>
-                    </td>
-                    <td>
-                      <Badge tone={item.tone}>{item.status}</Badge>
-                    </td>
-                    <td>
-                      <button type="button">
-                        <Icon name="more_vert" />
-                      </button>
-                    </td>
+            {filteredPackages.length ? (
+              <table className="dense-table package-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Package ID</th>
+                    <th>Task Type</th>
+                    <th>Platforms</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredPackages.map((item, index) => (
+                    <tr className={item.id === selectedPackage?.id ? 'selected-row' : ''} key={item.id} onClick={() => setSelectedPackageId(item.id)}>
+                      <td>
+                        <Icon name="folder_zip" filled={index === 0} />
+                      </td>
+                      <td>
+                        <strong>{item.id}</strong>
+                      </td>
+                      <td>{item.task}</td>
+                      <td>
+                        <div className="package-platforms">
+                          {item.platforms.map((platform) => (
+                            <PlatformSquare key={`${item.id}-${platform}`} label={platform} />
+                          ))}
+                        </div>
+                      </td>
+                      <td>
+                        <Badge tone={item.tone}>{item.status}</Badge>
+                      </td>
+                      <td>
+                        <button type="button">
+                          <Icon name="more_vert" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <section className="empty-workflow-state compact">
+                <Icon name="inventory_2" />
+                <h2>No packages in this export state</h2>
+                <p>Approved, review-required, and blocked package manifests appear here after Workspace generation and Review Queue decisions.</p>
+              </section>
+            )}
           </div>
         </section>
 
@@ -102,7 +151,7 @@ export function PackagesPage() {
           <header>
             <div>
               <Icon name="inventory" filled />
-              <h2>{selectedPackage?.id}</h2>
+              <h2>{selectedPackage?.id || 'No package selected'}</h2>
             </div>
             <Badge tone={selectedPackage?.tone || 'neutral'}>{selectedPackage?.status || 'Pending'}</Badge>
             <p>{selectedPackage?.task || 'No package manifest available yet.'}</p>
@@ -111,7 +160,7 @@ export function PackagesPage() {
           <div className="manifest-panel">
             <div className="manifest-heading">
               <strong>Metadata Schema</strong>
-              <span>manifest.json</span>
+              <span>{selectedPackage?.manifest?.status || 'manifest.json'}</span>
             </div>
             <pre>{manifest}</pre>
 
@@ -128,12 +177,12 @@ export function PackagesPage() {
           </div>
 
           <footer>
-            <button className="primary" onClick={exportPackage} type="button">
+            <button className="primary" disabled={!selectedPackage} onClick={exportPackage} type="button">
               <Icon name="download" />
               Export Package
             </button>
             <div>
-              <button onClick={copyPackageJson} type="button">
+              <button disabled={!selectedPackage} onClick={copyPackageJson} type="button">
                 <Icon name="content_copy" />
                 Copy JSON
               </button>

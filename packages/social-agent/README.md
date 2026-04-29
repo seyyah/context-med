@@ -2,7 +2,7 @@
 
 Standalone social operations package for Context-Med.
 
-`social-agent` helps turn source context and community comments into review-ready social media work. It currently supports LinkedIn and X workflows through a package-local CLI, JSON outputs, and a local demo UI.
+`social-agent` helps turn source context into review-ready social media work. It currently supports LinkedIn and X workflows through a package-local CLI, SQLite-backed workflow records, JSON outputs, and a local demo UI.
 
 The package is designed as a small social operations layer, not only a caption generator. It takes a source briefing, creates a platform-aware plan, drafts social copy, checks community comments, and keeps risky or sensitive items behind a human review step before package handoff.
 
@@ -14,7 +14,6 @@ The current goal is to provide a demoable MVP that shows:
 
 - how a source briefing becomes a social plan;
 - how the same idea is adapted differently for LinkedIn and X;
-- how community comments are classified before public response;
 - how review-required work is collected in one queue;
 - how generated work can be exported as JSON for manual handoff.
 
@@ -24,23 +23,43 @@ The package intentionally avoids direct publishing. It focuses on planning, draf
 
 - Builds a social plan from source context.
 - Creates platform-aware LinkedIn and X draft outputs.
-- Classifies community comments for moderation and review.
 - Collects approval/escalation items in a review queue.
+- Stores Workspace runs, content plans, drafts, draft versions, review decisions, and package manifests locally.
+- Shows the active LLM provider, model, API key readiness, storage path, and fallback state in the UI.
 - Serves a local standalone demo UI from `packages/social-agent/demo/`.
 
 ## Workflow
 
 The main workflow is:
 
-1. Add source context and community comments in Workspace.
-2. Generate a package payload.
+1. Add source context and select target platforms in Workspace.
+2. Generate a Workspace run.
 3. Review the planned LinkedIn/X schedule in Plan.
-4. Inspect and edit final platform copy in Drafts.
-5. Check community comments in Moderation.
-6. Approve, request changes, or escalate items in Review Queue.
-7. Export the package from Packages for manual handoff.
+4. Inspect and edit platform drafts in Drafts.
+5. Approve, request changes, reject, or escalate items in Review Queue.
+6. Export approved, review-required, or blocked manifests from Packages for manual handoff.
 
-All screens read from the same generated package state, so the demo behaves like one connected workflow instead of separate static pages.
+All React screens read from the same SQLite-backed workflow snapshot, so the demo behaves like one connected workflow instead of separate static pages.
+
+## Data Flow
+
+The React standalone UI and package server use these stored workflow records:
+
+- `workspace_run` - the raw result of a Workspace generation request. It contains source text, selected platforms, provider metadata, platform adaptations, plan seeds, draft seeds, and review seeds.
+- `content_plan` - the scheduled content queue item derived from a Workspace run. Plan reads this to show weekly slots and platform timing.
+- `draft` - the editable platform copy derived from a plan slot. Drafts reads and updates this record when hook, body, CTA, or hashtags change.
+- `draft_version` - a saved copy of a draft edit. Drafts uses this for lightweight version history and restore actions.
+- `review_item` - a human decision item created by the pipeline or by Drafts when a draft is sent to review. Review Queue updates this record with approved, rejected, changes-requested, or escalated status.
+- `package manifest` - computed from stored `content_plan`, `draft`, and `review_item` records. Packages does not invent a separate artifact; it exports a manifest based on current approval state.
+
+The package manifest status is derived from review state:
+
+- `APPROVED_EXPORT` when all review items for a content plan are approved.
+- `REVIEW_REQUIRED` when pending or escalated review items remain.
+- `BLOCKED` when a review item is rejected or changes are requested.
+- `READY_FOR_HANDOFF` when no review blockers exist.
+
+SQLite is intentionally package-local. If the API is unavailable, the UI falls back to browser/local mock state so the demo still opens, but stored workflow behavior requires the package server.
 
 ## Screens
 
@@ -49,10 +68,12 @@ All screens read from the same generated package state, so the demo behaves like
 Workspace is the main input surface. It accepts:
 
 - source context;
-- community comments;
-- local deterministic generation or optional Gemini-backed generation.
+- target platform selection;
+- local deterministic generation or optional provider-backed generation.
 
-The generated package feeds the other demo screens.
+The generated Workspace run is persisted and feeds Plan, Drafts, Review Queue, Overview, and Packages.
+
+Workspace also includes a run history panel. Each generate action creates a stored `workspace_run`, and older runs can be reloaded for inspection.
 
 ### Plan
 
@@ -60,30 +81,34 @@ Plan shows scheduled social items for LinkedIn and X. It includes platform, sugg
 
 ### Drafts
 
-Drafts shows final platform copy for LinkedIn and X. It keeps metadata separate from the actual post text, supports final copy editing in the demo state, and includes copy/export behavior for handoff.
+Drafts shows editable platform copy for LinkedIn and X. It keeps metadata separate from the actual post text, saves edits back to the stored `draft` record, and can route edited copy to Review Queue.
+
+Draft edits create `draft_version` records. The UI can restore recent saved versions without changing the rest of the workflow.
 
 ### Moderation
 
-Moderation classifies community comments by risk and recommended action. Spam can be ignored, normal questions can receive a reviewed reply draft, and sensitive items can be escalated.
+Moderation summarizes stored review artifacts and policy-sensitive items. It is connected to the same review data used by Review Queue.
 
 ### Review Queue
 
-Review Queue is the human approval gate. It collects plan, draft, and moderation items that require review before package handoff. Demo actions include approve, request changes, and escalate.
+Review Queue is the human approval gate. It collects plan and draft items that require review before package handoff. Actions persist approve, request changes, reject, and escalate decisions.
+
+Review decisions synchronize the related `draft` and `content_plan` slot status so Overview, Packages, Drafts, and Writeback reflect the same state.
 
 ### Packages
 
-Packages shows the export-ready JSON package. Direct publishing is out of scope; the package is meant for manual review and handoff.
+Packages shows JSON package manifests computed from current stored records. Direct publishing is out of scope; the package is meant for manual review and handoff.
 
 ### Writeback and Settings
 
-Writeback documents that external publishing and analytics writeback are disabled in the MVP. Settings shows platform and generation mode metadata.
+Writeback documents the manual handoff boundary and shows approved, review-required, or blocked package candidates. Settings shows provider status, API key readiness, SQLite path, workflow counts, and reset controls.
 
 ## Boundaries
 
 - No direct social publishing.
-- No database requirement.
+- Uses a package-local SQLite database through `sql.js`; no external database service is required.
 - No external server framework.
-- Gemini generation is optional. Without `GEMINI_API_KEY`, the package uses deterministic local fallback output.
+- Gemini, Groq, and OpenRouter generation are optional. Without a configured provider API key, the package uses deterministic mock fallback output.
 - Human review remains required for risky or sensitive outputs.
 
 ## Output Shape
@@ -117,8 +142,29 @@ copy .env.example .env
 Then set:
 
 ```env
+LLM_PROVIDER=gemini
+LLM_MODEL=gemini-2.5-flash
 GEMINI_API_KEY=your_key_here
-GEMINI_MODEL=gemini-2.5-flash
+```
+
+Alternative providers:
+
+```env
+LLM_PROVIDER=groq
+LLM_MODEL=llama-3.1-70b-versatile
+GROQ_API_KEY=your_key_here
+```
+
+```env
+LLM_PROVIDER=openrouter
+LLM_MODEL=meta-llama/llama-3.1-70b-instruct
+OPENROUTER_API_KEY=your_key_here
+```
+
+To force deterministic local generation:
+
+```env
+LLM_PROVIDER=mock
 ```
 
 ## CLI Usage
@@ -156,7 +202,7 @@ Then open:
 http://127.0.0.1:3000
 ```
 
-The Workspace screen accepts source context and community comments. Generated output is reused across Plan, Drafts, Moderation, Review Queue, Packages, Writeback, and Settings screens.
+The Workspace screen accepts source context and platform selection. Generated output is stored locally and reused across Plan, Drafts, Moderation, Review Queue, Packages, Writeback, and Settings screens.
 
 ## React Standalone UI
 
@@ -191,9 +237,12 @@ Current status:
 - The React app has separate pages for Overview, Workspace, Plan, Drafts, Moderation, Review Queue, Packages, Writeback, and Settings.
 - Shared shell, navigation, draft cards, panels, badges, and metric components live under `demo/standalone-ui/src/components/`.
 - Page-level UI lives under `demo/standalone-ui/src/pages/`.
-- It does not replace `npm start` yet.
-- It does not yet call `/api/demo`.
-- The existing CLI, package API, and static demo remain unchanged.
+- It has a SQLite-backed workflow store when served through the package server API.
+- Workspace generation calls `/api/workspace-runs`.
+- Plan, Drafts, Review Queue, Overview, and Packages read `/api/workflow-snapshot`.
+- Settings reads `/api/provider-status`.
+- Draft and review decisions persist through `/api/workflow-items`.
+- Draft edits also create `draft_version` workflow items.
 
 Example Workspace source:
 
@@ -239,6 +288,9 @@ The smoke test file is kept as the baseline behavior reference. Additional cover
 - `bin/cli.js` - CLI entrypoint.
 - `src/api.js` - package API and demo payload assembly.
 - `src/commands/` - CLI command implementations.
+- `src/llm/` - mock, Gemini, Groq, and OpenRouter provider layer.
+- `src/storage/sqlite-store.js` - package-local SQLite workflow item store.
+- `src/workflow/` - Workspace pipeline and workflow record mapping.
 - `src/gemini.js` - optional Gemini workspace generation.
 - `demo/screens/` - accepted demo screen HTML.
 - `demo/assets/` - demo runtime JS/CSS.

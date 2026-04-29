@@ -105,8 +105,10 @@ function riskTone(risk) {
 }
 
 export function WorkspacePage() {
-  const { refreshSnapshot, storageStatus, updateWorkspace, workflowState } = useWorkflowStore();
+  const { providerStatus, refreshSnapshot, storageStatus, updateWorkspace, workflowState } = useWorkflowStore();
   const activeRunRef = useRef(0);
+  const runHistoryRef = useRef(null);
+  const runHistoryCardRefs = useRef({});
   const [pipelineStatus, setPipelineStatus] = useState(() => createPipelineStatus('completed'));
   const [isGenerating, setIsGenerating] = useState(false);
   const [feedback, setFeedback] = useState('');
@@ -116,6 +118,8 @@ export function WorkspacePage() {
     run: workspaceRun
   } = workflowState.workspace;
   const workspaceDrafts = workspaceRun.adaptations;
+  const runHistory = workflowState.snapshot.workspaceRuns || [];
+  const providerInfo = providerStatus?.provider || workspaceRun.generation || {};
 
   function togglePlatform(platformId) {
     updateWorkspace((currentWorkspace) => {
@@ -190,6 +194,34 @@ export function WorkspacePage() {
     setFeedback(
       `Workspace run complete: ${nextRun.adaptations.length} adaptations, ${nextRun.planSeeds.length} plan seeds, ${nextRun.draftSeeds.length} draft seeds, ${nextRun.reviewItems.length} review items.`
     );
+  }
+
+  function selectRunHistoryItem(run) {
+    activeRunRef.current += 1;
+    updateWorkspace({
+      source: run.source?.text || workspaceSource,
+      selectedPlatforms: Array.isArray(run.source?.platforms) ? run.source.platforms : selectedPlatforms,
+      run
+    });
+    setPipelineStatus(createPipelineStatus('completed'));
+    setIsGenerating(false);
+    setFeedback(`Loaded run ${run.id}. This restores its raw adaptations, plan seeds, draft seeds, and review items.`);
+
+    const container = runHistoryRef.current;
+    const card = runHistoryCardRefs.current[run.id];
+
+    if (!container || !card) {
+      return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    const centeredLeft = container.scrollLeft + cardRect.left - containerRect.left - (containerRect.width - cardRect.width) / 2;
+
+    container.scrollTo({
+      behavior: 'smooth',
+      left: Math.max(0, centeredLeft)
+    });
   }
 
   function resetWorkspace() {
@@ -277,10 +309,12 @@ export function WorkspacePage() {
         <div className="pipeline-track">
           {pipelineStages.map((stage, index) => {
             const status = pipelineStatus[stage.id];
-            const provider = workspaceRun.generation;
+            const provider = providerInfo.provider ? providerInfo : workspaceRun.generation;
             const title = stage.id === 'provider' && provider ? `Provider: ${provider.provider}` : stage.label;
             const description = stage.id === 'provider'
-              ? `${provider?.model || stage.description} Storage: ${storageStatus.backend === 'sqlite' ? 'SQLite' : storageStatus.backend === 'browser' ? 'browser fallback' : 'loading'}.`
+              ? `${provider?.model || 'mock-deterministic-social-agent'} / requested ${provider?.requested_provider || provider?.provider || 'mock'} / ${
+                provider?.api_key_configured ? 'API key configured' : 'no API key required or configured'
+              }. Storage: ${storageStatus.backend === 'sqlite' ? 'SQLite' : storageStatus.backend === 'browser' ? 'browser fallback' : 'loading'}.`
               : stage.description;
 
             return (
@@ -304,6 +338,41 @@ export function WorkspacePage() {
           })}
         </div>
       </section>
+
+      <Panel
+        className="run-history-panel"
+        title="Run history"
+        description="Every generated Workspace run is stored in SQLite, so older outputs can be inspected before generating again."
+      >
+        {runHistory.length ? (
+          <div className="run-history-list" ref={runHistoryRef}>
+            {runHistory.map((run) => (
+              <button
+                className={run.id === workspaceRun.id ? 'run-history-card active' : 'run-history-card'}
+                key={run.id}
+                onClick={() => selectRunHistoryItem(run)}
+                ref={(node) => {
+                  runHistoryCardRefs.current[run.id] = node;
+                }}
+                type="button"
+              >
+                <div>
+                  <strong>{run.topic || 'Workspace run'}</strong>
+                  <span>{run.id}</span>
+                </div>
+                <small>
+                  {(run.source?.platforms || []).join(' + ') || 'no platform'} / {run.generation?.provider || 'mock'} / {run.reviewItems?.length || 0} review items
+                </small>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="workspace-empty-state compact">
+            <strong>No stored runs yet</strong>
+            <p>Generate output once to create a run history entry.</p>
+          </div>
+        )}
+      </Panel>
 
       <Panel
         title="Workspace run output"

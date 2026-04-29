@@ -279,21 +279,25 @@ function createEmptyRun(sourceText, platforms, provider) {
   };
 }
 
-async function runWorkspacePipeline(options = {}) {
-  const sourceText = normalizeText(options.sourceText || options.source || '');
-  const platforms = normalizePlatforms(options.platforms);
-  const provider = createLlmProvider(options.provider ? { provider: options.provider, model: options.model } : {});
-  const metadata = providerMetadata(provider);
+function createGenerationMetadata(metadata, status, extra = {}) {
+  return {
+    ...metadata,
+    status,
+    ...extra
+  };
+}
+
+function buildDeterministicRun(sourceText, platforms, metadata, extraGeneration = {}) {
   const generationMode = metadata.live_api_calls_enabled
-    ? `${metadata.provider} provider selected; live structured pipeline calls are pending. Deterministic pipeline fallback used.`
+    ? `${metadata.provider} provider selected; deterministic fallback used because live output was unavailable.`
     : `${metadata.provider} provider; deterministic pipeline used.`;
-
-  if (!sourceText || platforms.length === 0) {
-    return createEmptyRun(sourceText, platforms, metadata);
-  }
-
   const parts = extractSourceParts(sourceText);
   const risk = detectRisk(sourceText);
+  const generation = createGenerationMetadata(
+    metadata,
+    extraGeneration.status || metadata.status || 'ready',
+    extraGeneration
+  );
   const adaptations = platforms.map((platform) =>
     platform === 'linkedin'
       ? buildLinkedInDraft(parts, sourceText, risk, generationMode)
@@ -313,7 +317,7 @@ async function runWorkspacePipeline(options = {}) {
       text: sourceText,
       platforms
     },
-    generation: metadata,
+    generation,
     adaptations,
     planSeeds,
     draftSeeds,
@@ -321,6 +325,325 @@ async function runWorkspacePipeline(options = {}) {
   };
 }
 
+function createWorkspacePrompt(sourceText, platforms) {
+  const platformList = platforms.map((platform) => (platform === 'linkedin' ? 'LinkedIn' : 'X')).join(', ');
+
+  return [
+    'Generate a source-backed social-agent workflow run as strict JSON.',
+    '',
+    'Return only one JSON object with this exact shape:',
+    JSON.stringify(
+      {
+        topic: 'short source topic',
+        sourcePreview: 'one sentence source summary',
+        adaptations: [
+          {
+            tone: 'linkedin',
+            risk: 'Low Risk | Medium Risk | High Risk',
+            status: 'Draft | Needs Review',
+            hook: 'platform hook',
+            body: ['paragraph 1', 'paragraph 2'],
+            cta: 'question or call to action',
+            hashtags: '#TagOne #TagTwo',
+            adaptationDetails: [['Label', 'Value']]
+          }
+        ],
+        planSeeds: [
+          {
+            id: 'plan-linkedin-1',
+            day: 'Monday',
+            platform: 'LinkedIn',
+            contentPillar: 'Operational Visibility',
+            messageFocus: 'why this slot exists',
+            cta: 'slot CTA',
+            risk: 'Medium Risk',
+            status: 'Needs Review'
+          }
+        ],
+        draftSeeds: [
+          {
+            id: 'draft-seed-1',
+            planId: 'plan-linkedin-1',
+            platform: 'LinkedIn',
+            title: 'draft hook',
+            copyPreview: 'short preview',
+            cta: 'draft CTA',
+            risk: 'Medium Risk',
+            status: 'Needs Review'
+          }
+        ],
+        reviewItems: [
+          {
+            id: 'review-plan-linkedin-1',
+            source: 'plan',
+            label: 'what needs review',
+            platform: 'LinkedIn',
+            risk: 'Medium Risk',
+            action: 'Review',
+            status: 'Needs Review'
+          }
+        ]
+      },
+      null,
+      2
+    ),
+    '',
+    'Rules:',
+    '- Use only the provided source. Do not invent clinical, diagnosis, treatment, publishing, analytics, or integration claims.',
+    '- Generate outputs only for these platforms: ' + platformList + '.',
+    '- LinkedIn should be narrative and operational. X should stay under 280 characters.',
+    '- If healthcare, privacy, crisis, patient, or clinical boundaries appear, risk must be High Risk or Medium Risk and status must be Needs Review.',
+    '- Include reviewItems for every risky plan or draft.',
+    '',
+    'Source:',
+    sourceText
+  ].join('\n');
+}
+
+function parseProviderJson(rawText) {
+  if (!rawText) {
+    return null;
+  }
+
+  const text = String(rawText).trim().replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim();
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+
+  if (start === -1 || end === -1 || end <= start) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text.slice(start, end + 1));
+  } catch (_error) {
+    return null;
+  }
+}
+
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function normalizeRiskLabel(value, fallback = 'Medium Risk') {
+  if (/high/i.test(String(value))) {
+    return 'High Risk';
+  }
+  if (/low/i.test(String(value))) {
+    return 'Low Risk';
+  }
+  return /medium/i.test(String(value)) ? 'Medium Risk' : fallback;
+}
+
+function normalizeStatus(value, risk) {
+  if (/approved/i.test(String(value))) {
+    return 'Approved';
+  }
+  if (/draft/i.test(String(value)) && normalizeRiskLabel(risk) === 'Low Risk') {
+    return 'Draft';
+  }
+  return 'Needs Review';
+}
+
+function normalizePlatformName(value) {
+  return String(value || '').toLowerCase().includes('linkedin') ? 'LinkedIn' : 'X';
+}
+
+function normalizeTone(value, platform) {
+  const normalized = String(value || platform || '').toLowerCase();
+  return normalized.includes('linkedin') ? 'linkedin' : 'x';
+}
+
+function normalizeAdaptations(candidate, fallback, platforms) {
+  const candidateItems = asArray(candidate.adaptations);
+
+  return platforms.map((platform) => {
+    const tone = platform === 'linkedin' ? 'linkedin' : 'x';
+    const fallbackItem = fallback.adaptations.find((item) => item.tone === tone) || fallback.adaptations[0] || {};
+    const item = candidateItems.find((entry) => normalizeTone(entry?.tone || entry?.platform, platform) === tone) || {};
+    const risk = normalizeRiskLabel(item.risk, fallbackItem.risk);
+    const body = asArray(item.body).length > 0
+      ? item.body.map(compactLine).filter(Boolean)
+      : String(item.body || '')
+        .split(/\n{2,}/)
+        .map(compactLine)
+        .filter(Boolean);
+
+    return {
+      ...fallbackItem,
+      risk,
+      status: normalizeStatus(item.status, risk),
+      hook: compactLine(item.hook || fallbackItem.hook),
+      body: body.length > 0 ? body : fallbackItem.body,
+      cta: compactLine(item.cta || fallbackItem.cta),
+      hashtags: compactLine(item.hashtags || fallbackItem.hashtags),
+      adaptationDetails: asArray(item.adaptationDetails).length > 0 ? item.adaptationDetails : fallbackItem.adaptationDetails
+    };
+  });
+}
+
+function normalizePlanSeeds(candidate, fallback, adaptations, platforms) {
+  const allowedPlatforms = new Set(platforms.map((platform) => (platform === 'linkedin' ? 'LinkedIn' : 'X')));
+  const candidateSeeds = asArray(candidate.planSeeds || candidate.plan_seeds).filter((seed) =>
+    allowedPlatforms.has(normalizePlatformName(seed.platform))
+  );
+  const seeds = candidateSeeds.length >= platforms.length ? candidateSeeds : fallback.planSeeds;
+
+  return seeds
+    .map((seed, index) => {
+      const platform = normalizePlatformName(seed.platform);
+      const adaptation = adaptations.find((item) => item.tone === platform.toLowerCase()) || adaptations[0] || {};
+      const risk = normalizeRiskLabel(seed.risk, adaptation.risk || fallback.planSeeds[index]?.risk);
+
+      return {
+        id: compactLine(seed.id || `plan-${platform.toLowerCase()}-${index + 1}`).replace(/\s+/g, '-').toLowerCase(),
+        day: compactLine(seed.day || fallback.planSeeds[index]?.day || 'Monday'),
+        platform,
+        contentPillar: compactLine(seed.contentPillar || seed.content_pillar || fallback.planSeeds[index]?.contentPillar || 'Platform Adaptation'),
+        messageFocus: compactLine(seed.messageFocus || seed.message_focus || fallback.planSeeds[index]?.messageFocus || adaptation.hook),
+        cta: compactLine(seed.cta || adaptation.cta || fallback.planSeeds[index]?.cta),
+        risk,
+        status: normalizeStatus(seed.status, risk)
+      };
+    })
+    .filter((seed) => allowedPlatforms.has(seed.platform))
+    .filter((seed) => seed.messageFocus);
+}
+
+function normalizeDraftSeeds(candidate, fallback, planSeeds, adaptations) {
+  const candidateSeeds = asArray(candidate.draftSeeds || candidate.draft_seeds);
+  const seeds = candidateSeeds.length > 0 ? candidateSeeds : fallback.draftSeeds;
+
+  return seeds.map((seed, index) => {
+    const planSeed = planSeeds.find((item) => item.id === seed.planId || item.id === seed.plan_id) || planSeeds[index % planSeeds.length] || {};
+    const adaptation = adaptations.find((item) => item.tone === String(planSeed.platform || seed.platform).toLowerCase()) || adaptations[0] || {};
+    const risk = normalizeRiskLabel(seed.risk, planSeed.risk || adaptation.risk);
+
+    return {
+      id: compactLine(seed.id || `draft-seed-${index + 1}`).replace(/\s+/g, '-').toLowerCase(),
+      planId: planSeed.id || compactLine(seed.planId || seed.plan_id || ''),
+      platform: normalizePlatformName(seed.platform || planSeed.platform),
+      title: compactLine(seed.title || adaptation.hook || planSeed.messageFocus),
+      copyPreview: compactLine(seed.copyPreview || seed.copy_preview || asArray(adaptation.body).slice(0, 2).join(' ')),
+      cta: compactLine(seed.cta || planSeed.cta || adaptation.cta),
+      risk,
+      status: normalizeStatus(seed.status, risk)
+    };
+  });
+}
+
+function normalizeReviewItems(candidate, fallback, planSeeds, draftSeeds) {
+  const candidateItems = asArray(candidate.reviewItems || candidate.review_items);
+  const items = candidateItems.length > 0 ? candidateItems : fallback.reviewItems;
+
+  return items.map((item, index) => {
+    const source = String(item.source || '').toLowerCase().includes('draft') ? 'draft' : 'plan';
+    const related = source === 'draft'
+      ? draftSeeds[index % draftSeeds.length] || {}
+      : planSeeds[index % planSeeds.length] || {};
+    const risk = normalizeRiskLabel(item.risk, related.risk);
+
+    return {
+      id: compactLine(item.id || `review-${source}-${index + 1}`).replace(/\s+/g, '-').toLowerCase(),
+      source,
+      label: compactLine(item.label || related.title || related.messageFocus || 'Review source-backed social output.'),
+      platform: normalizePlatformName(item.platform || related.platform),
+      risk,
+      action: compactLine(item.action || 'Review'),
+      status: normalizeStatus(item.status, risk)
+    };
+  });
+}
+
+function normalizeProviderRun(candidate, fallback, sourceText, platforms, metadata) {
+  if (!candidate || typeof candidate !== 'object') {
+    return null;
+  }
+
+  const adaptations = normalizeAdaptations(candidate, fallback, platforms);
+  const planSeeds = normalizePlanSeeds(candidate, fallback, adaptations, platforms);
+  const draftSeeds = normalizeDraftSeeds(candidate, fallback, planSeeds, adaptations);
+  const reviewItems = normalizeReviewItems(candidate, fallback, planSeeds, draftSeeds);
+
+  if (adaptations.length === 0 || planSeeds.length === 0 || draftSeeds.length === 0) {
+    return null;
+  }
+
+  return {
+    id: createRunId(sourceText, platforms),
+    type: 'workspace_run',
+    schema_version: 'social-agent.workspace.v1',
+    topic: compactLine(candidate.topic || fallback.topic),
+    sourcePreview: trimToCharacters(candidate.sourcePreview || candidate.source_preview || fallback.sourcePreview, 140),
+    source: {
+      text: sourceText,
+      platforms
+    },
+    generation: createGenerationMetadata(metadata, 'live', {
+      validation: 'schema_normalized',
+      fallback_used: false
+    }),
+    adaptations,
+    planSeeds,
+    draftSeeds,
+    reviewItems
+  };
+}
+
+async function runWorkspacePipeline(options = {}) {
+  const sourceText = normalizeText(options.sourceText || options.source || '');
+  const platforms = normalizePlatforms(options.platforms);
+  const provider = createLlmProvider(options.provider ? { provider: options.provider, model: options.model } : {});
+  const metadata = providerMetadata(provider);
+
+  if (!sourceText || platforms.length === 0) {
+    return createEmptyRun(sourceText, platforms, metadata);
+  }
+
+  const fallbackRun = buildDeterministicRun(sourceText, platforms, metadata, {
+    fallback_used: true,
+    fallback_reason: metadata.fallback_reason || 'mock_or_local_generation'
+  });
+
+  if (!metadata.live_api_calls_enabled || typeof provider.generateWorkspaceJson !== 'function') {
+    return fallbackRun;
+  }
+
+  try {
+    const rawProviderOutput = await provider.generateWorkspaceJson({
+      prompt: createWorkspacePrompt(sourceText, platforms),
+      sourceText,
+      platforms
+    });
+    const candidate = parseProviderJson(rawProviderOutput);
+    const normalizedRun = normalizeProviderRun(candidate, fallbackRun, sourceText, platforms, metadata);
+
+    if (normalizedRun) {
+      return normalizedRun;
+    }
+
+    return {
+      ...fallbackRun,
+      generation: createGenerationMetadata(metadata, 'fallback_validation_error', {
+        fallback_used: true,
+        fallback_reason: 'provider_json_failed_schema_validation'
+      })
+    };
+  } catch (error) {
+    return {
+      ...fallbackRun,
+      generation: createGenerationMetadata(metadata, 'fallback_provider_error', {
+        fallback_used: true,
+        fallback_reason: error.message
+      })
+    };
+  }
+}
+
 module.exports = {
-  runWorkspacePipeline
+  runWorkspacePipeline,
+  _test: {
+    buildDeterministicRun,
+    normalizeProviderRun,
+    parseProviderJson
+  }
 };

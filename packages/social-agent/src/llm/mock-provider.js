@@ -9,9 +9,11 @@ function createMockProvider(config = {}) {
     id: 'mock',
     label: 'Mock Provider',
     model,
-    status: 'ready',
+    status: config.status || 'ready',
     requiresApiKey: false,
     apiKeyConfigured: true,
+    requestedProvider: config.requestedProvider || 'mock',
+    fallbackReason: config.fallbackReason || '',
     async generateDraft(request = {}) {
       return {
         provider: 'mock',
@@ -20,6 +22,9 @@ function createMockProvider(config = {}) {
         text: 'Mock provider output. Deterministic CLI builders remain the source of truth until a live provider is wired.',
         risk_level: 'low'
       };
+    },
+    async generateWorkspaceJson() {
+      return null;
     }
   };
 }

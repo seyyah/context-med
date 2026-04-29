@@ -16,12 +16,24 @@ export function OverviewPage() {
   const platforms = [...new Set(contentPlans.flatMap((content) => content.platforms))];
   const highRiskSlots = allPlanSlots.filter((slot) => slot.risk === 'High');
   const highRiskReviews = reviewQueueItems.filter((item) => item.risk === 'High');
-  const pendingReviewCount = reviewQueueItems.filter((item) => !['Approved', 'Closed'].includes(item.status)).length;
+  const pendingReviewCount = reviewQueueItems.filter((item) => ['Needs Review', 'In Review', 'Escalated'].includes(item.status)).length;
+  const blockedPackageCount = packages.filter((item) => item.manifest?.exportType === 'blocked').length;
+  const reviewPackageCount = packages.filter((item) => item.manifest?.exportType === 'review_required').length;
+  const approvedPackageCount = packages.filter((item) => item.manifest?.exportType === 'approved').length;
+  const packageStatus = blockedPackageCount
+    ? 'Blocked'
+    : reviewPackageCount
+      ? 'Review'
+      : approvedPackageCount
+        ? 'Approved'
+        : packages.length
+          ? 'Ready'
+          : 'Pending';
   const overviewMetrics = [
     { label: 'Content plans', value: String(contentPlans.length), detail: 'Loaded from workflow store' },
     { label: 'Draft slots', value: String(drafts.length || allPlanSlots.length), detail: `${platforms.join(' and ')} schedule outputs` },
     { label: 'Needs review', value: String(pendingReviewCount), detail: 'Plans, drafts, and review items' },
-    { label: 'Package status', value: packages.length ? 'Ready' : 'Pending', detail: 'Store-backed export manifest' }
+    { label: 'Package status', value: packageStatus, detail: 'Store-backed export manifest' }
   ];
   const flow = [
     ['Workspace', `${workflowState.snapshot.workspaceRuns.length} source-backed workspace run is stored.`],

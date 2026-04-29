@@ -176,6 +176,22 @@ async function openWorkflowStore(options = {}) {
       persist();
     },
 
+    async clearItems(types = []) {
+      const normalizedTypes = Array.isArray(types)
+        ? types.map((type) => String(type || '').trim()).filter(Boolean)
+        : [];
+
+      if (normalizedTypes.length === 0) {
+        database.run('DELETE FROM workflow_items');
+        persist();
+        return;
+      }
+
+      const placeholders = normalizedTypes.map(() => '?').join(', ');
+      database.run(`DELETE FROM workflow_items WHERE type IN (${placeholders})`, normalizedTypes);
+      persist();
+    },
+
     async close() {
       persist();
       database.close();

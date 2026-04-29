@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Badge } from '../components/Badge.jsx';
 import { Icon } from '../components/Icon.jsx';
@@ -14,7 +14,10 @@ const statusTone = {
   Draft: 'success',
   'Needs Review': 'warning',
   'In Review': 'warning',
-  Approved: 'success'
+  Approved: 'success',
+  'Changes Requested': 'warning',
+  Escalated: 'danger',
+  Rejected: 'danger'
 };
 
 function platformMeta(platform) {
@@ -96,6 +99,7 @@ function createDraftPlans(contentPlans, storedDrafts = []) {
       return {
         ...slot,
         planId: content.id,
+        draftRecordId: storedDraft?.id || `draft-manual-${content.id}-${slot.id}`,
         planTitle: content.title,
         planSummary: content.summary,
         platformLabel: storedDraft?.platformLabel || platform.label,
@@ -110,6 +114,7 @@ function createDraftPlans(contentPlans, storedDrafts = []) {
         body,
         hashtags: storedDraft?.hashtags || buildHashtags(slot),
         assetBrief: storedDraft?.assetBrief || `Visual brief for ${content.title}: show ${slot.pillar.toLowerCase()} with a clear human review checkpoint.`,
+        packageTarget: storedDraft?.packageTarget || `${content.id}_${slot.platform.toLowerCase()}_${slot.id}.json`,
         context: storedDraft?.context || buildContext(content, slot)
       };
     })
@@ -132,6 +137,63 @@ function createInitialEdits(draftPlans) {
   );
 }
 
+function normalizeDraftStatus(status) {
+  return status || 'Draft';
+}
+
+function buildDraftWorkflowItem(selectedPlan, selectedSlot, selectedDraft, selectedStatus) {
+  const payload = {
+    ...selectedSlot,
+    id: selectedSlot.draftRecordId,
+    runId: selectedPlan.runId,
+    planId: selectedPlan.id,
+    slotId: selectedSlot.id,
+    title: selectedPlan.title,
+    status: normalizeDraftStatus(selectedStatus),
+    hook: selectedDraft.hook,
+    body: selectedDraft.body,
+    cta: selectedDraft.cta,
+    hashtags: selectedDraft.hashtags,
+    updatedFrom: 'drafts-page'
+  };
+
+  return {
+    id: selectedSlot.draftRecordId,
+    type: 'draft',
+    title: selectedPlan.title,
+    status: payload.status,
+    payload
+  };
+}
+
+function buildDraftVersionWorkflowItem(selectedPlan, selectedSlot, selectedDraft, selectedStatus, reason = 'manual_edit') {
+  const createdAt = new Date().toISOString();
+  const id = `draft-version-${selectedSlot.draftRecordId}-${Date.now()}`;
+
+  return {
+    id,
+    type: 'draft_version',
+    title: `${selectedPlan.title} draft version`,
+    status: selectedStatus,
+    payload: {
+      id,
+      draftId: selectedSlot.draftRecordId,
+      runId: selectedPlan.runId,
+      planId: selectedPlan.id,
+      slotId: selectedSlot.id,
+      platform: selectedSlot.platform,
+      status: selectedStatus,
+      hook: selectedDraft.hook,
+      body: selectedDraft.body,
+      cta: selectedDraft.cta,
+      hashtags: selectedDraft.hashtags,
+      reason,
+      createdAt
+    },
+    createdAt
+  };
+}
+
 export function DraftsPage() {
   const { persistWorkflowItem, updateDrafts, workflowState } = useWorkflowStore();
   const {
@@ -143,6 +205,8 @@ export function DraftsPage() {
   const [planPickerOpen, setPlanPickerOpen] = useState(false);
   const [planSearch, setPlanSearch] = useState('');
   const [feedback, setFeedback] = useState('Select a content plan from the same Plan queue, then refine one of its draft slots.');
+  const [draftSaveStatus, setDraftSaveStatus] = useState('idle');
+  const draftPersistTimeoutsRef = useRef({});
   const draftPlans = useMemo(
     () => createDraftPlans(workflowState.snapshot.contentPlans, workflowState.snapshot.drafts),
     [workflowState.snapshot.contentPlans, workflowState.snapshot.drafts]
@@ -151,15 +215,23 @@ export function DraftsPage() {
 
   const selectedPlan = useMemo(
     () => draftPlans.find((plan) => plan.id === selectedPlanId) ?? draftPlans[0],
-    [selectedPlanId]
+    [draftPlans, selectedPlanId]
   );
   const selectedSlot = useMemo(
-    () => selectedPlan.slots.find((slot) => slot.id === selectedSlotId) ?? selectedPlan.slots[0],
+    () => selectedPlan?.slots.find((slot) => slot.id === selectedSlotId) ?? selectedPlan?.slots[0],
     [selectedPlan, selectedSlotId]
   );
-  const selectedDraft = draftEdits[selectedSlot.id];
-  const selectedStatus = statusBySlot[selectedSlot.id] ?? selectedSlot.status;
-  const isLinkedIn = selectedSlot.platform === 'LinkedIn';
+  const selectedDraft = selectedSlot ? draftEdits[selectedSlot.id] : null;
+  const selectedStatus = selectedSlot ? statusBySlot[selectedSlot.id] ?? selectedSlot.status : 'Draft';
+  const selectedDraftVersions = useMemo(
+    () =>
+      (workflowState.snapshot.draftVersions || [])
+        .filter((version) => version.draftId === selectedSlot?.draftRecordId || version.slotId === selectedSlot?.id)
+        .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
+        .slice(0, 5),
+    [selectedSlot, workflowState.snapshot.draftVersions]
+  );
+  const isLinkedIn = selectedSlot?.platform === 'LinkedIn';
   const filteredDraftPlans = useMemo(() => {
     const query = planSearch.trim().toLowerCase();
 
@@ -175,6 +247,18 @@ export function DraftsPage() {
     );
   }, [planSearch]);
 
+  if (!draftPlans.length || !selectedPlan || !selectedSlot || !selectedDraft) {
+    return (
+      <div className="page drafts-empty-page">
+        <section className="empty-workflow-state">
+          <Icon name="edit_note" />
+          <h1>No draft slots yet</h1>
+          <p>Generate Workspace output first. Drafts will appear after the pipeline creates plan slots and platform-specific draft records.</p>
+        </section>
+      </div>
+    );
+  }
+
   function selectPlan(planId) {
     const nextPlan = draftPlans.find((plan) => plan.id === planId) ?? draftPlans[0];
 
@@ -187,30 +271,56 @@ export function DraftsPage() {
     setFeedback(`${nextPlan.title} selected from the Plan content queue.`);
   }
 
+  function scheduleDraftPersist(plan, slot, draft, status) {
+    window.clearTimeout(draftPersistTimeoutsRef.current[slot.id]);
+    setDraftSaveStatus('saving');
+    draftPersistTimeoutsRef.current[slot.id] = window.setTimeout(async () => {
+      const saved = await persistWorkflowItem(buildDraftWorkflowItem(plan, slot, draft, status));
+      if (saved) {
+        await persistWorkflowItem(buildDraftVersionWorkflowItem(plan, slot, draft, status));
+      }
+      setDraftSaveStatus(saved ? 'saved' : 'failed');
+      delete draftPersistTimeoutsRef.current[slot.id];
+    }, 650);
+  }
+
   function updateDraft(field, value) {
+    const nextDraft = {
+      ...draftEdits[selectedSlot.id],
+      [field]: value
+    };
+
+    scheduleDraftPersist(selectedPlan, selectedSlot, nextDraft, selectedStatus);
     updateDrafts((currentDrafts) => ({
       ...currentDrafts,
       draftEdits: {
         ...currentDrafts.draftEdits,
-        [selectedSlot.id]: {
-          ...draftEdits[selectedSlot.id],
-          [field]: value
-        }
+        [selectedSlot.id]: nextDraft
       }
     }));
   }
 
+  useEffect(() => {
+    const timeouts = draftPersistTimeoutsRef.current;
+    return () => {
+      Object.values(timeouts).forEach((timeout) => window.clearTimeout(timeout));
+    };
+  }, []);
+
   function regenerateDraft() {
+    const nextDraft = {
+      hook: selectedSlot.hook,
+      body: selectedSlot.body.join('\n\n'),
+      cta: selectedSlot.cta,
+      hashtags: selectedSlot.hashtags
+    };
+
+    scheduleDraftPersist(selectedPlan, selectedSlot, nextDraft, 'Draft');
     updateDrafts((currentDrafts) => ({
       ...currentDrafts,
       draftEdits: {
         ...currentDrafts.draftEdits,
-        [selectedSlot.id]: {
-          hook: selectedSlot.hook,
-          body: selectedSlot.body.join('\n\n'),
-          cta: selectedSlot.cta,
-          hashtags: selectedSlot.hashtags
-        }
+        [selectedSlot.id]: nextDraft
       },
       statusBySlot: {
         ...currentDrafts.statusBySlot,
@@ -220,11 +330,43 @@ export function DraftsPage() {
     setFeedback(`${selectedSlot.platform} draft reset from the selected Plan queue slot.`);
   }
 
+  async function restoreDraftVersion(version) {
+    const restoredDraft = {
+      hook: version.hook,
+      body: version.body,
+      cta: version.cta,
+      hashtags: version.hashtags
+    };
+
+    updateDrafts((currentDrafts) => ({
+      ...currentDrafts,
+      draftEdits: {
+        ...currentDrafts.draftEdits,
+        [selectedSlot.id]: restoredDraft
+      },
+      statusBySlot: {
+        ...currentDrafts.statusBySlot,
+        [selectedSlot.id]: version.status || selectedStatus
+      }
+    }));
+
+    const saved = await persistWorkflowItem(buildDraftWorkflowItem(selectedPlan, selectedSlot, restoredDraft, version.status || selectedStatus));
+    if (saved) {
+      await persistWorkflowItem(buildDraftVersionWorkflowItem(selectedPlan, selectedSlot, restoredDraft, version.status || selectedStatus, 'restored_version'));
+    }
+    setDraftSaveStatus(saved ? 'saved' : 'failed');
+    setFeedback(`Restored ${selectedSlot.platform} draft from version ${version.createdAt || version.id}.`);
+  }
+
   function exportDraft() {
     setFeedback(`${selectedSlot.platform} draft package is ready for JSON export in the package handoff step.`);
   }
 
   async function sendToReview() {
+    const draftItem = buildDraftWorkflowItem(selectedPlan, selectedSlot, selectedDraft, 'In Review');
+    window.clearTimeout(draftPersistTimeoutsRef.current[selectedSlot.id]);
+    delete draftPersistTimeoutsRef.current[selectedSlot.id];
+
     updateDrafts((currentDrafts) => ({
       ...currentDrafts,
       statusBySlot: {
@@ -232,6 +374,7 @@ export function DraftsPage() {
         [selectedSlot.id]: 'In Review'
       }
     }));
+    await persistWorkflowItem(draftItem);
     await persistWorkflowItem({
       id: `review-manual-${selectedSlot.id}`,
       type: 'review_item',
@@ -240,6 +383,9 @@ export function DraftsPage() {
       payload: {
         id: `review-manual-${selectedSlot.id}`,
         runId: selectedPlan.runId,
+        planId: selectedPlan.id,
+        slotId: selectedSlot.id,
+        draftId: selectedSlot.draftRecordId,
         artifactType: 'Draft',
         source: 'Drafts',
         title: selectedPlan.title,
@@ -258,6 +404,7 @@ export function DraftsPage() {
         ]
       }
     });
+    setDraftSaveStatus('saved');
     setFeedback(`${selectedSlot.platform} draft routed to Review Queue with source, plan slot, and risk context attached.`);
   }
 
@@ -401,7 +548,14 @@ export function DraftsPage() {
           </div>
         </section>
 
-        <p className="draft-feedback">{feedback}</p>
+        <p className="draft-feedback">
+          {feedback}
+          {draftSaveStatus !== 'idle' ? (
+            <strong>
+              {draftSaveStatus === 'saving' ? 'Saving...' : draftSaveStatus === 'saved' ? 'Saved' : 'Save failed'}
+            </strong>
+          ) : null}
+        </p>
 
         <div className="draft-scroll">
           <article className={`draft-card ${selectedSlot.tone} selected-draft-editor`}>
@@ -541,6 +695,30 @@ export function DraftsPage() {
               </li>
             ))}
           </ul>
+        </section>
+
+        <section className="context-card draft-version-card">
+          <div className="context-title">
+            <Icon name="history" />
+            <h3>Draft Versions</h3>
+          </div>
+          {selectedDraftVersions.length ? (
+            <ul className="draft-version-list">
+              {selectedDraftVersions.map((version) => (
+                <li key={version.id}>
+                  <div>
+                    <strong>{version.reason === 'restored_version' ? 'Restored version' : 'Saved edit'}</strong>
+                    <span>{version.createdAt ? new Date(version.createdAt).toLocaleString() : version.id}</span>
+                  </div>
+                  <button onClick={() => restoreDraftVersion(version)} type="button">
+                    Restore
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No saved draft versions yet. Edit a field and wait for the Saved state to create the first version.</p>
+          )}
         </section>
 
         <section className="context-card review-routing-card">

@@ -5,6 +5,40 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.6.0] - 2026-04-29
+
+### Contributors
+
+- Akbulut55
+
+### Added
+
+- Added live LLM provider calls for Gemini, Groq, and OpenRouter behind the Workspace pipeline provider layer.
+- Added strict Workspace pipeline JSON normalization with deterministic fallback for missing, malformed, or incomplete provider output.
+- Added persisted draft editing so Drafts page changes update the stored `draft` item instead of only local UI state.
+- Added persisted Review Queue decisions for approve, reject, changes requested, and escalated states.
+- Added a workflow reset API and Workspace control for clearing stored workflow records.
+- Added empty states for Plan, Drafts, Review Queue, and Packages when no stored Workspace run exists.
+- Added a provider status API and Settings view for active provider, model, API key readiness, fallback state, storage path, and workflow counts.
+- Added Workspace run history for selecting previously persisted `workspace_run` outputs.
+- Added Drafts version history with stored `draft_version` records and restore actions.
+- Added Writeback handoff visibility for approved, review-required, and blocked package candidates.
+- Added Workspace pipeline validator tests for fenced JSON parsing, schema normalization, and unsupported platform filtering.
+
+### Changed
+
+- Updated LLM provider selection so missing API keys automatically fall back to the mock provider without changing the UI workflow.
+- Updated package manifests to distinguish approved exports, review-required exports, blocked exports, and ready handoff packages.
+- Updated Overview and Packages summaries to reflect stored review decisions and package export status.
+- Updated Packages with approved, review-required, and blocked export filters.
+- Updated Drafts with save feedback for persisted draft edits.
+- Updated Review Queue decisions so related draft and plan slot statuses are synchronized after approval, rejection, change requests, or escalation.
+- Updated Settings and Writeback pages to use stored workflow/provider data instead of static placeholder content.
+- Moved stored workflow reset out of Workspace and made the Settings reset clear Workspace output as well as stored records.
+- Updated README with the SQLite-backed workflow data flow between `workspace_run`, `content_plan`, `draft`, `review_item`, and package manifests.
+- Expanded CLI integration coverage for provider fallback, draft persistence, review decisions, and package manifest state transitions.
+- Bumped package metadata to `0.6.0`.
+
 ## [social-agent-v0.5.0] - 2026-04-29
 
 ### Contributors

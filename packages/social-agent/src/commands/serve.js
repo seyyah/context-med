@@ -6,7 +6,8 @@ const path = require('path');
 const { createCliError } = require('../index');
 const { createSocialAgentDemoPayload, runWorkspacePipeline } = require('../api');
 const { loadPackageEnv } = require('../env');
-const { openWorkflowStore } = require('../storage/sqlite-store');
+const { createLlmProvider, getLlmConfig, providerMetadata } = require('../llm');
+const { defaultDatabasePath, openWorkflowStore } = require('../storage/sqlite-store');
 const {
   createSnapshotFromItems,
   createWorkflowRecordsFromRun,
@@ -14,6 +15,7 @@ const {
 } = require('../workflow/workflow-records');
 
 const MAX_DEMO_BODY_BYTES = 64 * 1024;
+const WORKFLOW_RECORD_TYPES = ['workspace_run', 'content_plan', 'draft', 'draft_version', 'review_item'];
 let lastDemoOptions = null;
 
 const CONTENT_TYPES = {
@@ -200,6 +202,18 @@ async function serveWorkflowItemsApi(request, response, url) {
       return;
     }
 
+    if (url.pathname === '/api/workflow-items' && request.method === 'DELETE') {
+      const scope = url.searchParams.get('scope') || 'workflow';
+      const types = scope === 'all' ? [] : WORKFLOW_RECORD_TYPES;
+      await store.clearItems(types);
+      respondJson(response, 200, {
+        type: 'workflow_items_cleared',
+        scope,
+        cleared_types: types
+      });
+      return;
+    }
+
     if (itemId && request.method === 'GET') {
       const item = await store.getItem(itemId);
 
@@ -285,7 +299,7 @@ async function serveWorkspaceRunsApi(request, response, url) {
   }
 }
 
-async function ensureWorkflowSeed(store) {
+async function backfillWorkflowRecords(store) {
   const existingPlans = await store.listItems('content_plan');
   const existingDrafts = await store.listItems('draft');
   const existingReviews = await store.listItems('review_item');
@@ -296,24 +310,10 @@ async function ensureWorkflowSeed(store) {
 
   const existingRuns = await store.listItems('workspace_run');
   const latestRun = existingRuns[0]?.payload;
-  const run = Array.isArray(latestRun?.planSeeds) && Array.isArray(latestRun?.adaptations)
-    ? latestRun
-    : await runWorkspacePipeline({
-      sourceText: [
-        '# Patient intake dashboard update',
-        '',
-        'Context-Med is releasing a patient intake dashboard update for care coordination teams.',
-        '',
-        'The update helps teams review incoming intake messages, identify incomplete information, and route cases to the right internal workflow faster.',
-        '',
-        'The communication should focus on operational visibility, reduced manual sorting, privacy-safe review, and clearer escalation paths.',
-        '',
-        'Do not claim that the dashboard diagnoses patients, recommends treatment, or replaces clinical judgment. Emphasize that sensitive cases, crisis signals, and unclear medical questions remain under human review.'
-      ].join('\n'),
-      platforms: ['linkedin', 'x']
-    });
 
-  await saveWorkflowRecords(store, createWorkflowRecordsFromRun(run));
+  if (Array.isArray(latestRun?.planSeeds) && Array.isArray(latestRun?.adaptations)) {
+    await saveWorkflowRecords(store, createWorkflowRecordsFromRun(latestRun));
+  }
 }
 
 async function serveWorkflowSnapshotApi(request, response) {
@@ -331,10 +331,56 @@ async function serveWorkflowSnapshotApi(request, response) {
   const store = await openWorkflowStore();
 
   try {
-    await ensureWorkflowSeed(store);
+    await backfillWorkflowRecords(store);
     respondJson(response, 200, {
       type: 'workflow_snapshot',
       snapshot: createSnapshotFromItems(await store.listItems())
+    });
+  } finally {
+    await store.close();
+  }
+}
+
+async function serveProviderStatusApi(request, response) {
+  if (request.method === 'OPTIONS') {
+    respondJson(response, 204, {});
+    return;
+  }
+
+  if (request.method !== 'GET') {
+    response.writeHead(405, { 'content-type': 'text/plain; charset=utf-8' });
+    response.end('Method not allowed');
+    return;
+  }
+
+  loadPackageEnv();
+  const provider = createLlmProvider();
+  const config = getLlmConfig();
+  const store = await openWorkflowStore();
+
+  try {
+    const items = await store.listItems();
+    const countByType = items.reduce((counts, item) => ({
+      ...counts,
+      [item.type]: (counts[item.type] || 0) + 1
+    }), {});
+
+    respondJson(response, 200, {
+      type: 'provider_status',
+      provider: providerMetadata(provider),
+      requested: config,
+      storage: {
+        backend: 'sqlite',
+        dbPath: store.dbPath || defaultDatabasePath()
+      },
+      workflow_counts: {
+        workspaceRuns: countByType.workspace_run || 0,
+        contentPlans: countByType.content_plan || 0,
+        drafts: countByType.draft || 0,
+        draftVersions: countByType.draft_version || 0,
+        reviewItems: countByType.review_item || 0,
+        workflowState: countByType.workflow_state || 0
+      }
     });
   } finally {
     await store.close();
@@ -372,6 +418,11 @@ async function runServe(options) {
 
       if (url.pathname === '/api/workflow-snapshot') {
         await serveWorkflowSnapshotApi(request, response);
+        return;
+      }
+
+      if (url.pathname === '/api/provider-status') {
+        await serveProviderStatusApi(request, response);
         return;
       }
 

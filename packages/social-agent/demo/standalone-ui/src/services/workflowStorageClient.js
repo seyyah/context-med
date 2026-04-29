@@ -31,6 +31,14 @@ function saveLocalWorkflowState(payload) {
   }
 }
 
+function clearLocalWorkflowState() {
+  try {
+    window.localStorage.removeItem(LOCAL_STORAGE_KEY);
+  } catch (_error) {
+    // Browser storage can be unavailable in private or restricted contexts.
+  }
+}
+
 export async function loadWorkflowState() {
   try {
     const response = await fetch(`${API_BASE}/workflow-items/${encodeURIComponent(WORKFLOW_STATE_ID)}`, {
@@ -118,6 +126,59 @@ export async function loadWorkflowSnapshot() {
   }
 }
 
+export async function loadProviderStatus() {
+  try {
+    const response = await fetch(`${API_BASE}/provider-status`, {
+      headers: { accept: 'application/json' }
+    });
+    const data = await readJson(response);
+
+    return {
+      backend: 'sqlite',
+      status: data,
+      message: 'Loaded provider status from the local social-agent server.'
+    };
+  } catch (_error) {
+    return {
+      backend: 'browser',
+      status: {
+        type: 'provider_status',
+        provider: {
+          provider: 'mock',
+          requested_provider: 'mock',
+          label: 'Mock provider',
+          model: 'mock-deterministic-social-agent',
+          status: 'browser_fallback',
+          fallback_reason: 'provider_status_api_unavailable',
+          requires_api_key: false,
+          api_key_configured: false,
+          live_api_calls_enabled: false
+        },
+        requested: {
+          provider: 'mock',
+          model: '',
+          geminiApiKeyConfigured: false,
+          groqApiKeyConfigured: false,
+          openRouterApiKeyConfigured: false
+        },
+        storage: {
+          backend: 'browser',
+          dbPath: 'Unavailable until the CLI server is running.'
+        },
+        workflow_counts: {
+          workspaceRuns: 0,
+          contentPlans: 0,
+          drafts: 0,
+          draftVersions: 0,
+          reviewItems: 0,
+          workflowState: 0
+        }
+      },
+      message: 'Provider status API unavailable; showing mock browser fallback.'
+    };
+  }
+}
+
 export async function saveWorkflowItem(item) {
   const response = await fetch(`${API_BASE}/workflow-items`, {
     method: 'POST',
@@ -128,4 +189,28 @@ export async function saveWorkflowItem(item) {
     body: JSON.stringify(item)
   });
   return readJson(response);
+}
+
+export async function resetWorkflowItems() {
+  try {
+    const response = await fetch(`${API_BASE}/workflow-items?scope=workflow`, {
+      method: 'DELETE',
+      headers: { accept: 'application/json' }
+    });
+    const data = await readJson(response);
+
+    return {
+      backend: 'sqlite',
+      payload: data,
+      message: 'Workflow records cleared from SQLite.'
+    };
+  } catch (_error) {
+    clearLocalWorkflowState();
+
+    return {
+      backend: 'browser',
+      payload: null,
+      message: 'SQLite API unavailable; cleared browser workflow fallback.'
+    };
+  }
 }

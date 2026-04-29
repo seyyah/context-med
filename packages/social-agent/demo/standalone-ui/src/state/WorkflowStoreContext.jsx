@@ -1,10 +1,11 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { contentPlans, reviewQueueItems, sourceContext } from '../data/workflowData.js';
-import { generateWorkspaceRun } from '../services/mockWorkspaceGenerator.js';
 import {
+  loadProviderStatus,
   loadWorkflowSnapshot,
   loadWorkflowState,
+  resetWorkflowItems,
   saveWorkflowItem,
   saveWorkflowState
 } from '../services/workflowStorageClient.js';
@@ -12,6 +13,25 @@ import {
 const defaultSelectedPlatforms = ['linkedin', 'x'];
 const firstContent = contentPlans[0];
 const firstSlot = firstContent.slots[0];
+
+function createEmptyWorkspaceRun(sourceText = sourceContext, platforms = defaultSelectedPlatforms) {
+  return {
+    sourcePreview: sourceText.slice(0, 140),
+    source: {
+      text: sourceText,
+      platforms
+    },
+    generation: {
+      provider: 'mock',
+      model: 'mock-deterministic-social-agent',
+      status: 'not_run'
+    },
+    adaptations: [],
+    planSeeds: [],
+    draftSeeds: [],
+    reviewItems: []
+  };
+}
 
 function createPackagesFromContentPlans(plans) {
   return plans.map((plan, index) => ({
@@ -41,13 +61,34 @@ function createFallbackSnapshot() {
     latestRun: null,
     contentPlans,
     drafts: [],
+    draftVersions: [],
     reviewQueueItems,
     packages: createPackagesFromContentPlans(contentPlans),
     metrics: {
       contentPlans: contentPlans.length,
       draftSlots: contentPlans.reduce((total, plan) => total + plan.slots.length, 0),
+      draftVersions: 0,
       reviewItems: reviewQueueItems.length,
       packages: contentPlans.length
+    }
+  };
+}
+
+function createEmptySnapshot() {
+  return {
+    workspaceRuns: [],
+    latestRun: null,
+    contentPlans: [],
+    drafts: [],
+    draftVersions: [],
+    reviewQueueItems: [],
+    packages: [],
+    metrics: {
+      contentPlans: 0,
+      draftSlots: 0,
+      draftVersions: 0,
+      reviewItems: 0,
+      packages: 0
     }
   };
 }
@@ -58,10 +99,7 @@ function createDefaultWorkflowState() {
     workspace: {
       source: sourceContext,
       selectedPlatforms: defaultSelectedPlatforms,
-      run: generateWorkspaceRun({
-        sourceText: sourceContext,
-        platforms: defaultSelectedPlatforms
-      })
+      run: createEmptyWorkspaceRun()
     },
     plan: {
       selectedWeek: 'current',
@@ -120,10 +158,20 @@ export function WorkflowStoreProvider({ children }) {
     backend: 'loading',
     message: 'Loading workflow storage.'
   });
+  const [providerStatus, setProviderStatus] = useState(null);
   const loadedRef = useRef(false);
 
+  const refreshProviderStatus = useCallback(async () => {
+    const result = await loadProviderStatus();
+    setProviderStatus(result.status);
+    return result;
+  }, []);
+
   const refreshSnapshot = useCallback(async () => {
-    const result = await loadWorkflowSnapshot();
+    const [result] = await Promise.all([
+      loadWorkflowSnapshot(),
+      refreshProviderStatus()
+    ]);
 
     if (result.snapshot) {
       setWorkflowState((current) => ({
@@ -138,7 +186,7 @@ export function WorkflowStoreProvider({ children }) {
     });
 
     return result;
-  }, []);
+  }, [refreshProviderStatus]);
 
   const persistWorkflowItem = useCallback(async (item) => {
     try {
@@ -154,13 +202,47 @@ export function WorkflowStoreProvider({ children }) {
     }
   }, [refreshSnapshot]);
 
+  const resetWorkflow = useCallback(async () => {
+    const result = await resetWorkflowItems();
+    await refreshProviderStatus();
+
+    setWorkflowState((current) => ({
+      ...current,
+      snapshot: createEmptySnapshot(),
+      workspace: {
+        ...current.workspace,
+        run: createEmptyWorkspaceRun(current.workspace.source, current.workspace.selectedPlatforms)
+      },
+      plan: {
+        ...current.plan,
+        selectedContentId: '',
+        selectedSlotId: '',
+        regeneratedContentIds: []
+      },
+      drafts: {
+        ...current.drafts,
+        selectedPlanId: '',
+        selectedSlotId: '',
+        draftEdits: {},
+        statusBySlot: {}
+      }
+    }));
+    setStorageStatus({
+      backend: result.backend,
+      message: result.message
+    });
+
+    return result;
+  }, [refreshProviderStatus]);
+
   useEffect(() => {
     let active = true;
 
     async function loadStoredState() {
-      const [snapshotResult, stateResult] = await Promise.all([
+      const [snapshotResult, stateResult, providerResult] = await Promise.all([
         loadWorkflowSnapshot(),
-        loadWorkflowState()
+        loadWorkflowState(),
+        loadProviderStatus()
       ]);
 
       if (!active) {
@@ -179,6 +261,7 @@ export function WorkflowStoreProvider({ children }) {
         backend: snapshotResult.backend === 'sqlite' ? 'sqlite' : stateResult.backend,
         message: snapshotResult.snapshot ? snapshotResult.message : stateResult.message
       });
+      setProviderStatus(providerResult.status);
       loadedRef.current = true;
     }
 
@@ -231,13 +314,16 @@ export function WorkflowStoreProvider({ children }) {
     () => ({
       persistWorkflowItem,
       refreshSnapshot,
+      resetWorkflow,
+      refreshProviderStatus,
       workflowState,
       storageStatus,
+      providerStatus,
       updateWorkspace,
       updatePlan,
       updateDrafts
     }),
-    [persistWorkflowItem, refreshSnapshot, storageStatus, updateDrafts, updatePlan, updateWorkspace, workflowState]
+    [persistWorkflowItem, providerStatus, refreshProviderStatus, refreshSnapshot, resetWorkflow, storageStatus, updateDrafts, updatePlan, updateWorkspace, workflowState]
   );
 
   return <WorkflowStoreContext.Provider value={value}>{children}</WorkflowStoreContext.Provider>;

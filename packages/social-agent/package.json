@@ -1,6 +1,6 @@
 {
   "name": "@context-med/social-agent",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Standalone social operations CLI and UI package for Context-Med.",
   "private": true,
   "type": "commonjs",

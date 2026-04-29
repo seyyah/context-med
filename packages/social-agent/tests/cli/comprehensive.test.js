@@ -16,6 +16,7 @@ const CLI = path.join(PKG_ROOT, 'bin', 'cli.js');
 const DEMO_SCRIPT = path.join(PKG_ROOT, 'demo', 'comprehensive-demo.js');
 const DEMO_ASSET = path.join(PKG_ROOT, 'demo', 'assets', 'social-agent-demo.js');
 const FIXTURES = path.join(REPO_ROOT, 'fixtures');
+const { runWorkspacePipeline, _test: workspacePipelineTest } = require('../../src/workflow/workspace-pipeline');
 
 function runCli(args, options = {}) {
   return spawnSync(process.execPath, [CLI, ...args], {
@@ -724,6 +725,155 @@ describe('social-agent CLI comprehensive behavior', () => {
     expect(main.innerHTML).toMatch(/Review items/);
   });
 
+  test('workspace pipeline falls back to mock when a live provider has no API key', async () => {
+    const previousGeminiKey = process.env.GEMINI_API_KEY;
+    const previousGoogleKey = process.env.GOOGLE_API_KEY;
+
+    process.env.GEMINI_API_KEY = '';
+    process.env.GOOGLE_API_KEY = '';
+
+    try {
+      const run = await runWorkspacePipeline({
+        provider: 'gemini',
+        sourceText: '# Provider fallback\n\nCare teams need source-backed social copy with review gates.',
+        platforms: ['linkedin', 'x']
+      });
+
+      expect(run.generation).toMatchObject({
+        provider: 'mock',
+        requested_provider: 'gemini',
+        fallback_reason: 'missing_api_key',
+        live_api_calls_enabled: false
+      });
+      expect(run.adaptations.length).toBe(2);
+      expect(run.planSeeds.length).toBeGreaterThanOrEqual(2);
+      expect(run.reviewItems.length).toBeGreaterThanOrEqual(1);
+    } finally {
+      if (previousGeminiKey == null) {
+        delete process.env.GEMINI_API_KEY;
+      } else {
+        process.env.GEMINI_API_KEY = previousGeminiKey;
+      }
+
+      if (previousGoogleKey == null) {
+        delete process.env.GOOGLE_API_KEY;
+      } else {
+        process.env.GOOGLE_API_KEY = previousGoogleKey;
+      }
+    }
+  });
+
+  test('workspace pipeline parser accepts fenced provider JSON', () => {
+    const parsed = workspacePipelineTest.parseProviderJson([
+      '```json',
+      '{"topic":"Parsed Provider Output","adaptations":[]}',
+      '```'
+    ].join('\n'));
+
+    expect(parsed).toMatchObject({
+      topic: 'Parsed Provider Output',
+      adaptations: []
+    });
+    expect(workspacePipelineTest.parseProviderJson('not json')).toBeNull();
+  });
+
+  test('workspace pipeline validator normalizes provider output and filters unsupported platforms', () => {
+    const source = '# Intake workflow\n\nCare teams need source-backed intake routing with human review.';
+    const platforms = ['linkedin'];
+    const metadata = {
+      provider: 'gemini',
+      requested_provider: 'gemini',
+      label: 'Gemini',
+      model: 'gemini-test',
+      status: 'ready',
+      fallback_reason: '',
+      requires_api_key: true,
+      api_key_configured: true,
+      live_api_calls_enabled: true
+    };
+    const fallback = workspacePipelineTest.buildDeterministicRun(source, platforms, metadata);
+    const normalized = workspacePipelineTest.normalizeProviderRun({
+      topic: 'AI generated intake plan',
+      sourcePreview: 'AI output for care coordination.',
+      adaptations: [
+        {
+          tone: 'linkedin',
+          risk: 'High Risk',
+          status: 'Needs Review',
+          hook: 'Care teams need routing clarity.',
+          body: ['Keep human review visible.'],
+          cta: 'What needs review?',
+          hashtags: '#CareOps',
+          adaptationDetails: [['Boundary', 'No clinical claims.']]
+        }
+      ],
+      planSeeds: [
+        {
+          id: 'bad-instagram-slot',
+          day: 'Friday',
+          platform: 'Instagram',
+          contentPillar: 'Visual',
+          messageFocus: 'Unsupported platform should be ignored.',
+          cta: 'Ignore',
+          risk: 'Low Risk',
+          status: 'Draft'
+        },
+        {
+          id: 'linkedin-slot',
+          day: 'Monday',
+          platform: 'LinkedIn',
+          contentPillar: 'Human Review',
+          messageFocus: 'Explain the human review gate.',
+          cta: 'What would you review?',
+          risk: 'High Risk',
+          status: 'Needs Review'
+        }
+      ],
+      draftSeeds: [
+        {
+          id: 'draft-linkedin',
+          planId: 'linkedin-slot',
+          platform: 'LinkedIn',
+          title: 'Review-ready LinkedIn draft',
+          copyPreview: 'Keep review visible.',
+          cta: 'What would you review?',
+          risk: 'High Risk',
+          status: 'Needs Review'
+        }
+      ],
+      reviewItems: [
+        {
+          id: 'review-linkedin',
+          source: 'draft',
+          label: 'Review required.',
+          platform: 'LinkedIn',
+          risk: 'High Risk',
+          action: 'Review',
+          status: 'Needs Review'
+        }
+      ]
+    }, fallback, source, platforms, metadata);
+
+    expect(normalized).toMatchObject({
+      topic: 'AI generated intake plan',
+      generation: {
+        provider: 'gemini',
+        status: 'live',
+        validation: 'schema_normalized',
+        fallback_used: false
+      }
+    });
+    expect(normalized.adaptations).toHaveLength(1);
+    expect(normalized.planSeeds).toHaveLength(1);
+    expect(normalized.planSeeds[0]).toMatchObject({
+      platform: 'LinkedIn',
+      contentPillar: 'Human Review',
+      status: 'Needs Review'
+    });
+    expect(normalized.draftSeeds[0].planId).toBe('linkedin-slot');
+    expect(normalized.reviewItems[0].platform).toBe('LinkedIn');
+  });
+
   test('serve exposes accepted demo screens with extensionless routes', async () => {
     const port = 3300 + Math.floor(Math.random() * 300);
     const child = spawn(process.execPath, [CLI, 'serve', '--port', String(port), '--quiet'], {
@@ -742,6 +892,20 @@ describe('social-agent CLI comprehensive behavior', () => {
       const overview = await waitForServer(`http://127.0.0.1:${port}/`);
       expect(overview.body).toMatch(/Social-Agent/);
       expect(overview.body).toMatch(/assets\/social-agent-demo\.js/);
+
+      const emptyWorkflowSnapshot = await requestText(`http://127.0.0.1:${port}/api/workflow-snapshot`);
+      expect(emptyWorkflowSnapshot.statusCode).toBe(200);
+      expect(JSON.parse(emptyWorkflowSnapshot.body).snapshot.contentPlans).toEqual([]);
+
+      const providerStatus = await requestText(`http://127.0.0.1:${port}/api/provider-status`);
+      const providerPayload = JSON.parse(providerStatus.body);
+      expect(providerStatus.statusCode).toBe(200);
+      expect(providerPayload.provider).toMatchObject({
+        provider: 'mock',
+        live_api_calls_enabled: false
+      });
+      expect(providerPayload.storage.backend).toBe('sqlite');
+      expect(providerPayload.workflow_counts.workspaceRuns).toBe(0);
 
       const plan = await requestText(`http://127.0.0.1:${port}/plan`);
       expect(plan.statusCode).toBe(200);
@@ -822,6 +986,97 @@ describe('social-agent CLI comprehensive behavior', () => {
       expect(snapshotPayload.snapshot.reviewQueueItems.length).toBeGreaterThanOrEqual(1);
       expect(snapshotPayload.snapshot.packages.length).toBeGreaterThanOrEqual(1);
       expect(snapshotPayload.snapshot.contentPlans[0].slots.length).toBeGreaterThanOrEqual(2);
+
+      const firstDraft = snapshotPayload.snapshot.drafts[0];
+      const editedDraft = {
+        ...firstDraft,
+        hook: 'Edited persistent hook',
+        body: 'Edited persistent body',
+        status: 'In Review'
+      };
+      const savedDraft = await requestText(`http://127.0.0.1:${port}/api/workflow-items`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          id: firstDraft.id,
+          type: 'draft',
+          title: firstDraft.title,
+          status: 'In Review',
+          payload: editedDraft
+        })
+      });
+      expect(savedDraft.statusCode).toBe(200);
+
+      const afterDraftEdit = JSON.parse((await requestText(`http://127.0.0.1:${port}/api/workflow-snapshot`)).body).snapshot;
+      expect(afterDraftEdit.drafts.find((draft) => draft.id === firstDraft.id)).toMatchObject({
+        hook: 'Edited persistent hook',
+        body: 'Edited persistent body',
+        status: 'In Review'
+      });
+
+      const planRunId = afterDraftEdit.contentPlans[0].runId;
+      const planReviewItems = afterDraftEdit.reviewQueueItems.filter((item) => item.runId === planRunId);
+      for (const reviewItem of planReviewItems) {
+        const approvedReview = {
+          ...reviewItem,
+          status: 'Approved',
+          decision: 'Approved in test'
+        };
+        const savedReview = await requestText(`http://127.0.0.1:${port}/api/workflow-items`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            id: reviewItem.id,
+            type: 'review_item',
+            title: reviewItem.title,
+            status: 'Approved',
+            payload: approvedReview
+          })
+        });
+        expect(savedReview.statusCode).toBe(200);
+      }
+
+      const approvedSnapshot = JSON.parse((await requestText(`http://127.0.0.1:${port}/api/workflow-snapshot`)).body).snapshot;
+      const approvedPackage = approvedSnapshot.packages.find((item) =>
+        item.manifest.artifacts.some((artifact) => artifact.type === 'CONTENT_PLAN' && artifact.id === approvedSnapshot.contentPlans[0].id)
+      );
+      expect(approvedPackage.manifest.status).toBe('APPROVED_EXPORT');
+      expect(approvedPackage.manifest.exportType).toBe('approved');
+
+      const rejectedReview = {
+        ...planReviewItems[0],
+        status: 'Rejected',
+        decision: 'Rejected in test'
+      };
+      const savedRejectedReview = await requestText(`http://127.0.0.1:${port}/api/workflow-items`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          id: planReviewItems[0].id,
+          type: 'review_item',
+          title: planReviewItems[0].title,
+          status: 'Rejected',
+          payload: rejectedReview
+        })
+      });
+      expect(savedRejectedReview.statusCode).toBe(200);
+
+      const blockedSnapshot = JSON.parse((await requestText(`http://127.0.0.1:${port}/api/workflow-snapshot`)).body).snapshot;
+      const blockedPackage = blockedSnapshot.packages.find((item) =>
+        item.manifest.artifacts.some((artifact) => artifact.type === 'CONTENT_PLAN' && artifact.id === blockedSnapshot.contentPlans[0].id)
+      );
+      expect(blockedPackage.manifest.status).toBe('BLOCKED');
+      expect(blockedPackage.manifest.exportType).toBe('blocked');
+
+      const resetWorkflow = await requestText(`http://127.0.0.1:${port}/api/workflow-items?scope=workflow`, {
+        method: 'DELETE'
+      });
+      expect(resetWorkflow.statusCode).toBe(200);
+      const resetSnapshot = JSON.parse((await requestText(`http://127.0.0.1:${port}/api/workflow-snapshot`)).body).snapshot;
+      expect(resetSnapshot.contentPlans).toEqual([]);
+      expect(resetSnapshot.drafts).toEqual([]);
+      expect(resetSnapshot.reviewQueueItems).toEqual([]);
+      expect(resetSnapshot.packages).toEqual([]);
 
       const demoAsset = await requestText(`http://127.0.0.1:${port}/assets/social-agent-demo.js`);
       expect(demoAsset.statusCode).toBe(200);

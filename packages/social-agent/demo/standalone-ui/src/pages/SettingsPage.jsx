@@ -1,132 +1,186 @@
+import { Badge } from '../components/Badge.jsx';
 import { Icon } from '../components/Icon.jsx';
+import { useWorkflowStore } from '../state/WorkflowStoreContext.jsx';
 
-const integrationItems = [
-  ['check', 'CLI callable', 'System environment mapped to social-agent executable.', 'success'],
-  ['check', 'JSON artifact output', 'Schema validation passing for package handoff.', 'success'],
-  ['api', 'Future integration-ready', 'API hooks planned for a later connected workflow.', 'primary']
-];
+function providerTone(provider) {
+  if (provider?.live_api_calls_enabled) {
+    return 'success';
+  }
+
+  if (provider?.fallback_reason) {
+    return 'warning';
+  }
+
+  return provider?.provider === 'mock' ? 'neutral' : 'warning';
+}
+
+function keyStatus(config) {
+  return [
+    ['Gemini', config?.geminiApiKeyConfigured],
+    ['Groq', config?.groqApiKeyConfigured],
+    ['OpenRouter', config?.openRouterApiKeyConfigured]
+  ];
+}
 
 export function SettingsPage() {
+  const {
+    providerStatus,
+    refreshProviderStatus,
+    resetWorkflow,
+    storageStatus,
+    workflowState
+  } = useWorkflowStore();
+  const provider = providerStatus?.provider || {};
+  const requested = providerStatus?.requested || {};
+  const storage = providerStatus?.storage || {};
+  const counts = providerStatus?.workflow_counts || {};
+  const metrics = workflowState.snapshot.metrics || {};
+
   return (
     <div className="settings-reference-page">
       <header className="settings-reference-header">
         <h1>Configuration</h1>
-        <p>Manage runtime behavior, knowledge sources, and output formatting for the standalone React UI.</p>
+        <p>Inspect the active provider, SQLite store, workflow counts, and reset controls used by the standalone UI.</p>
       </header>
 
       <div className="settings-reference-grid">
         <div className="settings-form-column">
           <section className="settings-section-card">
             <header>
-              <Icon name="terminal" />
-              <h2>Runtime Mode</h2>
+              <Icon name="api" />
+              <h2>Provider Status</h2>
             </header>
             <div className="runtime-mode-grid">
               <article className="runtime-mode-card active">
                 <Icon name="radio_button_checked" filled />
-                <h3>Standalone CLI</h3>
-                <p>Execute social-agent locally through package scripts for testing, generation, and demo handoff.</p>
+                <h3>{provider.label || 'Mock provider'}</h3>
+                <p>
+                  Active: <strong>{provider.provider || 'mock'}</strong> / requested:{' '}
+                  <strong>{provider.requested_provider || requested.provider || 'mock'}</strong>
+                </p>
+                <Badge tone={providerTone(provider)}>
+                  {provider.live_api_calls_enabled ? 'Live API ready' : provider.fallback_reason ? 'Fallback active' : 'Mock ready'}
+                </Badge>
               </article>
-              <article className="runtime-mode-card disabled">
-                <Icon name="radio_button_unchecked" />
-                <h3>Future Cerebra</h3>
-                <p>Enterprise integration mode. Currently disabled until a connected system boundary is approved.</p>
-                <span>Coming Soon</span>
+              <article className="runtime-mode-card">
+                <Icon name="memory" />
+                <h3>{provider.model || requested.model || 'mock-deterministic-social-agent'}</h3>
+                <p>
+                  {provider.fallback_reason
+                    ? `Fallback reason: ${provider.fallback_reason}.`
+                    : provider.live_api_calls_enabled
+                      ? 'API key is configured and live calls are enabled.'
+                      : 'No API key is required for mock generation.'}
+                </p>
               </article>
             </div>
           </section>
 
           <section className="settings-section-card">
             <header>
-              <Icon name="menu_book" />
-              <h2>Knowledge Source</h2>
+              <Icon name="vpn_key" />
+              <h2>API Key Readiness</h2>
+            </header>
+            <div className="settings-status-grid">
+              {keyStatus(requested).map(([label, configured]) => (
+                <article key={label}>
+                  <span>{label}</span>
+                  <Badge tone={configured ? 'success' : 'neutral'}>{configured ? 'configured' : 'missing key'}</Badge>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="settings-section-card">
+            <header>
+              <Icon name="database" />
+              <h2>Storage</h2>
             </header>
             <div className="settings-field-stack">
               <label>
-                <span>Primary Corpus Path</span>
-                <div className="settings-input-row">
-                  <div className="settings-input-with-icon">
-                    <Icon name="folder" />
-                    <input readOnly type="text" value="packages/social-agent/demo/social-agent-source.md" />
-                  </div>
-                  <button type="button">Browse</button>
+                <span>SQLite Path</span>
+                <div className="settings-input-with-icon">
+                  <Icon name="folder" />
+                  <input readOnly type="text" value={storage.dbPath || 'SQLite path unavailable'} />
                 </div>
-                <small>Agent output should stay grounded in local source context and approved package documents.</small>
+                <small>{storageStatus.message}</small>
               </label>
             </div>
           </section>
 
           <section className="settings-section-card">
             <header>
-              <Icon name="data_object" />
-              <h2>Output &amp; Review Pipeline</h2>
+              <Icon name="schema" />
+              <h2>Workflow Counts</h2>
             </header>
-            <div className="settings-select-grid">
-              <label>
-                <span>Artifact Output Format</span>
-                <div className="settings-select-wrap">
-                  <select defaultValue="json">
-                    <option value="json">Strict JSON Structure</option>
-                    <option value="markdown">Markdown Document</option>
-                    <option value="hybrid">JSON with Markdown payload</option>
-                  </select>
-                  <Icon name="expand_more" />
-                </div>
-              </label>
-              <label>
-                <span>Review Policy</span>
-                <div className="settings-select-wrap">
-                  <select defaultValue="risk-based">
-                    <option value="risk-based">Risk-based automatic scoring</option>
-                    <option value="manual">Manual approval queue</option>
-                    <option value="bypass">Bypass for development only</option>
-                  </select>
-                  <Icon name="expand_more" />
-                </div>
-              </label>
-              <label>
-                <span>Generation Provider</span>
-                <div className="settings-select-wrap">
-                  <select defaultValue="local">
-                    <option value="local">Local deterministic fallback</option>
-                    <option value="gemini">Gemini API when configured</option>
-                  </select>
-                  <Icon name="expand_more" />
-                </div>
-              </label>
-              <label>
-                <span>Publishing Boundary</span>
-                <div className="settings-select-wrap">
-                  <select defaultValue="manual">
-                    <option value="manual">Manual package handoff only</option>
-                    <option value="direct" disabled>Direct publishing disabled</option>
-                  </select>
-                  <Icon name="expand_more" />
-                </div>
-              </label>
+            <div className="settings-status-grid workflow-count-grid">
+              <article>
+                <span>Runs</span>
+                <strong>{counts.workspaceRuns ?? workflowState.snapshot.workspaceRuns.length}</strong>
+              </article>
+              <article>
+                <span>Plans</span>
+                <strong>{counts.contentPlans ?? metrics.contentPlans ?? 0}</strong>
+              </article>
+              <article>
+                <span>Drafts</span>
+                <strong>{counts.drafts ?? metrics.draftSlots ?? 0}</strong>
+              </article>
+              <article>
+                <span>Versions</span>
+                <strong>{counts.draftVersions ?? metrics.draftVersions ?? 0}</strong>
+              </article>
+              <article>
+                <span>Review Items</span>
+                <strong>{counts.reviewItems ?? metrics.reviewItems ?? 0}</strong>
+              </article>
+              <article>
+                <span>Packages</span>
+                <strong>{metrics.packages ?? workflowState.snapshot.packages.length}</strong>
+              </article>
             </div>
           </section>
         </div>
 
         <aside className="integration-status-card">
-          <h2>Integration Status</h2>
+          <h2>Runtime Controls</h2>
           <ul>
-            {integrationItems.map(([icon, title, description, tone]) => (
-              <li key={title}>
-                <span className={`integration-icon ${tone}`}>
-                  <Icon name={icon} />
-                </span>
-                <div>
-                  <h3>{title}</h3>
-                  <p>{description}</p>
-                </div>
-              </li>
-            ))}
+            <li>
+              <span className="integration-icon success">
+                <Icon name="check" />
+              </span>
+              <div>
+                <h3>Standalone CLI Mode</h3>
+                <p>The UI reads and writes through the local social-agent server when it is running.</p>
+              </div>
+            </li>
+            <li>
+              <span className={`integration-icon ${provider.live_api_calls_enabled ? 'success' : 'primary'}`}>
+                <Icon name="api" />
+              </span>
+              <div>
+                <h3>{provider.live_api_calls_enabled ? 'Live provider ready' : 'Mock fallback available'}</h3>
+                <p>AI integration can change providers without changing the UI data flow.</p>
+              </div>
+            </li>
+            <li>
+              <span className="integration-icon primary">
+                <Icon name="storage" />
+              </span>
+              <div>
+                <h3>{storage.backend || storageStatus.backend}</h3>
+                <p>Workflow records are stored as workspace runs, plans, drafts, draft versions, and review items.</p>
+              </div>
+            </li>
           </ul>
           <footer>
-            <button className="primary" type="button">
-              <Icon name="save" />
-              Save Configuration
+            <button onClick={refreshProviderStatus} type="button">
+              <Icon name="refresh" />
+              Refresh Status
+            </button>
+            <button className="primary danger-button" onClick={resetWorkflow} type="button">
+              <Icon name="delete_sweep" />
+              Reset Stored Workflow
             </button>
           </footer>
         </aside>

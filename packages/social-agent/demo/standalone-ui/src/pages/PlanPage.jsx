@@ -26,7 +26,25 @@ export function PlanPage() {
     selectedPlatform === 'all' ? true : content.platforms.map((platform) => platform.toLowerCase()).includes(selectedPlatform)
   );
   const selectedContent = filteredContentPlans.find((content) => content.id === selectedContentId) || filteredContentPlans[0] || fallbackContent;
-  const selectedPlan = selectedContent.slots.find((slot) => slot.id === selectedSlotId) || selectedContent.slots[0];
+  const selectedPlan = selectedContent?.slots.find((slot) => slot.id === selectedSlotId) || selectedContent?.slots[0];
+
+  if (!contentPlans.length || !selectedContent || !selectedPlan) {
+    return (
+      <div className="page plan-page original-plan-page">
+        <div className="plan-title-row">
+          <div>
+            <h1>Weekly Content Plan</h1>
+            <p>Generate Workspace output to create source-backed weekly plan records.</p>
+          </div>
+        </div>
+        <section className="empty-workflow-state">
+          <Icon name="calendar_today" />
+          <h2>No stored content plans</h2>
+          <p>Use Workspace to generate output. The pipeline will store content plans, draft slots, review items, and package manifests here.</p>
+        </section>
+      </div>
+    );
+  }
 
   function selectContent(contentId) {
     const nextContent = contentPlans.find((content) => content.id === contentId) || fallbackContent;

@@ -131,6 +131,9 @@ function createReviewItemsFromRun(run, contentPlan, drafts) {
     return {
       id: `RQ-${run.id.slice(-6)}-${String(index + 1).padStart(2, '0')}`,
       runId: run.id,
+      planId: contentPlan.id,
+      slotId: planSeed.id || '',
+      draftId: draft?.id || '',
       artifactType,
       source,
       title: contentPlan.title,
@@ -155,22 +158,61 @@ function createPackagesFromSnapshot(contentPlans, drafts, reviewItems) {
   return contentPlans.map((contentPlan, index) => {
     const planDrafts = drafts.filter((draft) => draft.planId === contentPlan.id);
     const planReviews = reviewItems.filter((item) => item.runId === contentPlan.runId);
+    const reviewStatuses = planReviews.map((item) => item.status);
+    const hasBlockedReview = reviewStatuses.some((status) => ['Rejected', 'Changes Requested'].includes(status));
+    const hasEscalatedReview = reviewStatuses.includes('Escalated');
+    const hasPendingReview = reviewStatuses.some((status) => ['Needs Review', 'In Review'].includes(status));
+    const allReviewsApproved = planReviews.length > 0 && reviewStatuses.every((status) => status === 'Approved');
     const highRisk = planReviews.some((item) => stripRiskLabel(item.risk) === 'High') || stripRiskLabel(contentPlan.risk) === 'High';
-    const status = planReviews.length ? 'Pending Review' : 'Ready';
+    const exportState = hasBlockedReview
+      ? {
+        label: 'Changes Required',
+        manifestStatus: 'BLOCKED',
+        exportType: 'blocked',
+        tone: 'danger'
+      }
+      : allReviewsApproved
+        ? {
+          label: 'Approved Export',
+          manifestStatus: 'APPROVED_EXPORT',
+          exportType: 'approved',
+          tone: 'success'
+        }
+        : hasPendingReview || hasEscalatedReview || highRisk
+          ? {
+            label: 'Needs Review',
+            manifestStatus: 'REVIEW_REQUIRED',
+            exportType: 'review_required',
+            tone: hasEscalatedReview || highRisk ? 'danger' : 'warning'
+          }
+          : {
+            label: 'Ready',
+            manifestStatus: 'READY_FOR_HANDOFF',
+            exportType: 'ready',
+            tone: 'success'
+          };
     const id = `PKG-${String(index + 1).padStart(4, '0')}-${contentPlan.id.slice(0, 8).toUpperCase()}`;
 
     return {
       id,
       task: `${contentPlan.title} package`,
       platforms: contentPlan.platforms.map((platform) => (platform === 'LinkedIn' ? 'in' : platform)),
-      status: highRisk ? 'High Risk' : status,
-      tone: highRisk ? 'danger' : status === 'Ready' ? 'success' : 'neutral',
+      status: exportState.label,
+      tone: exportState.tone,
       manifest: {
         packageId: id,
         taskType: 'SOCIAL_AGENT_WORKFLOW',
-        status: highRisk ? 'REVIEW_REQUIRED' : 'READY_FOR_HANDOFF',
+        status: exportState.manifestStatus,
+        exportType: exportState.exportType,
         riskLevel: stripRiskLabel(contentPlan.risk).toLowerCase(),
         platforms: contentPlan.platforms.map((platform) => platform.toUpperCase()),
+        reviewSummary: {
+          total: planReviews.length,
+          approved: reviewStatuses.filter((status) => status === 'Approved').length,
+          pending: reviewStatuses.filter((status) => ['Needs Review', 'In Review'].includes(status)).length,
+          escalated: reviewStatuses.filter((status) => status === 'Escalated').length,
+          blocked: reviewStatuses.filter((status) => ['Rejected', 'Changes Requested'].includes(status)).length
+        },
         artifacts: [
           { type: 'WORKSPACE_RUN', id: contentPlan.runId },
           { type: 'CONTENT_PLAN', id: contentPlan.id },
@@ -232,6 +274,7 @@ function createSnapshotFromItems(items) {
   const byType = (type) => items.filter((item) => item.type === type).map((item) => item.payload);
   const contentPlans = byType('content_plan');
   const drafts = byType('draft');
+  const draftVersions = byType('draft_version');
   const reviewQueueItems = byType('review_item');
   const workspaceRuns = byType('workspace_run');
   const packages = createPackagesFromSnapshot(contentPlans, drafts, reviewQueueItems);
@@ -241,11 +284,13 @@ function createSnapshotFromItems(items) {
     latestRun: workspaceRuns[0] || null,
     contentPlans,
     drafts,
+    draftVersions,
     reviewQueueItems,
     packages,
     metrics: {
       contentPlans: contentPlans.length,
       draftSlots: drafts.length,
+      draftVersions: draftVersions.length,
       reviewItems: reviewQueueItems.length,
       packages: packages.length
     }
