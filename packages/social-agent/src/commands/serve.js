@@ -29,13 +29,6 @@ const CONTENT_TYPES = {
   '.jpeg': 'image/jpeg'
 };
 
-function resolveDemoPath(requestUrl, rootDir) {
-  const url = new URL(requestUrl, 'http://localhost');
-  const pathname = decodeURIComponent(url.pathname);
-  const relative = normalizeDemoRoute(pathname);
-  return resolveInsideRoot(rootDir, relative);
-}
-
 function resolveStaticPath(requestUrl, rootDir) {
   const url = new URL(requestUrl, 'http://localhost');
   const pathname = decodeURIComponent(url.pathname);
@@ -51,23 +44,6 @@ function resolveInsideRoot(rootDir, relativePath) {
   }
 
   return resolved;
-}
-
-function normalizeDemoRoute(pathname) {
-  if (pathname === '/' || pathname === '') {
-    return 'overview.html';
-  }
-
-  const trimmed = pathname.replace(/^\/+/, '').replace(/\/+$/, '');
-  if (!trimmed) {
-    return 'overview.html';
-  }
-
-  if (path.extname(trimmed)) {
-    return trimmed;
-  }
-
-  return `${trimmed}.html`;
 }
 
 function serveFile(request, response, filePath) {
@@ -88,6 +64,70 @@ function serveFile(request, response, filePath) {
   }
 
   fs.createReadStream(filePath).pipe(response);
+}
+
+function respondHtml(request, response, statusCode, html) {
+  response.writeHead(statusCode, {
+    'content-type': 'text/html; charset=utf-8',
+    'cache-control': 'no-store'
+  });
+
+  if (request.method === 'HEAD') {
+    response.end();
+    return;
+  }
+
+  response.end(html);
+}
+
+function renderApiLanding(host, port) {
+  return [
+    '<!doctype html>',
+    '<html lang="en">',
+    '<head>',
+    '<meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<title>social-agent API server</title>',
+    '<style>',
+    'body{font-family:Inter,Arial,sans-serif;margin:0;padding:48px;background:#f8f6fb;color:#111827}',
+    'main{max-width:760px;background:#fff;border:1px solid #ccd3e2;border-radius:12px;padding:32px;box-shadow:0 8px 24px rgba(15,23,42,.06)}',
+    'h1{margin:0 0 12px;font-size:28px}p{line-height:1.55;color:#475569}code{background:#f1f5f9;border-radius:6px;padding:2px 6px}',
+    '</style>',
+    '</head>',
+    '<body>',
+    '<main>',
+    '<h1>social-agent API server</h1>',
+    `<p>The package server is running at <code>http://${host}:${port}</code>. API endpoints are available under <code>/api</code>.</p>`,
+    '<p>Run <code>npm run ui:dev</code> in another terminal to open the React standalone UI. Build output under <code>demo/dist</code> will be served here when present.</p>',
+    '</main>',
+    '</body>',
+    '</html>'
+  ].join('');
+}
+
+function serveReactOrLanding(request, response, url, distDir, host, port) {
+  const distIndex = path.join(distDir, 'index.html');
+  const isAssetRoute = url.pathname.startsWith('/assets/');
+  const hasExtension = Boolean(path.extname(url.pathname));
+
+  if (!fs.existsSync(distIndex)) {
+    if (isAssetRoute || hasExtension) {
+      response.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+      response.end('Not found');
+      return;
+    }
+
+    respondHtml(request, response, 200, renderApiLanding(host, port));
+    return;
+  }
+
+  if (isAssetRoute || hasExtension) {
+    const filePath = resolveStaticPath(request.url, distDir);
+    serveFile(request, response, filePath);
+    return;
+  }
+
+  serveFile(request, response, distIndex);
 }
 
 function respondJson(response, statusCode, payload) {
@@ -397,11 +437,7 @@ async function runServe(options) {
 
   const host = options.host || '127.0.0.1';
   const demoDir = path.resolve(__dirname, '../../demo');
-  const screensDir = path.join(demoDir, 'screens');
-
-  if (!fs.existsSync(path.join(screensDir, 'overview.html'))) {
-    throw createCliError(`Demo entry not found: ${path.join(screensDir, 'overview.html')}`, 1);
-  }
+  const reactDistDir = path.join(demoDir, 'dist');
 
   const server = http.createServer(async (request, response) => {
     try {
@@ -437,11 +473,7 @@ async function runServe(options) {
         return;
       }
 
-      const isDemoStaticAsset = url.pathname.startsWith('/assets/') || url.pathname.startsWith('/screens/');
-      const filePath = isDemoStaticAsset
-        ? resolveStaticPath(request.url, demoDir)
-        : resolveDemoPath(request.url, screensDir);
-      serveFile(request, response, filePath);
+      serveReactOrLanding(request, response, url, reactDistDir, host, port);
     } catch (error) {
       response.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' });
       response.end(error.message);
@@ -450,7 +482,7 @@ async function runServe(options) {
 
   server.listen(port, host, () => {
     if (!options.quiet) {
-      console.log(`social-agent demo listening at http://${host}:${port}`);
+      console.log(`social-agent server listening at http://${host}:${port}`);
     }
   });
 }

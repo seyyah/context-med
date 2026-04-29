@@ -9,8 +9,8 @@ function PlatformMark({ platform }) {
   return <span className={isLinkedIn ? 'platform-mark linkedin-mark-small' : 'platform-mark x-mark-small'}>{isLinkedIn ? 'in' : 'X'}</span>;
 }
 
-export function PlanPage() {
-  const { updatePlan, workflowState } = useWorkflowStore();
+export function PlanPage({ onNavigate }) {
+  const { updateDrafts, updatePlan, workflowState } = useWorkflowStore();
   const contentQueueRef = useRef(null);
   const contentCardRefs = useRef({});
   const {
@@ -104,6 +104,15 @@ export function PlanPage() {
         : [...currentPlan.regeneratedContentIds, selectedContent.id],
       selectedSlotId: selectedContent.slots[0].id
     }));
+  }
+
+  function openDraft(slot = selectedPlan) {
+    updatePlan({ selectedSlotId: slot.id });
+    updateDrafts({
+      selectedPlanId: selectedContent.id,
+      selectedSlotId: slot.id
+    });
+    onNavigate?.('drafts');
   }
 
   return (
@@ -226,10 +235,17 @@ export function PlanPage() {
                       </div>
                     </td>
                     <td>
-                      <a className="output-link" href="#">
+                      <button
+                        className="output-link"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          openDraft(item);
+                        }}
+                        type="button"
+                      >
                         <Icon name="code" />
                         {selectedContent.id}_{item.platform.toLowerCase()}_{index + 1}.json
-                      </a>
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -300,7 +316,7 @@ export function PlanPage() {
                 Risk explanation
               </h3>
               <p>{selectedPlan.risk === 'High' ? 'Review is required because this slot carries safety, privacy, trust, or clinical-boundary risk.' : selectedPlan.risk === 'Medium' ? 'Review is recommended because this slot still affects public messaging and channel fit.' : 'This is lower risk, but the final copy should still stay aligned with the source.'} Current status: {selectedPlan.status}.</p>
-              <button type="button">
+              <button onClick={() => openDraft(selectedPlan)} type="button">
                 <Icon name="edit_note" />
                 Open in Drafts
               </button>

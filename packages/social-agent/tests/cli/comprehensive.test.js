@@ -7,14 +7,12 @@ const fs = require('fs');
 const http = require('http');
 const os = require('os');
 const path = require('path');
-const vm = require('vm');
 const { spawn, spawnSync } = require('child_process');
 
 const PKG_ROOT = path.resolve(__dirname, '../..');
 const REPO_ROOT = path.resolve(PKG_ROOT, '../..');
 const CLI = path.join(PKG_ROOT, 'bin', 'cli.js');
 const DEMO_SCRIPT = path.join(PKG_ROOT, 'demo', 'comprehensive-demo.js');
-const DEMO_ASSET = path.join(PKG_ROOT, 'demo', 'assets', 'social-agent-demo.js');
 const FIXTURES = path.join(REPO_ROOT, 'fixtures');
 const { runWorkspacePipeline, _test: workspacePipelineTest } = require('../../src/workflow/workspace-pipeline');
 
@@ -510,221 +508,6 @@ describe('social-agent CLI comprehensive behavior', () => {
     });
   });
 
-  test('browser demo asset replaces placeholder main content from package data', async () => {
-    const socialAgent = require('@context-med/social-agent');
-    const asset = fs.readFileSync(DEMO_ASSET, 'utf8');
-    const main = { innerHTML: '' };
-    const context = {
-      window: { location: { pathname: '/plan' } },
-      document: {
-        querySelector(selector) {
-          return selector === 'main' ? main : null;
-        },
-        querySelectorAll() {
-          return [];
-        }
-      },
-      fetch() {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(socialAgent.createSocialAgentDemo())
-        });
-      }
-    };
-
-    vm.createContext(context);
-    vm.runInContext(asset, context);
-    await new Promise((resolve) => setImmediate(resolve));
-
-    expect(main.innerHTML).toMatch(/data-social-agent-app/);
-    expect(main.innerHTML).toMatch(/Generated Weekly Plan/);
-    expect(main.innerHTML).toMatch(/Planning board/);
-    expect(main.innerHTML).toMatch(/Plan items/);
-    expect(main.innerHTML).toMatch(/node bin\/cli\.js plan/);
-  });
-
-  test('browser demo asset renders workspace controls for custom input', async () => {
-    const socialAgent = require('@context-med/social-agent');
-    const asset = fs.readFileSync(DEMO_ASSET, 'utf8');
-    const main = { innerHTML: '' };
-    const context = {
-      window: {
-        location: { pathname: '/workspace' },
-        addEventListener() {},
-        localStorage: {
-          getItem() { return null; },
-          setItem() {},
-          removeItem() {}
-        }
-      },
-      document: {
-        body: {
-          classList: {
-            classes: [],
-            add(name) {
-              this.classes.push(name);
-            }
-          }
-        },
-        querySelector(selector) {
-          return selector === 'main' ? main : null;
-        },
-        querySelectorAll() {
-          return [];
-        }
-      },
-      fetch() {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(socialAgent.createSocialAgentDemo())
-        });
-      }
-    };
-
-    vm.createContext(context);
-    vm.runInContext(asset, context);
-    await new Promise((resolve) => setImmediate(resolve));
-
-    expect(main.innerHTML).toMatch(/data-workspace-form/);
-    expect(main.innerHTML).toMatch(/Generate Demo Output/);
-    expect(main.innerHTML).toMatch(/Source context/);
-    expect(main.innerHTML).toMatch(/Community comments/);
-    expect(main.innerHTML).toMatch(/Generated output/);
-    expect(main.innerHTML).toMatch(/Run complete/);
-    expect(main.innerHTML).toMatch(/Local fallback/);
-    expect(main.innerHTML).toMatch(/Final platform outputs/);
-    expect(main.innerHTML).toMatch(/Final LINKEDIN output/);
-    expect(main.innerHTML).toMatch(/Final X output/);
-    expect(main.innerHTML).toMatch(/Adaptation details/);
-    expect(main.innerHTML).toMatch(/sa-adaptation-details/);
-    expect(main.innerHTML).toMatch(/Hashtags/);
-    expect(main.innerHTML).toMatch(/Copy final copy/);
-    expect(main.innerHTML).toMatch(/Adaptation/);
-    expect(main.innerHTML).toMatch(/professional_narrative/);
-    expect(main.innerHTML).toMatch(/Plan created/);
-    expect(main.innerHTML).toMatch(/Drafts created/);
-    expect(main.innerHTML).toMatch(/Plan output/);
-    expect(main.innerHTML).toMatch(/Draft output/);
-    expect(main.innerHTML).toMatch(/Moderation output/);
-    expect(main.innerHTML).toMatch(/Review queue output/);
-    expect(context.document.body.classList.classes).toContain('sa-demo-shell');
-  });
-
-  test('browser demo asset wires sidebar routes despite icon labels', async () => {
-    const socialAgent = require('@context-med/social-agent');
-    const asset = fs.readFileSync(DEMO_ASSET, 'utf8');
-    const main = { innerHTML: '' };
-    const listeners = {};
-    const navLink = {
-      textContent: 'event_note Plan',
-      dataset: {},
-      href: '',
-      attributes: {},
-      setAttribute(name, value) {
-        this.attributes[name] = value;
-      },
-      getAttribute(name) {
-        return name === 'href' ? this.href : this.attributes[name];
-      },
-      addEventListener(name, handler) {
-        listeners[name] = handler;
-      }
-    };
-    const context = {
-      window: {
-        location: { pathname: '/workspace' },
-        history: {
-          pushState(_state, _title, url) {
-            context.window.location.pathname = url;
-          }
-        },
-        localStorage: {
-          getItem() { return null; },
-          setItem() {},
-          removeItem() {}
-        },
-        addEventListener() {}
-      },
-      document: {
-        querySelector(selector) {
-          return selector === 'main' ? main : null;
-        },
-        querySelectorAll(selector) {
-          if (selector === 'nav a' || selector === 'a[href^="/"]') {
-            return [navLink];
-          }
-          return [];
-        }
-      },
-      fetch() {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(socialAgent.createSocialAgentDemo())
-        });
-      }
-    };
-
-    vm.createContext(context);
-    vm.runInContext(asset, context);
-    await new Promise((resolve) => setImmediate(resolve));
-
-    expect(navLink.href).toBe('/plan');
-    expect(navLink.dataset.route).toBe('plan');
-    expect(navLink.attributes['aria-current']).toBe('false');
-    expect(typeof listeners.click).toBe('function');
-
-    listeners.click({ preventDefault() {} });
-    expect(context.window.location.pathname).toBe('/plan');
-    expect(main.innerHTML).toMatch(/Generated Weekly Plan/);
-  });
-
-  test('browser demo asset renders review queue as an approval workspace', async () => {
-    const socialAgent = require('@context-med/social-agent');
-    const asset = fs.readFileSync(DEMO_ASSET, 'utf8');
-    const main = { innerHTML: '' };
-    const context = {
-      window: {
-        location: { pathname: '/review-queue' },
-        addEventListener() {},
-        localStorage: {
-          getItem() { return null; },
-          setItem() {},
-          removeItem() {}
-        }
-      },
-      document: {
-        body: {
-          classList: {
-            add() {}
-          }
-        },
-        querySelector(selector) {
-          return selector === 'main' ? main : null;
-        },
-        querySelectorAll() {
-          return [];
-        }
-      },
-      fetch() {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(socialAgent.createSocialAgentDemo())
-        });
-      }
-    };
-
-    vm.createContext(context);
-    vm.runInContext(asset, context);
-    await new Promise((resolve) => setImmediate(resolve));
-
-    expect(main.innerHTML).toMatch(/Human approval gate/);
-    expect(main.innerHTML).toMatch(/Decision board/);
-    expect(main.innerHTML).toMatch(/approve-review/);
-    expect(main.innerHTML).toMatch(/request-review-changes/);
-    expect(main.innerHTML).toMatch(/escalate-review/);
-    expect(main.innerHTML).toMatch(/Review items/);
-  });
-
   test('workspace pipeline falls back to mock when a live provider has no API key', async () => {
     const previousGeminiKey = process.env.GEMINI_API_KEY;
     const previousGoogleKey = process.env.GOOGLE_API_KEY;
@@ -874,7 +657,7 @@ describe('social-agent CLI comprehensive behavior', () => {
     expect(normalized.reviewItems[0].platform).toBe('LinkedIn');
   });
 
-  test('serve exposes accepted demo screens with extensionless routes', async () => {
+  test('serve exposes API endpoints and React fallback routes', async () => {
     const port = 3300 + Math.floor(Math.random() * 300);
     const child = spawn(process.execPath, [CLI, 'serve', '--port', String(port), '--quiet'], {
       cwd: PKG_ROOT,
@@ -890,8 +673,7 @@ describe('social-agent CLI comprehensive behavior', () => {
 
     try {
       const overview = await waitForServer(`http://127.0.0.1:${port}/`);
-      expect(overview.body).toMatch(/Social-Agent/);
-      expect(overview.body).toMatch(/assets\/social-agent-demo\.js/);
+      expect(overview.body).toMatch(/social-agent API server|Social-Agent Standalone UI|<div id="root">/i);
 
       const emptyWorkflowSnapshot = await requestText(`http://127.0.0.1:${port}/api/workflow-snapshot`);
       expect(emptyWorkflowSnapshot.statusCode).toBe(200);
@@ -909,11 +691,11 @@ describe('social-agent CLI comprehensive behavior', () => {
 
       const plan = await requestText(`http://127.0.0.1:${port}/plan`);
       expect(plan.statusCode).toBe(200);
-      expect(plan.body).toMatch(/Generated Weekly Plan/);
+      expect(plan.body).toMatch(/social-agent API server|Social-Agent Standalone UI|<div id="root">/i);
 
       const drafts = await requestText(`http://127.0.0.1:${port}/drafts`);
       expect(drafts.statusCode).toBe(200);
-      expect(drafts.body).toMatch(/Drafts/);
+      expect(drafts.body).toMatch(/social-agent API server|Social-Agent Standalone UI|<div id="root">/i);
 
       const demoApi = await requestText(`http://127.0.0.1:${port}/api/demo`);
       expect(demoApi.statusCode).toBe(200);
@@ -1077,62 +859,6 @@ describe('social-agent CLI comprehensive behavior', () => {
       expect(resetSnapshot.drafts).toEqual([]);
       expect(resetSnapshot.reviewQueueItems).toEqual([]);
       expect(resetSnapshot.packages).toEqual([]);
-
-      const demoAsset = await requestText(`http://127.0.0.1:${port}/assets/social-agent-demo.js`);
-      expect(demoAsset.statusCode).toBe(200);
-      expect(demoAsset.body).toMatch(/api\/demo/);
-      expect(demoAsset.body).toMatch(/data-social-agent-app/);
-      expect(demoAsset.body).toMatch(/main\.innerHTML = renderRoute/);
-      expect(demoAsset.body).toMatch(/data-workspace-form/);
-      expect(demoAsset.body).toMatch(/copy-json/);
-      expect(demoAsset.body).toMatch(/download-json/);
-      expect(demoAsset.body).toMatch(/navigateTo/);
-      expect(demoAsset.body).toMatch(/pushState/);
-      expect(demoAsset.body).toMatch(/aria-current/);
-      expect(demoAsset.body).toMatch(/sa-demo-shell/);
-      expect(demoAsset.body).toMatch(/Generated Weekly Plan/);
-      expect(demoAsset.body).toMatch(/Generated output/);
-      expect(demoAsset.body).toMatch(/Run complete/);
-      expect(demoAsset.body).toMatch(/Gemini live/);
-      expect(demoAsset.body).toMatch(/Local fallback/);
-      expect(demoAsset.body).toMatch(/finalPostCard/);
-      expect(demoAsset.body).toMatch(/Adaptation details/);
-      expect(demoAsset.body).toMatch(/sa-adaptation-details/);
-      expect(demoAsset.body).toMatch(/Hashtags/);
-      expect(demoAsset.body).toMatch(/Planning board/);
-      expect(demoAsset.body).toMatch(/Publish handoff/);
-      expect(demoAsset.body).toMatch(/Moderation triage/);
-      expect(demoAsset.body).toMatch(/copy-draft/);
-      expect(demoAsset.body).toMatch(/edit-draft/);
-      expect(demoAsset.body).toMatch(/save-draft-edit/);
-      expect(demoAsset.body).toMatch(/data-draft-editor/);
-      expect(demoAsset.body).toMatch(/Final platform outputs/);
-      expect(demoAsset.body).toMatch(/Plan created/);
-      expect(demoAsset.body).toMatch(/Review Queue/);
-      expect(demoAsset.body).toMatch(/Human approval gate/);
-      expect(demoAsset.body).toMatch(/approve-review/);
-      expect(demoAsset.body).toMatch(/request-review-changes/);
-      expect(demoAsset.body).toMatch(/escalate-review/);
-
-      const demoStyles = await requestText(`http://127.0.0.1:${port}/assets/social-agent-demo.css`);
-      expect(demoStyles.statusCode).toBe(200);
-      expect(demoStyles.body).toMatch(/nav a\[aria-current="false"\]/);
-      expect(demoStyles.body).toMatch(/body\.sa-demo-shell main/);
-      expect(demoStyles.body).toMatch(/overflow-y: auto/);
-      expect(demoStyles.body).toMatch(/sa-adaptation-details/);
-      expect(demoStyles.body).toMatch(/sa-run-summary/);
-      expect(demoStyles.body).toMatch(/sa-run-card--live/);
-      expect(demoStyles.body).toMatch(/sa-output-card/);
-      expect(demoStyles.body).toMatch(/sa-plan-board/);
-      expect(demoStyles.body).toMatch(/sa-triage-grid/);
-      expect(demoStyles.body).toMatch(/sa-icon-action/);
-      expect(demoStyles.body).toMatch(/sa-review-board/);
-      expect(demoStyles.body).toMatch(/sa-callout/);
-      expect(demoStyles.body).toMatch(/sa-draft-editor/);
-
-      const directScreen = await requestText(`http://127.0.0.1:${port}/screens/overview.html`);
-      expect(directScreen.statusCode).toBe(200);
-      expect(directScreen.body).toMatch(/Social-Agent/);
 
       const post = await requestText(`http://127.0.0.1:${port}/plan`, 'POST');
       expect(post.statusCode).toBe(405);

@@ -26,7 +26,7 @@ The package intentionally avoids direct publishing. It focuses on planning, draf
 - Collects approval/escalation items in a review queue.
 - Stores Workspace runs, content plans, drafts, draft versions, review decisions, and package manifests locally.
 - Shows the active LLM provider, model, API key readiness, storage path, and fallback state in the UI.
-- Serves a local standalone demo UI from `packages/social-agent/demo/`.
+- Serves the package API and, when built, the React standalone UI from `packages/social-agent/demo/dist`.
 
 ## Workflow
 
@@ -133,6 +133,47 @@ cd packages/social-agent
 npm install
 ```
 
+## Quick Start
+
+For the connected React UI, run the package server and the Vite UI together.
+
+Terminal 1 starts the social-agent API, SQLite store, demo API, and workflow endpoints:
+
+```bash
+cd packages/social-agent
+npm start
+```
+
+Terminal 2 starts the React/Vite UI:
+
+```bash
+cd packages/social-agent
+npm run ui:dev
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5173
+```
+
+The React dev server proxies `/api` requests to `http://127.0.0.1:3000`, so Workspace generation, provider status, SQLite workflow records, draft saves, review decisions, and package manifests stay connected.
+
+For CLI/API-only testing, run only:
+
+```bash
+npm start
+```
+
+Then use:
+
+```text
+http://127.0.0.1:3000
+```
+
+This serves the package-local demo server and API endpoints.
+If no React build exists under `demo/dist`, the port shows a small API landing page. The full UI is developed through Vite at `http://127.0.0.1:5173`.
+
 Optional live generation:
 
 ```bash
@@ -190,7 +231,7 @@ Dry run example:
 npm run cli -- plan --input demo/social-agent-source.md --dry-run
 ```
 
-## Demo UI
+## Package Server
 
 ```bash
 npm start
@@ -202,7 +243,9 @@ Then open:
 http://127.0.0.1:3000
 ```
 
-The Workspace screen accepts source context and platform selection. Generated output is stored locally and reused across Plan, Drafts, Moderation, Review Queue, Packages, Writeback, and Settings screens.
+This starts the package server, SQLite workflow store, demo API, provider status endpoint, and workflow endpoints. It is the backend used by both CLI workflows and the React standalone UI.
+
+When a production React build exists under `demo/dist`, the package server serves it as a fallback route. During development, use `npm run ui:dev` for the UI.
 
 ## React Standalone UI
 
@@ -212,13 +255,15 @@ A React/Vite standalone UI lives under:
 demo/standalone-ui/
 ```
 
-This is intentionally separate from the current CLI-served demo. It keeps the CLI and package API in place while rebuilding the UI as a component-based app.
+This is the current standalone UI implementation. It keeps the CLI and package API in place while presenting the workflow as a component-based app.
 
 Run the React dev server:
 
 ```bash
 npm run ui:dev
 ```
+
+The connected development flow expects `npm start` to be running in another terminal because Vite proxies `/api` to the package server on port `3000`.
 
 Build the React app:
 
@@ -243,6 +288,30 @@ Current status:
 - Settings reads `/api/provider-status`.
 - Draft and review decisions persist through `/api/workflow-items`.
 - Draft edits also create `draft_version` workflow items.
+
+## Screenshots
+
+The current standalone UI screens are shown below:
+
+| Overview | Workspace |
+| --- | --- |
+| ![Overview screen](demo/screenshots/overview.png) | ![Workspace screen](demo/screenshots/workspace.png) |
+
+| Plan | Drafts |
+| --- | --- |
+| ![Plan screen](demo/screenshots/plan.png) | ![Drafts screen](demo/screenshots/drafts.png) |
+
+| Review Queue | Packages |
+| --- | --- |
+| ![Review Queue screen](demo/screenshots/review.png) | ![Packages screen](demo/screenshots/packages.png) |
+
+| Writeback | Moderation |
+| --- | --- |
+| ![Writeback screen](demo/screenshots/writeback.png) | ![Moderation screen](demo/screenshots/moderation.png) |
+
+| Settings |
+| --- |
+| ![Settings screen](demo/screenshots/settings.png) |
 
 Example Workspace source:
 
@@ -279,7 +348,7 @@ This writes a package-generated demo payload under `demo/generated/`.
 npm test -- tests/cli/smoke.test.js tests/cli/comprehensive.test.js
 ```
 
-Current package-level coverage focuses on CLI behavior, package API output, demo API behavior, and browser-demo rendering checks.
+Current package-level coverage focuses on CLI behavior, package API output, demo API behavior, workflow persistence, and package server routes.
 
 The smoke test file is kept as the baseline behavior reference. Additional coverage lives in the comprehensive CLI test file.
 
@@ -292,6 +361,7 @@ The smoke test file is kept as the baseline behavior reference. Additional cover
 - `src/storage/sqlite-store.js` - package-local SQLite workflow item store.
 - `src/workflow/` - Workspace pipeline and workflow record mapping.
 - `src/gemini.js` - optional Gemini workspace generation.
-- `demo/screens/` - accepted demo screen HTML.
-- `demo/assets/` - demo runtime JS/CSS.
+- `demo/standalone-ui/` - React/Vite standalone UI.
+- `demo/screenshots/` - README screenshot assets.
+- `demo/comprehensive-demo.js` - package-generated demo payload builder.
 - `tests/cli/` - package-local CLI and demo tests.

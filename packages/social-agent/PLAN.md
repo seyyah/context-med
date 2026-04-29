@@ -39,7 +39,7 @@ New package-local test files may be added under `packages/social-agent/tests/`. 
 - Root `DESIGN.md`: canonical Xtatistix UI design language.
 - Root `README.md1`: Context-Med product context.
 - Local `IDEA.md`: canonical product concept for `social-agent`.
-- Local `demo/screens/`: accepted Stitch UI reference screens.
+- Local `demo/standalone-ui/`: current React/Vite standalone UI.
 - Local `tests/cli/smoke.test.js`: locked smoke behavior reference.
 - Local comprehensive tests: package-local test files may be added without editing smoke.
 
@@ -61,7 +61,7 @@ Implementation order:
 
 1. Build CLI/domain core for `plan`, `draft`, and `moderate`.
 2. Add `serve` for local standalone UI.
-3. Build UI from the accepted `demo/` screens without inventing a different product flow.
+3. Build UI in the React standalone app without inventing a different product flow.
 
 ---
 
@@ -74,7 +74,7 @@ Included in the first implementation:
 - deterministic local JSON output
 - LinkedIn and X as first platforms
 - `plan`, `draft`, `moderate`, and `serve` commands
-- standalone local UI planned from accepted Stitch screens
+- standalone local UI implemented with React/Vite
 - Xtatistix design language
 
 Excluded from the first implementation:
@@ -90,23 +90,23 @@ Excluded from the first implementation:
 
 ---
 
-## Accepted UI Reference
+## Standalone UI Reference
 
-`packages/social-agent/demo/` contains the accepted Stitch-generated UI reference. These screens define the approved information architecture, navigation model, page names, and Xtatistix visual direction.
+`packages/social-agent/demo/standalone-ui/` contains the current React/Vite standalone UI. It preserves the approved information architecture, navigation model, page names, and Xtatistix visual direction from the earlier Stitch reference while making the screens component-based and connected to the package API.
 
-Accepted screens:
+Current pages:
 
-- `overview.html`
-- `workspace.html`
-- `plan.html`
-- `drafts.html`
-- `moderation.html`
-- `review-queue.html`
-- `packages.html`
-- `writeback.html`
-- `settings.html`
+- Overview
+- Workspace
+- Plan
+- Drafts
+- Review Queue
+- Packages
+- Writeback
+- Moderation
+- Settings
 
-Rule: `demo/` is the accepted visual and workflow reference. It is not automatically the final production implementation. The working standalone UI should preserve the same flow and design language, whether implemented under `src/ui/` or later moved into `demo/` if the project owner requires it.
+Rule: React standalone UI is the current implementation surface. The package server provides API routes and serves a built React app from `demo/dist` when present.
 
 ---
 
@@ -148,19 +148,13 @@ packages/social-agent/
         settings.js
   demo/
     comprehensive-demo.js
-    assets/
-      social-agent-demo.css
-      social-agent-demo.js
-    screens/
-      overview.html
-      workspace.html
-      plan.html
-      drafts.html
-      moderation.html
-      review-queue.html
-      packages.html
-      writeback.html
-      settings.html
+    standalone-ui/
+      src/
+        components/
+        pages/
+        services/
+        data/
+    screenshots/
   tests/
     cli/
       smoke.test.js
@@ -172,9 +166,8 @@ Rules:
 - `src/index.js` owns shared domain helpers and output builders.
 - `src/api.js` exposes the package API used by demos and future UI code.
 - `src/commands/*` exposes CLI commands.
-- `src/ui/` is the working standalone UI implementation for now.
-- `demo/screens/` keeps the accepted Stitch reference HTML screens.
-- `demo/assets/` keeps package-backed browser demo assets.
+- `demo/standalone-ui/` is the working standalone UI implementation.
+- `demo/screenshots/` keeps README/PR screenshot assets.
 - Existing `smoke.test.js` is locked.
 - New package-local tests may be added for comprehensive CLI coverage.
 
@@ -337,7 +330,7 @@ social-agent moderate --input <path> --output <path> --format json
 
 ## Phase 4 - Standalone UI
 
-**Hedef:** `social-agent serve` starts a local UI that follows the accepted `demo/` screens and uses the same domain logic as the CLI.
+**Hedef:** `social-agent serve` starts the package API server and can serve the built React standalone UI when `demo/dist` exists.
 
 **CLI:**
 
@@ -348,7 +341,7 @@ social-agent serve --port 3000
 **Design source:**
 
 - `packages/social-agent/DESIGN.md`
-- accepted `packages/social-agent/demo/screens/*.html`
+- `packages/social-agent/demo/standalone-ui/`
 
 **UI screens:**
 
@@ -375,7 +368,7 @@ social-agent serve --port 3000
 
 - `serve` starts a local server.
 - Overview screen loads.
-- Navigation reaches all accepted screens.
+- React navigation reaches all workflow screens.
 - `/api/demo` returns a package-generated demo payload.
 - `/api/demo` accepts custom source/comment payloads for interactive demo regeneration.
 - `npm run demo:build` writes comprehensive demo JSON from the npm package API.
@@ -384,7 +377,7 @@ social-agent serve --port 3000
 - Workspace shows visible generated plan, draft, moderation, and review queue results.
 - Sidebar navigation routes between demo views without relying on placeholder anchors.
 - Package views support local JSON copy/download actions.
-- UI follows the accepted Stitch visual flow.
+- UI follows the Xtatistix visual flow.
 
 ---
 
@@ -469,8 +462,8 @@ Note: `smoke.test.js` is locked for now. New package-local test files can be add
 4. Add `plan`, `draft`, `moderate`, and `serve` command modules.
 5. Implement deterministic JSON output.
 6. Add local `serve` command.
-7. Add package-backed demo payload and accepted demo screen bindings.
-8. Build `src/ui/` using accepted `demo/` screens as reference.
+7. Add package-backed demo payload and React workflow bindings.
+8. Build `demo/standalone-ui/` as the connected UI surface.
 9. Verify commands without editing the locked smoke test.
 
 ---
@@ -496,8 +489,8 @@ The following decisions are locked before implementation starts:
 - First commands: `plan`, `draft`, `moderate`, `serve`.
 - First output format: JSON.
 - MVP mode: deterministic, no LLM/API.
-- UI source: accepted Stitch screens under `demo/`.
-- Working UI path for now: `src/ui/`.
+- UI source: React/Vite app under `demo/standalone-ui/`.
+- Package server path for built UI: `demo/dist/`.
 - `smoke.test.js` remains locked.
 - New package-local tests may be added.
 - PR scope remains inside `packages/social-agent/`.

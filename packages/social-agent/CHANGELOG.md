@@ -5,6 +5,26 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.7.0] - 2026-04-30
+
+### Contributors
+
+- Akbulut55
+
+### Changed
+
+- Updated README run instructions with the connected API server plus React/Vite UI workflow.
+- Added README screenshot placeholders and the expected `demo/screenshots/` file naming convention.
+- Updated README screenshot references to match the added page screenshots.
+- Connected Plan page draft package links and rationale action to open the matching slot in Drafts.
+- Updated `serve` so it no longer depends on legacy HTML demo screens and now serves the API server landing page or built React UI.
+- Updated docs and tests to treat `demo/standalone-ui` as the current UI surface.
+- Bumped package metadata to `0.7.0`.
+
+### Removed
+
+- Removed the legacy static HTML demo screens and browser demo asset bundle from `demo/screens` and `demo/assets`.
+
 ## [social-agent-v0.6.0] - 2026-04-29
 
 ### Contributors

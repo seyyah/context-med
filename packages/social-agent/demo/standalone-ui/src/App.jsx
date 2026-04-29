@@ -30,7 +30,7 @@ export default function App() {
   return (
     <WorkflowStoreProvider>
       <Shell activePage={activePage} onPageChange={setActivePage}>
-        <ActivePage />
+        <ActivePage onNavigate={setActivePage} />
       </Shell>
     </WorkflowStoreProvider>
   );
