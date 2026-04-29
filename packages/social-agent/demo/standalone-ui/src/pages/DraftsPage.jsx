@@ -2,128 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { Badge } from '../components/Badge.jsx';
 import { Icon } from '../components/Icon.jsx';
-
-const draftSlots = [
-  {
-    id: 'draft-slot-linkedin-01',
-    category: 'Campaign',
-    day: 'Monday',
-    platform: 'LinkedIn',
-    platformLabel: 'LinkedIn Professional',
-    tone: 'linkedin',
-    icon: 'in',
-    title: 'Patient intake dashboard update',
-    focus: 'Operational visibility',
-    meta: '184 words - narrative draft',
-    risk: 'Low Risk',
-    status: 'Needs Review',
-    score: 92,
-    hook: 'Patient intake work moves faster when routing is clear and review stays visible.',
-    body: [
-      'Context-Med is releasing a patient intake dashboard update for care coordination teams.',
-      'The update helps teams review incoming intake messages, identify incomplete information, and route cases to the right internal workflow faster.',
-      'The important boundary is clear: this dashboard supports intake operations. It does not diagnose patients, recommend treatment, or replace clinical judgment.',
-      'Sensitive cases, crisis signals, and unclear medical questions remain under human review before any public response or workflow action moves forward.'
-    ],
-    cta: 'Which review step creates the most friction for care coordination teams?',
-    hashtags: '#CareOperations #HealthTech #PatientSafety',
-    assetBrief: 'A clean dashboard-style visual showing review gates, intake routing, and a human approval checkpoint.',
-    context: [
-      ['menu_book', 'Source Boundary Rules', 'No diagnosis, treatment, or replacement claims.'],
-      ['calendar_month', 'Plan Slot', 'Monday slot for a high-priority Workspace source.'],
-      ['group', 'Audience Persona', 'Care coordination leaders and operations managers.'],
-      ['approval', 'Review Gate', 'Needs human review before package export.']
-    ]
-  },
-  {
-    id: 'draft-slot-x-01',
-    category: 'Short Form',
-    day: 'Tuesday',
-    platform: 'X',
-    platformLabel: 'X Short Form',
-    tone: 'x',
-    icon: 'x',
-    title: 'Privacy-safe intake review',
-    focus: 'Escalation paths',
-    meta: '236/280 chars - compact draft',
-    risk: 'Low Risk',
-    status: 'Needs Review',
-    score: 88,
-    hook: 'Patient intake updates need speed and guardrails.',
-    body: [
-      'Context-Med helps care teams review intake messages, spot missing info, and route cases faster.',
-      'No diagnosis. No treatment recommendations. Sensitive or unclear cases stay under human review.'
-    ],
-    cta: 'Where should intake automation stop?',
-    hashtags: '#HealthTech #CareOps',
-    assetBrief: '',
-    context: [
-      ['short_text', 'Platform Constraint', 'Short form copy should stay under 280 characters.'],
-      ['calendar_month', 'Plan Slot', 'Tuesday slot for a concise follow-up angle.'],
-      ['rule', 'Claim Control', 'Keep the post focused on routing and review, not clinical decisions.'],
-      ['approval', 'Review Gate', 'Needs review because healthcare boundaries are mentioned.']
-    ]
-  },
-  {
-    id: 'draft-slot-linkedin-02',
-    category: 'Trust',
-    day: 'Wednesday',
-    platform: 'LinkedIn',
-    platformLabel: 'LinkedIn Professional',
-    tone: 'linkedin',
-    icon: 'in',
-    title: 'Human review guardrails',
-    focus: 'Human review',
-    meta: '156 words - trust draft',
-    risk: 'Medium Risk',
-    status: 'Draft',
-    score: 86,
-    hook: 'Automation works best when the human review boundary is obvious.',
-    body: [
-      'For intake operations, speed matters. So does knowing when an automated workflow should pause.',
-      'Context-Med keeps sensitive cases, crisis signals, and unclear medical questions under human review so teams can route intake messages without turning operational support into clinical judgment.',
-      'The useful improvement is visibility: teams can see where a message is, what is missing, and which escalation path should handle it.'
-    ],
-    cta: 'How do you keep operational automation under human oversight?',
-    hashtags: '#PatientSafety #CareOperations',
-    assetBrief: 'A review-gate diagram showing intake message, missing information check, escalation route, and reviewer approval.',
-    context: [
-      ['verified_user', 'Safety Boundary', 'Sensitive or unclear cases remain under human review.'],
-      ['calendar_month', 'Plan Slot', 'Wednesday trust-building slot.'],
-      ['group', 'Audience Persona', 'Operations managers evaluating AI workflow risk.'],
-      ['edit_note', 'Draft Need', 'Strengthen clarity before this moves to review queue.']
-    ]
-  },
-  {
-    id: 'draft-slot-x-02',
-    category: 'Awareness',
-    day: 'Thursday',
-    platform: 'X',
-    platformLabel: 'X Short Form',
-    tone: 'x',
-    icon: 'x',
-    title: 'Faster routing for care teams',
-    focus: 'Care operations',
-    meta: '219/280 chars - compact draft',
-    risk: 'Medium Risk',
-    status: 'Draft',
-    score: 84,
-    hook: 'Faster intake routing should not blur clinical boundaries.',
-    body: [
-      'A patient intake dashboard can help teams spot missing info and route cases faster.',
-      'The line stays clear: no diagnosis, no treatment recommendations, and human review for sensitive signals.'
-    ],
-    cta: 'What should stay human-reviewed?',
-    hashtags: '#CareOps #HealthTech',
-    assetBrief: '',
-    context: [
-      ['short_text', 'Platform Constraint', 'Direct language with one focused question.'],
-      ['calendar_month', 'Plan Slot', 'Thursday slot for a compact operational reminder.'],
-      ['rule', 'Claim Control', 'Avoid implying the dashboard decides medical outcomes.'],
-      ['edit_note', 'Draft Need', 'Ready for copy tightening before review.']
-    ]
-  }
-];
+import { contentPlans } from './PlanPage.jsx';
 
 const riskTone = {
   'Low Risk': 'success',
@@ -138,9 +17,105 @@ const statusTone = {
   Approved: 'success'
 };
 
+function platformMeta(platform) {
+  const isLinkedIn = platform === 'LinkedIn';
+
+  return {
+    icon: isLinkedIn ? 'in' : 'x',
+    label: isLinkedIn ? 'LinkedIn Professional' : 'X Short Form',
+    meta: isLinkedIn ? 'Narrative draft from selected plan slot' : 'Compact draft from selected plan slot',
+    tone: isLinkedIn ? 'linkedin' : 'x'
+  };
+}
+
+function scoreForRisk(risk) {
+  if (risk === 'High') {
+    return 84;
+  }
+
+  if (risk === 'Medium') {
+    return 88;
+  }
+
+  return 92;
+}
+
+function buildHook(content, slot) {
+  if (slot.platform === 'LinkedIn') {
+    return `${content.title} should stay source-backed and review-ready.`;
+  }
+
+  return `${content.title} needs a clear short-form boundary.`;
+}
+
+function buildBody(content, slot) {
+  if (slot.platform === 'LinkedIn') {
+    return [
+      content.summary,
+      `The useful story for this slot is: ${slot.focus}`,
+      `The copy should keep the planned CTA visible: ${slot.cta}`,
+      'The final draft should avoid diagnosis, treatment, or replacement claims and keep sensitive cases under human review.'
+    ];
+  }
+
+  return [
+    `${slot.focus}`,
+    'Keep the boundary visible: no diagnosis, no treatment recommendations, and human review for sensitive or unclear cases.'
+  ];
+}
+
+function buildHashtags(slot) {
+  if (slot.platform === 'LinkedIn') {
+    return slot.risk === 'High' ? '#PatientSafety #CareOperations #HealthTech' : '#CareOperations #HealthTech';
+  }
+
+  return '#CareOps #HealthTech';
+}
+
+function buildContext(content, slot) {
+  return [
+    ['description', 'Source Content', content.title],
+    ['calendar_month', 'Plan Slot', `${slot.day} / ${slot.pillar} / ${slot.objective}`],
+    ['hub', 'Platform Adaptation', `${slot.platform} draft generated from the selected weekly plan slot.`],
+    ['approval', 'Review Gate', slot.status === 'Draft' ? 'Draft can be refined before review routing.' : 'Needs human review before package export.']
+  ];
+}
+
+function createDraftPlans() {
+  return contentPlans.map((content) => ({
+    ...content,
+    slots: content.slots.map((slot) => {
+      const platform = platformMeta(slot.platform);
+
+      return {
+        ...slot,
+        planId: content.id,
+        planTitle: content.title,
+        planSummary: content.summary,
+        platformLabel: platform.label,
+        tone: platform.tone,
+        icon: platform.icon,
+        title: content.title,
+        meta: platform.meta,
+        risk: `${slot.risk} Risk`,
+        status: slot.status,
+        score: scoreForRisk(slot.risk),
+        hook: buildHook(content, slot),
+        body: buildBody(content, slot),
+        hashtags: buildHashtags(slot),
+        assetBrief: `Visual brief for ${content.title}: show ${slot.pillar.toLowerCase()} with a clear human review checkpoint.`,
+        context: buildContext(content, slot)
+      };
+    })
+  }));
+}
+
+const draftPlans = createDraftPlans();
+const allDraftSlots = draftPlans.flatMap((plan) => plan.slots);
+
 function createInitialEdits() {
   return Object.fromEntries(
-    draftSlots.map((slot) => [
+    allDraftSlots.map((slot) => [
       slot.id,
       {
         hook: slot.hook,
@@ -153,18 +128,49 @@ function createInitialEdits() {
 }
 
 export function DraftsPage() {
-  const [selectedSlotId, setSelectedSlotId] = useState(draftSlots[0].id);
+  const [selectedPlanId, setSelectedPlanId] = useState(draftPlans[0].id);
+  const [selectedSlotId, setSelectedSlotId] = useState(draftPlans[0].slots[0].id);
   const [draftEdits, setDraftEdits] = useState(createInitialEdits);
   const [statusBySlot, setStatusBySlot] = useState({});
-  const [feedback, setFeedback] = useState('Select a scheduled plan slot, refine its platform draft, then route it to review.');
+  const [planPickerOpen, setPlanPickerOpen] = useState(false);
+  const [planSearch, setPlanSearch] = useState('');
+  const [feedback, setFeedback] = useState('Select a content plan from the same Plan queue, then refine one of its draft slots.');
 
+  const selectedPlan = useMemo(
+    () => draftPlans.find((plan) => plan.id === selectedPlanId) ?? draftPlans[0],
+    [selectedPlanId]
+  );
   const selectedSlot = useMemo(
-    () => draftSlots.find((slot) => slot.id === selectedSlotId) ?? draftSlots[0],
-    [selectedSlotId]
+    () => selectedPlan.slots.find((slot) => slot.id === selectedSlotId) ?? selectedPlan.slots[0],
+    [selectedPlan, selectedSlotId]
   );
   const selectedDraft = draftEdits[selectedSlot.id];
   const selectedStatus = statusBySlot[selectedSlot.id] ?? selectedSlot.status;
   const isLinkedIn = selectedSlot.platform === 'LinkedIn';
+  const filteredDraftPlans = useMemo(() => {
+    const query = planSearch.trim().toLowerCase();
+
+    if (!query) {
+      return draftPlans;
+    }
+
+    return draftPlans.filter((plan) =>
+      [plan.title, plan.summary, plan.priority, plan.platforms.join(' ')]
+        .join(' ')
+        .toLowerCase()
+        .includes(query)
+    );
+  }, [planSearch]);
+
+  function selectPlan(planId) {
+    const nextPlan = draftPlans.find((plan) => plan.id === planId) ?? draftPlans[0];
+
+    setSelectedPlanId(nextPlan.id);
+    setSelectedSlotId(nextPlan.slots[0].id);
+    setPlanPickerOpen(false);
+    setPlanSearch('');
+    setFeedback(`${nextPlan.title} selected from the Plan content queue.`);
+  }
 
   function updateDraft(field, value) {
     setDraftEdits((current) => ({
@@ -187,7 +193,7 @@ export function DraftsPage() {
       }
     }));
     setStatusBySlot((current) => ({ ...current, [selectedSlot.id]: 'Draft' }));
-    setFeedback(`${selectedSlot.platform} draft reset to the latest mock output from the selected plan slot.`);
+    setFeedback(`${selectedSlot.platform} draft reset from the selected Plan queue slot.`);
   }
 
   function exportDraft() {
@@ -205,14 +211,82 @@ export function DraftsPage() {
         <div className="panel-heading">
           <div>
             <span className="kicker">Draft slots</span>
-            <h2>From weekly plan</h2>
+            <h2>Choose plan</h2>
           </div>
           <button aria-label="Filter draft slots" type="button">
             <Icon name="filter_list" />
           </button>
         </div>
+
+        <section className="draft-plan-summary">
+          <header>
+            <span>{selectedPlan.source}</span>
+            <button onClick={() => setPlanPickerOpen(true)} type="button">
+              Change plan
+            </button>
+          </header>
+          <h3>{selectedPlan.title}</h3>
+          <p>{selectedPlan.summary}</p>
+          <footer>
+            <strong>{selectedPlan.slots.length} draft slots</strong>
+            <span>{selectedPlan.platforms.join(' + ')}</span>
+          </footer>
+        </section>
+
+        {planPickerOpen ? (
+          <section className="draft-plan-popover" aria-label="Change content plan">
+            <header>
+              <div>
+                <span>Plan content queue</span>
+                <h3>Change plan</h3>
+              </div>
+              <button aria-label="Close plan picker" onClick={() => setPlanPickerOpen(false)} type="button">
+                <Icon name="close" />
+              </button>
+            </header>
+
+            <label className="draft-plan-search">
+              <Icon name="search" />
+              <input
+                autoFocus
+                onChange={(event) => setPlanSearch(event.target.value)}
+                placeholder="Search plans..."
+                value={planSearch}
+              />
+            </label>
+
+            <div className="draft-plan-option-list">
+              {filteredDraftPlans.map((plan) => (
+                <button
+                  className={plan.id === selectedPlan.id ? 'draft-plan-option selected' : 'draft-plan-option'}
+                  key={plan.id}
+                  onClick={() => selectPlan(plan.id)}
+                  type="button"
+                >
+                  <div>
+                    <span>{plan.source}</span>
+                    <Badge tone={plan.risk === 'High' ? 'danger' : plan.risk === 'Medium' ? 'warning' : 'success'}>
+                      {plan.risk} Risk
+                    </Badge>
+                  </div>
+                  <h4>{plan.title}</h4>
+                  <p>{plan.summary}</p>
+                  <footer>
+                    <strong>{plan.slots.length} draft slots</strong>
+                    <span>{plan.platforms.join(' + ')}</span>
+                  </footer>
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <div className="slot-list-heading">
+          <span>Scheduled slots</span>
+        </div>
+
         <div className="plan-list">
-          {draftSlots.map((slot) => {
+          {selectedPlan.slots.map((slot) => {
             const slotStatus = statusBySlot[slot.id] ?? slot.status;
 
             return (
@@ -248,9 +322,9 @@ export function DraftsPage() {
               <Icon name="edit_note" />
             </div>
             <div>
-              <h2>{selectedSlot.title}</h2>
+              <h2>{selectedPlan.title}</h2>
               <p>
-                {selectedSlot.day} / {selectedSlot.platform} / {selectedSlot.focus}
+                {selectedSlot.day} / {selectedSlot.platform} / {selectedSlot.pillar}
               </p>
             </div>
           </div>
@@ -397,7 +471,9 @@ export function DraftsPage() {
             <Icon name="psychology" />
             <h3>Generation Context</h3>
           </div>
-          <p>This draft keeps the selected weekly plan slot, source boundary, platform constraint, and review requirement together.</p>
+          <p>
+            This draft belongs to <strong>{selectedPlan.title}</strong> and uses the same content queue item shown on the Plan page.
+          </p>
           <ul>
             {selectedSlot.context.map(([icon, title, detail]) => (
               <li key={title}>

@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Badge } from '../components/Badge.jsx';
 import { Icon } from '../components/Icon.jsx';
 
-const contentPlans = [
+export const contentPlans = [
   {
     id: 'patient-intake',
     title: 'Patient intake dashboard update',

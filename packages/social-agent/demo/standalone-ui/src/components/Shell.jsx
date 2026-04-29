@@ -1,17 +1,26 @@
+import { useState } from 'react';
 import { Icon } from './Icon.jsx';
 import { PAGES } from '../data/navigation.js';
 
-function Sidebar({ activePage, onPageChange }) {
+function Sidebar({ activePage, collapsed, onPageChange, onToggle }) {
   return (
     <aside className="sidebar">
       <div className="brand">
         <div className="brand-mark">
           <Icon name="hub" filled />
         </div>
-        <div>
+        <div className="brand-copy">
           <h1>Social-Agent</h1>
           <p>CLI Operations</p>
         </div>
+        <button
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          className="sidebar-toggle"
+          onClick={onToggle}
+          type="button"
+        >
+          <Icon name={collapsed ? 'chevron_right' : 'chevron_left'} />
+        </button>
       </div>
 
       <nav className="nav-list" aria-label="Standalone UI sections">
@@ -23,14 +32,14 @@ function Sidebar({ activePage, onPageChange }) {
             type="button"
           >
             <Icon name={page.icon} filled={activePage === page.id} />
-            <span>{page.label}</span>
+            <span className="nav-label">{page.label}</span>
           </button>
         ))}
       </nav>
 
       <div className="sidebar-user">
         <div className="avatar">A</div>
-        <div>
+        <div className="sidebar-user-copy">
           <p>Admin User</p>
           <span>System Access</span>
         </div>
@@ -65,11 +74,18 @@ function Topbar() {
 }
 
 export function Shell({ activePage, onPageChange, children }) {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   return (
-    <>
-      <Sidebar activePage={activePage} onPageChange={onPageChange} />
+    <div className={sidebarCollapsed ? 'app-shell sidebar-collapsed' : 'app-shell'}>
+      <Sidebar
+        activePage={activePage}
+        collapsed={sidebarCollapsed}
+        onPageChange={onPageChange}
+        onToggle={() => setSidebarCollapsed((current) => !current)}
+      />
       <Topbar />
       <main className="app-content">{children}</main>
-    </>
+    </div>
   );
 }

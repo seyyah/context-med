@@ -5,6 +5,20 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.4.4] - 2026-04-29
+
+### Contributors
+
+- Akbulut55
+
+### Changed
+
+- Connected the React Drafts plan dropdown to the same content queue data used by the React Plan page.
+- Replaced the React Drafts plan dropdown with a selected-plan card and searchable change-plan popover.
+- Added collapsible React sidebar behavior for wider workspace views.
+- Fixed React Workspace pipeline connector alignment and compacted Drafts slot card layout.
+- Bumped package metadata to `0.4.4`.
+
 ## [social-agent-v0.4.3] - 2026-04-27
 
 ### Contributors
