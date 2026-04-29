@@ -1,310 +1,40 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Badge } from '../components/Badge.jsx';
 import { Icon } from '../components/Icon.jsx';
-
-export const contentPlans = [
-  {
-    id: 'patient-intake',
-    title: 'Patient intake dashboard update',
-    source: 'Workspace output',
-    summary: 'Operational visibility, faster routing, privacy-safe review, and human escalation boundaries.',
-    priority: 'High priority',
-    risk: 'High',
-    platforms: ['LinkedIn', 'X'],
-    slots: [
-      {
-        id: 'patient-linkedin-01',
-        platform: 'LinkedIn',
-        day: 'Monday',
-        pillar: 'Operational Visibility',
-        objective: 'Engagement',
-        focus: 'Frame the dashboard as workflow support for care coordination teams.',
-        cta: 'Which review step creates the most friction for care coordination teams?',
-        risk: 'Medium',
-        status: 'Needs Review'
-      },
-      {
-        id: 'patient-x-01',
-        platform: 'X',
-        day: 'Tuesday',
-        pillar: 'Escalation Paths',
-        objective: 'Awareness',
-        focus: 'Condense privacy-safe intake review into a short guardrail-first post.',
-        cta: 'What should teams check before posting intake workflow updates?',
-        risk: 'Medium',
-        status: 'Needs Review'
-      },
-      {
-        id: 'patient-linkedin-02',
-        platform: 'LinkedIn',
-        day: 'Wednesday',
-        pillar: 'Human Review',
-        objective: 'Trust',
-        focus: 'Explain why sensitive cases and unclear medical questions stay under human review.',
-        cta: 'How do you keep operational automation under human oversight?',
-        risk: 'High',
-        status: 'Draft'
-      },
-      {
-        id: 'patient-x-02',
-        platform: 'X',
-        day: 'Thursday',
-        pillar: 'Care Operations',
-        objective: 'Awareness',
-        focus: 'Summarize faster routing without making clinical claims.',
-        cta: 'Where should automation stop and review begin?',
-        risk: 'High',
-        status: 'Needs Review'
-      }
-    ]
-  },
-  {
-    id: 'review-queue',
-    title: 'Human review guardrails',
-    source: 'Workspace output',
-    summary: 'A follow-up angle from the same source focused on what stays under human review before publishing.',
-    priority: 'Medium priority',
-    risk: 'Medium',
-    platforms: ['LinkedIn', 'X'],
-    slots: [
-      {
-        id: 'review-linkedin-01',
-        platform: 'LinkedIn',
-        day: 'Monday',
-        pillar: 'Human Review',
-        objective: 'Education',
-        focus: 'Explain why sensitive cases, unclear medical questions, and crisis signals need visible human review.',
-        cta: 'Which intake signals should never skip review?',
-        risk: 'Medium',
-        status: 'Needs Review'
-      },
-      {
-        id: 'review-x-01',
-        platform: 'X',
-        day: 'Wednesday',
-        pillar: 'Approval Workflow',
-        objective: 'Engagement',
-        focus: 'Turn human review into a short boundary-setting takeaway.',
-        cta: 'What should always stay under human review?',
-        risk: 'Medium',
-        status: 'Draft'
-      }
-    ]
-  },
-  {
-    id: 'community-recap',
-    title: 'Privacy-safe intake review',
-    source: 'Workspace output',
-    summary: 'A second Workspace-derived content angle focused on private patient details and safe public communication.',
-    priority: 'Later this week',
-    risk: 'Medium',
-    platforms: ['LinkedIn', 'X'],
-    slots: [
-      {
-        id: 'community-linkedin-01',
-        platform: 'LinkedIn',
-        day: 'Friday',
-        pillar: 'Privacy-Safe Review',
-        objective: 'Trust',
-        focus: 'Explain how private patient details stay out of public replies while teams still move faster.',
-        cta: 'What privacy check should happen before an intake update is posted?',
-        risk: 'Medium',
-        status: 'Needs Review'
-      },
-      {
-        id: 'community-x-01',
-        platform: 'X',
-        day: 'Friday',
-        pillar: 'Privacy Boundaries',
-        objective: 'Engagement',
-        focus: 'Ask a short question about keeping private details out of public social replies.',
-        cta: 'What should never appear in a public reply?',
-        risk: 'Medium',
-        status: 'Draft'
-      }
-    ]
-  },
-  {
-    id: 'care-team-tip',
-    title: 'Faster routing for care teams',
-    source: 'Workspace output',
-    summary: 'A practical Workspace-derived post about reducing manual sorting while preserving escalation paths.',
-    priority: 'Next week candidate',
-    risk: 'Low',
-    platforms: ['LinkedIn'],
-    slots: [
-      {
-        id: 'care-tip-linkedin-01',
-        platform: 'LinkedIn',
-        day: 'Thursday',
-        pillar: 'Care Operations',
-        objective: 'Education',
-        focus: 'Share one operational tip for routing intake messages without over-automating review.',
-        cta: 'Where does manual review still matter most in intake work?',
-        risk: 'Low',
-        status: 'Draft'
-      }
-    ]
-  },
-  {
-    id: 'escalation-paths',
-    title: 'Clear escalation paths',
-    source: 'Workspace output',
-    summary: 'A Workspace-derived angle about routing sensitive or unclear intake cases to the right internal workflow.',
-    priority: 'Next week candidate',
-    risk: 'High',
-    platforms: ['LinkedIn', 'X'],
-    slots: [
-      {
-        id: 'escalation-linkedin-01',
-        platform: 'LinkedIn',
-        day: 'Tuesday',
-        pillar: 'Escalation Paths',
-        objective: 'Trust',
-        focus: 'Explain how clear escalation paths help teams respond without over-claiming automation capability.',
-        cta: 'Where should escalation be visible in an intake workflow?',
-        risk: 'High',
-        status: 'Needs Review'
-      },
-      {
-        id: 'escalation-x-01',
-        platform: 'X',
-        day: 'Wednesday',
-        pillar: 'Safety Workflow',
-        objective: 'Awareness',
-        focus: 'Summarize the need for escalation paths when intake messages include sensitive signals.',
-        cta: 'What should trigger human escalation?',
-        risk: 'High',
-        status: 'Needs Review'
-      }
-    ]
-  },
-  {
-    id: 'manual-sorting',
-    title: 'Reduced manual sorting',
-    source: 'Workspace output',
-    summary: 'A practical content angle about reducing repetitive intake sorting while keeping review accountability intact.',
-    priority: 'Backlog',
-    risk: 'Low',
-    platforms: ['LinkedIn'],
-    slots: [
-      {
-        id: 'sorting-linkedin-01',
-        platform: 'LinkedIn',
-        day: 'Monday',
-        pillar: 'Operational Efficiency',
-        objective: 'Education',
-        focus: 'Position reduced manual sorting as an operations improvement rather than a clinical decision system.',
-        cta: 'Which intake sorting task creates the most repeated work?',
-        risk: 'Low',
-        status: 'Draft'
-      }
-    ]
-  },
-  {
-    id: 'privacy-checklist',
-    title: 'Privacy review checklist',
-    source: 'Workspace output',
-    summary: 'A checklist-style content idea for keeping private patient details out of public social replies.',
-    priority: 'Backlog',
-    risk: 'Medium',
-    platforms: ['LinkedIn', 'X'],
-    slots: [
-      {
-        id: 'privacy-checklist-linkedin-01',
-        platform: 'LinkedIn',
-        day: 'Thursday',
-        pillar: 'Privacy-Safe Review',
-        objective: 'Education',
-        focus: 'Turn the source boundary into a short checklist for public social content review.',
-        cta: 'What privacy check belongs in every social approval flow?',
-        risk: 'Medium',
-        status: 'Needs Review'
-      },
-      {
-        id: 'privacy-checklist-x-01',
-        platform: 'X',
-        day: 'Friday',
-        pillar: 'Privacy Boundaries',
-        objective: 'Engagement',
-        focus: 'Ask one direct question about privacy checks before posting public replies.',
-        cta: 'What should be removed before a public reply goes live?',
-        risk: 'Medium',
-        status: 'Draft'
-      }
-    ]
-  },
-  {
-    id: 'not-a-diagnosis',
-    title: 'Not a diagnosis message',
-    source: 'Workspace output',
-    summary: 'A boundary-setting content angle that makes clear the dashboard supports intake operations, not clinical judgment.',
-    priority: 'Backlog',
-    risk: 'High',
-    platforms: ['LinkedIn', 'X'],
-    slots: [
-      {
-        id: 'diagnosis-linkedin-01',
-        platform: 'LinkedIn',
-        day: 'Tuesday',
-        pillar: 'Clinical Boundaries',
-        objective: 'Trust',
-        focus: 'Clarify the difference between operational intake support and clinical diagnosis.',
-        cta: 'How do you communicate automation boundaries clearly?',
-        risk: 'High',
-        status: 'Needs Review'
-      },
-      {
-        id: 'diagnosis-x-01',
-        platform: 'X',
-        day: 'Thursday',
-        pillar: 'Clinical Boundaries',
-        objective: 'Awareness',
-        focus: 'State the no-diagnosis boundary in a short post with a human-review reminder.',
-        cta: 'What should automation never claim?',
-        risk: 'High',
-        status: 'Needs Review'
-      }
-    ]
-  }
-];
+import { riskTone } from '../data/workflowData.js';
+import { useWorkflowStore } from '../state/WorkflowStoreContext.jsx';
 
 function PlatformMark({ platform }) {
   const isLinkedIn = platform === 'LinkedIn';
   return <span className={isLinkedIn ? 'platform-mark linkedin-mark-small' : 'platform-mark x-mark-small'}>{isLinkedIn ? 'in' : 'X'}</span>;
 }
 
-function riskTone(risk) {
-  if (risk === 'High') {
-    return 'danger';
-  }
-
-  if (risk === 'Medium') {
-    return 'warning';
-  }
-
-  return 'success';
-}
-
 export function PlanPage() {
+  const { updatePlan, workflowState } = useWorkflowStore();
   const contentQueueRef = useRef(null);
   const contentCardRefs = useRef({});
-  const [selectedWeek, setSelectedWeek] = useState('current');
-  const [selectedPlatform, setSelectedPlatform] = useState('all');
-  const [selectedContentId, setSelectedContentId] = useState(contentPlans[0].id);
-  const [selectedSlotId, setSelectedSlotId] = useState(contentPlans[0].slots[0].id);
-  const [regeneratedContentIds, setRegeneratedContentIds] = useState([]);
+  const {
+    selectedWeek,
+    selectedPlatform,
+    selectedContentId,
+    selectedSlotId,
+    regeneratedContentIds
+  } = workflowState.plan;
+  const contentPlans = workflowState.snapshot.contentPlans;
+  const fallbackContent = contentPlans[0];
   const filteredContentPlans = contentPlans.filter((content) =>
     selectedPlatform === 'all' ? true : content.platforms.map((platform) => platform.toLowerCase()).includes(selectedPlatform)
   );
-  const selectedContent = filteredContentPlans.find((content) => content.id === selectedContentId) || filteredContentPlans[0] || contentPlans[0];
+  const selectedContent = filteredContentPlans.find((content) => content.id === selectedContentId) || filteredContentPlans[0] || fallbackContent;
   const selectedPlan = selectedContent.slots.find((slot) => slot.id === selectedSlotId) || selectedContent.slots[0];
 
   function selectContent(contentId) {
-    const nextContent = contentPlans.find((content) => content.id === contentId) || contentPlans[0];
+    const nextContent = contentPlans.find((content) => content.id === contentId) || fallbackContent;
 
-    setSelectedContentId(contentId);
-    setSelectedSlotId(nextContent.slots[0].id);
+    updatePlan({
+      selectedContentId: contentId,
+      selectedSlotId: nextContent.slots[0].id
+    });
 
     const container = contentQueueRef.current;
     const card = contentCardRefs.current[contentId];
@@ -324,7 +54,7 @@ export function PlanPage() {
   }
 
   function selectSlot(slotId) {
-    setSelectedSlotId(slotId);
+    updatePlan({ selectedSlotId: slotId });
   }
 
   function selectSlotWithKeyboard(event, slotId) {
@@ -339,18 +69,23 @@ export function PlanPage() {
     const nextContentPlans = contentPlans.filter((content) =>
       nextPlatform === 'all' ? true : content.platforms.map((platform) => platform.toLowerCase()).includes(nextPlatform)
     );
-    const nextContent = nextContentPlans.find((content) => content.id === selectedContentId) || nextContentPlans[0] || contentPlans[0];
+    const nextContent = nextContentPlans.find((content) => content.id === selectedContentId) || nextContentPlans[0] || fallbackContent;
 
-    setSelectedPlatform(nextPlatform);
-    setSelectedContentId(nextContent.id);
-    setSelectedSlotId(nextContent.slots[0].id);
+    updatePlan({
+      selectedPlatform: nextPlatform,
+      selectedContentId: nextContent.id,
+      selectedSlotId: nextContent.slots[0].id
+    });
   }
 
   function regeneratePlan() {
-    setRegeneratedContentIds((currentIds) =>
-      currentIds.includes(selectedContent.id) ? currentIds : [...currentIds, selectedContent.id]
-    );
-    setSelectedSlotId(selectedContent.slots[0].id);
+    updatePlan((currentPlan) => ({
+      ...currentPlan,
+      regeneratedContentIds: currentPlan.regeneratedContentIds.includes(selectedContent.id)
+        ? currentPlan.regeneratedContentIds
+        : [...currentPlan.regeneratedContentIds, selectedContent.id],
+      selectedSlotId: selectedContent.slots[0].id
+    }));
   }
 
   return (
@@ -363,7 +98,7 @@ export function PlanPage() {
         <div className="plan-filter-row">
           <label>
             <Icon name="calendar_today" />
-            <select aria-label="Plan week" value={selectedWeek} onChange={(event) => setSelectedWeek(event.target.value)}>
+            <select aria-label="Plan week" value={selectedWeek} onChange={(event) => updatePlan({ selectedWeek: event.target.value })}>
               <option value="current">Current Week</option>
               <option value="next">Next Week</option>
               <option value="backlog">Backlog</option>

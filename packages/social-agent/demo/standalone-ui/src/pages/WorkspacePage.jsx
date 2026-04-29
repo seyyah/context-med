@@ -2,8 +2,10 @@ import { Fragment, useRef, useState } from 'react';
 import { Badge } from '../components/Badge.jsx';
 import { Icon } from '../components/Icon.jsx';
 import { Panel } from '../components/Panel.jsx';
-import { sourceContext } from '../data/mockData.js';
+import { sourceContext } from '../data/workflowData.js';
 import { generateWorkspaceRun } from '../services/mockWorkspaceGenerator.js';
+import { runWorkspacePipeline } from '../services/workspacePipelineClient.js';
+import { useWorkflowStore } from '../state/WorkflowStoreContext.jsx';
 
 const platformOptions = [
   ['linkedin', 'LinkedIn', 'Professional narrative, thought leadership, operational detail', true, false],
@@ -21,7 +23,7 @@ const initialSelectedPlatforms = platformOptions
 const providerStage = {
   id: 'provider',
   label: 'Provider: mock',
-  description: 'LLM_PROVIDER=mock · local deterministic generation · no API key required.',
+  description: 'LLM_PROVIDER=mock; local deterministic generation; no API key required.',
   completedLabel: 'Mock ready',
   runningLabel: 'Checking',
   pendingLabel: 'Not checked'
@@ -103,53 +105,59 @@ function riskTone(risk) {
 }
 
 export function WorkspacePage() {
+  const { refreshSnapshot, storageStatus, updateWorkspace, workflowState } = useWorkflowStore();
   const activeRunRef = useRef(0);
-  const initialRun = generateWorkspaceRun({
-    sourceText: sourceContext,
-    platforms: initialSelectedPlatforms
-  });
-  const [workspaceSource, setWorkspaceSource] = useState(sourceContext);
-  const [selectedPlatforms, setSelectedPlatforms] = useState(initialSelectedPlatforms);
-  const [workspaceRun, setWorkspaceRun] = useState(initialRun);
   const [pipelineStatus, setPipelineStatus] = useState(() => createPipelineStatus('completed'));
   const [isGenerating, setIsGenerating] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const {
+    source: workspaceSource,
+    selectedPlatforms,
+    run: workspaceRun
+  } = workflowState.workspace;
   const workspaceDrafts = workspaceRun.adaptations;
 
   function togglePlatform(platformId) {
-    setSelectedPlatforms((currentPlatforms) =>
-      currentPlatforms.includes(platformId)
-        ? currentPlatforms.filter((id) => id !== platformId)
-        : [...currentPlatforms, platformId]
-    );
+    updateWorkspace((currentWorkspace) => {
+      const currentPlatforms = currentWorkspace.selectedPlatforms;
+
+      return {
+        ...currentWorkspace,
+        selectedPlatforms: currentPlatforms.includes(platformId)
+          ? currentPlatforms.filter((id) => id !== platformId)
+          : [...currentPlatforms, platformId]
+      };
+    });
   }
 
   async function generateOutput() {
     if (!workspaceSource.trim()) {
       setFeedback('Add source content before generating the workspace run.');
-      setWorkspaceRun(createEmptyRun(''));
+      updateWorkspace({ run: createEmptyRun('') });
       setPipelineStatus(createPendingPipelineStatus());
       return;
     }
 
     if (!selectedPlatforms.length) {
       setFeedback('Select at least one supported platform.');
-      setWorkspaceRun(createEmptyRun(workspaceSource));
+      updateWorkspace({ run: createEmptyRun(workspaceSource) });
       setPipelineStatus(createPendingPipelineStatus());
       return;
     }
 
     const runId = activeRunRef.current + 1;
     activeRunRef.current = runId;
-    const nextRun = generateWorkspaceRun({
+    setIsGenerating(true);
+    setFeedback('Starting backend workspace pipeline.');
+    updateWorkspace({ run: createEmptyRun(workspaceSource) });
+    setPipelineStatus(createPendingPipelineStatus());
+
+    const pipelineResult = await runWorkspacePipeline({
       sourceText: workspaceSource,
       platforms: selectedPlatforms
     });
-
-    setIsGenerating(true);
-    setFeedback('Starting mock workspace pipeline.');
-    setWorkspaceRun(createEmptyRun(workspaceSource));
-    setPipelineStatus(createPendingPipelineStatus());
+    const nextRun = pipelineResult.run;
+    setFeedback(pipelineResult.message);
 
     for (const stage of generationStages) {
       if (activeRunRef.current !== runId) {
@@ -164,14 +172,20 @@ export function WorkspacePage() {
         return;
       }
 
-      setWorkspaceRun((currentRun) => ({
-        ...currentRun,
-        [stage.id]: nextRun[stage.id]
+      updateWorkspace((currentWorkspace) => ({
+        ...currentWorkspace,
+        run: {
+          ...currentWorkspace.run,
+          [stage.id]: nextRun[stage.id]
+        }
       }));
       setPipelineStatus((currentStatus) => ({ ...currentStatus, [stage.id]: 'completed' }));
     }
 
-    setWorkspaceRun(nextRun);
+    updateWorkspace({ run: nextRun });
+    if (pipelineResult.backend === 'api') {
+      await refreshSnapshot();
+    }
     setIsGenerating(false);
     setFeedback(
       `Workspace run complete: ${nextRun.adaptations.length} adaptations, ${nextRun.planSeeds.length} plan seeds, ${nextRun.draftSeeds.length} draft seeds, ${nextRun.reviewItems.length} review items.`
@@ -185,9 +199,11 @@ export function WorkspacePage() {
     });
 
     activeRunRef.current += 1;
-    setWorkspaceSource(sourceContext);
-    setSelectedPlatforms(initialSelectedPlatforms);
-    setWorkspaceRun(resetRun);
+    updateWorkspace({
+      source: sourceContext,
+      selectedPlatforms: initialSelectedPlatforms,
+      run: resetRun
+    });
     setPipelineStatus(createPipelineStatus('completed'));
     setIsGenerating(false);
     setFeedback('Workspace input reset to the default source and mock run.');
@@ -209,7 +225,7 @@ export function WorkspacePage() {
       >
         <div className="input-grid">
           <label className="source-context-field">
-            <textarea value={workspaceSource} onChange={(event) => setWorkspaceSource(event.target.value)} />
+            <textarea value={workspaceSource} onChange={(event) => updateWorkspace({ source: event.target.value })} />
           </label>
           <section className="platform-selection-panel" aria-labelledby="workspace-platforms">
             <div>
@@ -261,6 +277,11 @@ export function WorkspacePage() {
         <div className="pipeline-track">
           {pipelineStages.map((stage, index) => {
             const status = pipelineStatus[stage.id];
+            const provider = workspaceRun.generation;
+            const title = stage.id === 'provider' && provider ? `Provider: ${provider.provider}` : stage.label;
+            const description = stage.id === 'provider'
+              ? `${provider?.model || stage.description} Storage: ${storageStatus.backend === 'sqlite' ? 'SQLite' : storageStatus.backend === 'browser' ? 'browser fallback' : 'loading'}.`
+              : stage.description;
 
             return (
               <article className={`pipeline-step ${status}`} key={stage.id}>
@@ -268,8 +289,8 @@ export function WorkspacePage() {
                   {status === 'completed' ? <Icon name="check" /> : status === 'running' ? <Icon name="sync" /> : index + 1}
                 </div>
                 <div>
-                  <h3>{stage.label}</h3>
-                  <p>{stage.description}</p>
+                  <h3>{title}</h3>
+                  <p>{description}</p>
                   <span>
                     {status === 'completed'
                       ? stage.completedLabel

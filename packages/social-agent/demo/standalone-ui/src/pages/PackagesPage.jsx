@@ -1,50 +1,34 @@
+import { useMemo, useState } from 'react';
+
 import { Badge } from '../components/Badge.jsx';
 import { Icon } from '../components/Icon.jsx';
-
-const packages = [
-  ['PKG-202604-A1', 'Patient intake social package', ['X', 'in'], 'Approved', 'success'],
-  ['PKG-202604-A2', 'Privacy and crisis moderation batch', ['All'], 'High Risk', 'danger'],
-  ['PKG-202604-B4', 'Review queue handoff', ['in', 'X'], 'Pending', 'neutral'],
-  ['PKG-202604-C1', 'Draft copy variants', ['in'], 'Ready', 'success']
-];
-
-const manifest = `{
-  "packageId": "PKG-202604-A1",
-  "version": "0.4.0",
-  "taskType": "SOCIAL_AGENT_DEMO",
-  "status": "APPROVED_FOR_HANDOFF",
-  "riskLevel": "medium",
-  "platforms": [
-    "LINKEDIN",
-    "X"
-  ],
-  "artifacts": [
-    {
-      "type": "PLAN",
-      "file": "plan.json"
-    },
-    {
-      "type": "DRAFTS",
-      "file": "drafts.json"
-    },
-    {
-      "type": "MODERATION",
-      "file": "moderation.json"
-    },
-    {
-      "type": "REVIEW_QUEUE",
-      "file": "review-queue.json"
-    }
-  ],
-  "directPublishing": false,
-  "checksum": "sha256:a8f93d..."
-}`;
+import { useWorkflowStore } from '../state/WorkflowStoreContext.jsx';
 
 function PlatformSquare({ label }) {
   return <span className={label === 'in' ? 'package-platform linkedin' : label === 'X' ? 'package-platform x' : 'package-platform'}>{label}</span>;
 }
 
 export function PackagesPage() {
+  const { workflowState } = useWorkflowStore();
+  const packages = workflowState.snapshot.packages;
+  const [selectedPackageId, setSelectedPackageId] = useState(packages[0]?.id);
+  const selectedPackage = packages.find((item) => item.id === selectedPackageId) || packages[0];
+  const manifest = useMemo(() => JSON.stringify(selectedPackage?.manifest || {}, null, 2), [selectedPackage]);
+
+  function exportPackage() {
+    const blob = new Blob([`${manifest}\n`], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${selectedPackage.id}.manifest.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function copyPackageJson() {
+    await navigator.clipboard?.writeText(manifest);
+  }
+
   return (
     <div className="page packages-page original-packages-page">
       <header className="section-title-row package-title-row">
@@ -68,7 +52,7 @@ export function PackagesPage() {
         <section className="artifact-directory-card">
           <header>
             <h2>Artifact Directory</h2>
-            <span>Total: 4 Items</span>
+            <span>Total: {packages.length} Items</span>
           </header>
           <div className="table-wrap">
             <table className="dense-table package-table">
@@ -83,24 +67,24 @@ export function PackagesPage() {
                 </tr>
               </thead>
               <tbody>
-                {packages.map(([id, task, platforms, status, tone], index) => (
-                  <tr className={index === 0 ? 'selected-row' : ''} key={id}>
+                {packages.map((item, index) => (
+                  <tr className={item.id === selectedPackage?.id ? 'selected-row' : ''} key={item.id} onClick={() => setSelectedPackageId(item.id)}>
                     <td>
                       <Icon name="folder_zip" filled={index === 0} />
                     </td>
                     <td>
-                      <strong>{id}</strong>
+                      <strong>{item.id}</strong>
                     </td>
-                    <td>{task}</td>
+                    <td>{item.task}</td>
                     <td>
                       <div className="package-platforms">
-                        {platforms.map((platform) => (
-                          <PlatformSquare key={`${id}-${platform}`} label={platform} />
+                        {item.platforms.map((platform) => (
+                          <PlatformSquare key={`${item.id}-${platform}`} label={platform} />
                         ))}
                       </div>
                     </td>
                     <td>
-                      <Badge tone={tone}>{status}</Badge>
+                      <Badge tone={item.tone}>{item.status}</Badge>
                     </td>
                     <td>
                       <button type="button">
@@ -118,10 +102,10 @@ export function PackagesPage() {
           <header>
             <div>
               <Icon name="inventory" filled />
-              <h2>PKG-202604-A1</h2>
+              <h2>{selectedPackage?.id}</h2>
             </div>
-            <Badge tone="neutral">v0.4.0</Badge>
-            <p>Patient intake dashboard package for LinkedIn and X. Ready for manual review handoff.</p>
+            <Badge tone={selectedPackage?.tone || 'neutral'}>{selectedPackage?.status || 'Pending'}</Badge>
+            <p>{selectedPackage?.task || 'No package manifest available yet.'}</p>
           </header>
 
           <div className="manifest-panel">
@@ -144,12 +128,12 @@ export function PackagesPage() {
           </div>
 
           <footer>
-            <button className="primary" type="button">
+            <button className="primary" onClick={exportPackage} type="button">
               <Icon name="download" />
               Export Package
             </button>
             <div>
-              <button type="button">
+              <button onClick={copyPackageJson} type="button">
                 <Icon name="content_copy" />
                 Copy JSON
               </button>

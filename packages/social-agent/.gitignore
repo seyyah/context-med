@@ -6,6 +6,9 @@ tmp/
 tmp-check/
 test-results/
 playwright-report/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
 
 .env
 .env.*

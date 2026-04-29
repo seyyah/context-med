@@ -1,6 +1,6 @@
 {
   "name": "@context-med/social-agent",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "description": "Standalone social operations CLI and UI package for Context-Med.",
   "private": true,
   "type": "commonjs",
@@ -24,7 +24,8 @@
   "dependencies": {
     "commander": "^12.1.0",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "sql.js": "^1.14.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.7.0",

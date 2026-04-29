@@ -4,8 +4,14 @@ const fs = require('fs');
 const http = require('http');
 const path = require('path');
 const { createCliError } = require('../index');
-const { createSocialAgentDemoPayload } = require('../api');
+const { createSocialAgentDemoPayload, runWorkspacePipeline } = require('../api');
 const { loadPackageEnv } = require('../env');
+const { openWorkflowStore } = require('../storage/sqlite-store');
+const {
+  createSnapshotFromItems,
+  createWorkflowRecordsFromRun,
+  saveWorkflowRecords
+} = require('../workflow/workflow-records');
 
 const MAX_DEMO_BODY_BYTES = 64 * 1024;
 let lastDemoOptions = null;
@@ -82,6 +88,17 @@ function serveFile(request, response, filePath) {
   fs.createReadStream(filePath).pipe(response);
 }
 
+function respondJson(response, statusCode, payload) {
+  response.writeHead(statusCode, {
+    'content-type': 'application/json; charset=utf-8',
+    'cache-control': 'no-store',
+    'access-control-allow-origin': '*',
+    'access-control-allow-methods': 'GET,POST,DELETE,OPTIONS',
+    'access-control-allow-headers': 'content-type'
+  });
+  response.end(`${JSON.stringify(payload, null, 2)}\n`);
+}
+
 function readJsonBody(request) {
   return new Promise((resolve, reject) => {
     let body = '';
@@ -143,6 +160,187 @@ async function serveDemoApi(request, response) {
   response.end(`${JSON.stringify(payload, null, 2)}\n`);
 }
 
+function workflowItemIdFromPath(pathname) {
+  const prefix = '/api/workflow-items/';
+
+  if (!pathname.startsWith(prefix)) {
+    return null;
+  }
+
+  const itemId = decodeURIComponent(pathname.slice(prefix.length)).trim();
+  return itemId || null;
+}
+
+async function serveWorkflowItemsApi(request, response, url) {
+  if (request.method === 'OPTIONS') {
+    respondJson(response, 204, {});
+    return;
+  }
+
+  const store = await openWorkflowStore();
+  const itemId = workflowItemIdFromPath(url.pathname);
+
+  try {
+    if (url.pathname === '/api/workflow-items' && request.method === 'GET') {
+      const type = url.searchParams.get('type') || undefined;
+      respondJson(response, 200, {
+        type: 'workflow_items',
+        items: await store.listItems(type)
+      });
+      return;
+    }
+
+    if (url.pathname === '/api/workflow-items' && request.method === 'POST') {
+      const body = await readJsonBody(request);
+      const item = await store.saveItem(body);
+      respondJson(response, 200, {
+        type: 'workflow_item',
+        item
+      });
+      return;
+    }
+
+    if (itemId && request.method === 'GET') {
+      const item = await store.getItem(itemId);
+
+      if (!item) {
+        respondJson(response, 404, {
+          error: 'Workflow item not found.'
+        });
+        return;
+      }
+
+      respondJson(response, 200, {
+        type: 'workflow_item',
+        item
+      });
+      return;
+    }
+
+    if (itemId && request.method === 'DELETE') {
+      await store.deleteItem(itemId);
+      respondJson(response, 200, {
+        type: 'workflow_item_deleted',
+        id: itemId
+      });
+      return;
+    }
+
+    response.writeHead(405, { 'content-type': 'text/plain; charset=utf-8' });
+    response.end('Method not allowed');
+  } finally {
+    await store.close();
+  }
+}
+
+async function serveWorkspaceRunsApi(request, response, url) {
+  if (request.method === 'OPTIONS') {
+    respondJson(response, 204, {});
+    return;
+  }
+
+  const store = await openWorkflowStore();
+
+  try {
+    if (url.pathname === '/api/workspace-runs' && request.method === 'GET') {
+      respondJson(response, 200, {
+        type: 'workspace_runs',
+        items: await store.listItems('workspace_run')
+      });
+      return;
+    }
+
+    if (url.pathname === '/api/workspace-runs/latest' && request.method === 'GET') {
+      const items = await store.listItems('workspace_run');
+      respondJson(response, 200, {
+        type: 'workspace_run',
+        item: items[0] || null
+      });
+      return;
+    }
+
+    if (url.pathname === '/api/workspace-runs' && request.method === 'POST') {
+      const body = await readJsonBody(request);
+      const run = await runWorkspacePipeline({
+        sourceText: body.sourceText || body.source || '',
+        platforms: body.platforms,
+        provider: body.provider,
+        model: body.model
+      });
+      const records = createWorkflowRecordsFromRun(run);
+      const savedRecords = await saveWorkflowRecords(store, records);
+
+      respondJson(response, 200, {
+        type: 'workspace_run',
+        run,
+        records: savedRecords
+      });
+      return;
+    }
+
+    response.writeHead(405, { 'content-type': 'text/plain; charset=utf-8' });
+    response.end('Method not allowed');
+  } finally {
+    await store.close();
+  }
+}
+
+async function ensureWorkflowSeed(store) {
+  const existingPlans = await store.listItems('content_plan');
+  const existingDrafts = await store.listItems('draft');
+  const existingReviews = await store.listItems('review_item');
+
+  if (existingPlans.length > 0 && existingDrafts.length > 0 && existingReviews.length > 0) {
+    return;
+  }
+
+  const existingRuns = await store.listItems('workspace_run');
+  const latestRun = existingRuns[0]?.payload;
+  const run = Array.isArray(latestRun?.planSeeds) && Array.isArray(latestRun?.adaptations)
+    ? latestRun
+    : await runWorkspacePipeline({
+      sourceText: [
+        '# Patient intake dashboard update',
+        '',
+        'Context-Med is releasing a patient intake dashboard update for care coordination teams.',
+        '',
+        'The update helps teams review incoming intake messages, identify incomplete information, and route cases to the right internal workflow faster.',
+        '',
+        'The communication should focus on operational visibility, reduced manual sorting, privacy-safe review, and clearer escalation paths.',
+        '',
+        'Do not claim that the dashboard diagnoses patients, recommends treatment, or replaces clinical judgment. Emphasize that sensitive cases, crisis signals, and unclear medical questions remain under human review.'
+      ].join('\n'),
+      platforms: ['linkedin', 'x']
+    });
+
+  await saveWorkflowRecords(store, createWorkflowRecordsFromRun(run));
+}
+
+async function serveWorkflowSnapshotApi(request, response) {
+  if (request.method === 'OPTIONS') {
+    respondJson(response, 204, {});
+    return;
+  }
+
+  if (request.method !== 'GET') {
+    response.writeHead(405, { 'content-type': 'text/plain; charset=utf-8' });
+    response.end('Method not allowed');
+    return;
+  }
+
+  const store = await openWorkflowStore();
+
+  try {
+    await ensureWorkflowSeed(store);
+    respondJson(response, 200, {
+      type: 'workflow_snapshot',
+      snapshot: createSnapshotFromItems(await store.listItems())
+    });
+  } finally {
+    await store.close();
+  }
+}
+
 async function runServe(options) {
   loadPackageEnv();
 
@@ -164,6 +362,21 @@ async function runServe(options) {
       const url = new URL(request.url, 'http://localhost');
       if (url.pathname === '/api/demo') {
         await serveDemoApi(request, response);
+        return;
+      }
+
+      if (url.pathname === '/api/workspace-runs' || url.pathname === '/api/workspace-runs/latest') {
+        await serveWorkspaceRunsApi(request, response, url);
+        return;
+      }
+
+      if (url.pathname === '/api/workflow-snapshot') {
+        await serveWorkflowSnapshotApi(request, response);
+        return;
+      }
+
+      if (url.pathname === '/api/workflow-items' || url.pathname.startsWith('/api/workflow-items/')) {
+        await serveWorkflowItemsApi(request, response, url);
         return;
       }
 

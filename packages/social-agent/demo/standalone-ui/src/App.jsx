@@ -9,6 +9,7 @@ import { ReviewQueuePage } from './pages/ReviewQueuePage.jsx';
 import { PackagesPage } from './pages/PackagesPage.jsx';
 import { WritebackPage } from './pages/WritebackPage.jsx';
 import { SettingsPage } from './pages/SettingsPage.jsx';
+import { WorkflowStoreProvider } from './state/WorkflowStoreContext.jsx';
 
 const pageComponents = {
   overview: OverviewPage,
@@ -27,8 +28,10 @@ export default function App() {
   const ActivePage = pageComponents[activePage] ?? OverviewPage;
 
   return (
-    <Shell activePage={activePage} onPageChange={setActivePage}>
-      <ActivePage />
-    </Shell>
+    <WorkflowStoreProvider>
+      <Shell activePage={activePage} onPageChange={setActivePage}>
+        <ActivePage />
+      </Shell>
+    </WorkflowStoreProvider>
   );
 }

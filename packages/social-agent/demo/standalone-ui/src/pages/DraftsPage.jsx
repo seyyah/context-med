@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { Badge } from '../components/Badge.jsx';
 import { Icon } from '../components/Icon.jsx';
-import { contentPlans } from './PlanPage.jsx';
+import { useWorkflowStore } from '../state/WorkflowStoreContext.jsx';
 
 const riskTone = {
   'Low Risk': 'success',
@@ -81,39 +81,44 @@ function buildContext(content, slot) {
   ];
 }
 
-function createDraftPlans() {
+function createDraftPlans(contentPlans, storedDrafts = []) {
+  const draftBySlot = new Map(storedDrafts.map((draft) => [draft.slotId, draft]));
+
   return contentPlans.map((content) => ({
     ...content,
     slots: content.slots.map((slot) => {
       const platform = platformMeta(slot.platform);
+      const storedDraft = draftBySlot.get(slot.id);
+      const body = storedDraft?.body
+        ? String(storedDraft.body).split(/\n{2,}/)
+        : buildBody(content, slot);
 
       return {
         ...slot,
         planId: content.id,
         planTitle: content.title,
         planSummary: content.summary,
-        platformLabel: platform.label,
-        tone: platform.tone,
-        icon: platform.icon,
-        title: content.title,
-        meta: platform.meta,
-        risk: `${slot.risk} Risk`,
-        status: slot.status,
-        score: scoreForRisk(slot.risk),
-        hook: buildHook(content, slot),
-        body: buildBody(content, slot),
-        hashtags: buildHashtags(slot),
-        assetBrief: `Visual brief for ${content.title}: show ${slot.pillar.toLowerCase()} with a clear human review checkpoint.`,
-        context: buildContext(content, slot)
+        platformLabel: storedDraft?.platformLabel || platform.label,
+        tone: storedDraft?.tone || platform.tone,
+        icon: storedDraft?.icon || platform.icon,
+        title: storedDraft?.title || content.title,
+        meta: storedDraft?.meta || platform.meta,
+        risk: storedDraft?.risk || `${slot.risk} Risk`,
+        status: storedDraft?.status || slot.status,
+        score: storedDraft?.score || scoreForRisk(slot.risk),
+        hook: storedDraft?.hook || buildHook(content, slot),
+        body,
+        hashtags: storedDraft?.hashtags || buildHashtags(slot),
+        assetBrief: storedDraft?.assetBrief || `Visual brief for ${content.title}: show ${slot.pillar.toLowerCase()} with a clear human review checkpoint.`,
+        context: storedDraft?.context || buildContext(content, slot)
       };
     })
   }));
 }
 
-const draftPlans = createDraftPlans();
-const allDraftSlots = draftPlans.flatMap((plan) => plan.slots);
+function createInitialEdits(draftPlans) {
+  const allDraftSlots = draftPlans.flatMap((plan) => plan.slots);
 
-function createInitialEdits() {
   return Object.fromEntries(
     allDraftSlots.map((slot) => [
       slot.id,
@@ -128,13 +133,21 @@ function createInitialEdits() {
 }
 
 export function DraftsPage() {
-  const [selectedPlanId, setSelectedPlanId] = useState(draftPlans[0].id);
-  const [selectedSlotId, setSelectedSlotId] = useState(draftPlans[0].slots[0].id);
-  const [draftEdits, setDraftEdits] = useState(createInitialEdits);
-  const [statusBySlot, setStatusBySlot] = useState({});
+  const { persistWorkflowItem, updateDrafts, workflowState } = useWorkflowStore();
+  const {
+    selectedPlanId,
+    selectedSlotId,
+    draftEdits: savedDraftEdits,
+    statusBySlot
+  } = workflowState.drafts;
   const [planPickerOpen, setPlanPickerOpen] = useState(false);
   const [planSearch, setPlanSearch] = useState('');
   const [feedback, setFeedback] = useState('Select a content plan from the same Plan queue, then refine one of its draft slots.');
+  const draftPlans = useMemo(
+    () => createDraftPlans(workflowState.snapshot.contentPlans, workflowState.snapshot.drafts),
+    [workflowState.snapshot.contentPlans, workflowState.snapshot.drafts]
+  );
+  const draftEdits = useMemo(() => ({ ...createInitialEdits(draftPlans), ...savedDraftEdits }), [draftPlans, savedDraftEdits]);
 
   const selectedPlan = useMemo(
     () => draftPlans.find((plan) => plan.id === selectedPlanId) ?? draftPlans[0],
@@ -165,34 +178,45 @@ export function DraftsPage() {
   function selectPlan(planId) {
     const nextPlan = draftPlans.find((plan) => plan.id === planId) ?? draftPlans[0];
 
-    setSelectedPlanId(nextPlan.id);
-    setSelectedSlotId(nextPlan.slots[0].id);
+    updateDrafts({
+      selectedPlanId: nextPlan.id,
+      selectedSlotId: nextPlan.slots[0].id
+    });
     setPlanPickerOpen(false);
     setPlanSearch('');
     setFeedback(`${nextPlan.title} selected from the Plan content queue.`);
   }
 
   function updateDraft(field, value) {
-    setDraftEdits((current) => ({
-      ...current,
-      [selectedSlot.id]: {
-        ...current[selectedSlot.id],
-        [field]: value
+    updateDrafts((currentDrafts) => ({
+      ...currentDrafts,
+      draftEdits: {
+        ...currentDrafts.draftEdits,
+        [selectedSlot.id]: {
+          ...draftEdits[selectedSlot.id],
+          [field]: value
+        }
       }
     }));
   }
 
   function regenerateDraft() {
-    setDraftEdits((current) => ({
-      ...current,
-      [selectedSlot.id]: {
-        hook: selectedSlot.hook,
-        body: selectedSlot.body.join('\n\n'),
-        cta: selectedSlot.cta,
-        hashtags: selectedSlot.hashtags
+    updateDrafts((currentDrafts) => ({
+      ...currentDrafts,
+      draftEdits: {
+        ...currentDrafts.draftEdits,
+        [selectedSlot.id]: {
+          hook: selectedSlot.hook,
+          body: selectedSlot.body.join('\n\n'),
+          cta: selectedSlot.cta,
+          hashtags: selectedSlot.hashtags
+        }
+      },
+      statusBySlot: {
+        ...currentDrafts.statusBySlot,
+        [selectedSlot.id]: 'Draft'
       }
     }));
-    setStatusBySlot((current) => ({ ...current, [selectedSlot.id]: 'Draft' }));
     setFeedback(`${selectedSlot.platform} draft reset from the selected Plan queue slot.`);
   }
 
@@ -200,8 +224,40 @@ export function DraftsPage() {
     setFeedback(`${selectedSlot.platform} draft package is ready for JSON export in the package handoff step.`);
   }
 
-  function sendToReview() {
-    setStatusBySlot((current) => ({ ...current, [selectedSlot.id]: 'In Review' }));
+  async function sendToReview() {
+    updateDrafts((currentDrafts) => ({
+      ...currentDrafts,
+      statusBySlot: {
+        ...currentDrafts.statusBySlot,
+        [selectedSlot.id]: 'In Review'
+      }
+    }));
+    await persistWorkflowItem({
+      id: `review-manual-${selectedSlot.id}`,
+      type: 'review_item',
+      title: selectedPlan.title,
+      status: 'Needs Review',
+      payload: {
+        id: `review-manual-${selectedSlot.id}`,
+        runId: selectedPlan.runId,
+        artifactType: 'Draft',
+        source: 'Drafts',
+        title: selectedPlan.title,
+        platform: selectedSlot.platform,
+        risk: selectedSlot.risk.replace(/\s*Risk$/i, ''),
+        status: 'Needs Review',
+        owner: 'Content review',
+        priority: selectedSlot.risk.includes('High') ? 'Urgent' : 'Today',
+        packageTarget: `${selectedPlan.id}_${selectedSlot.platform.toLowerCase()}_manual.json`,
+        reason: 'Draft was manually routed from Drafts to Review Queue.',
+        preview: `${selectedDraft.hook}\n\n${selectedDraft.body}\n\n${selectedDraft.cta}`,
+        checks: [
+          ['Edited copy', 'Uses the latest editable draft fields from Drafts.'],
+          ['Plan slot', `${selectedSlot.day} / ${selectedSlot.platform} / ${selectedSlot.pillar}.`],
+          ['Review route', 'Needs approval before package export.']
+        ]
+      }
+    });
     setFeedback(`${selectedSlot.platform} draft routed to Review Queue with source, plan slot, and risk context attached.`);
   }
 
@@ -293,7 +349,7 @@ export function DraftsPage() {
               <button
                 className={slot.id === selectedSlot.id ? 'plan-card active' : 'plan-card'}
                 key={slot.id}
-                onClick={() => setSelectedSlotId(slot.id)}
+                onClick={() => updateDrafts({ selectedSlotId: slot.id })}
                 type="button"
               >
                 <div className="plan-card-top">

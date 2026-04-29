@@ -1,17 +1,44 @@
 import { Badge } from '../components/Badge.jsx';
 import { Icon } from '../components/Icon.jsx';
-import { moderationReports } from '../data/mockData.js';
+import { useWorkflowStore } from '../state/WorkflowStoreContext.jsx';
 
-const summaryCards = [
-  ['check_circle', 'Low Risk', '2', '+12%', 'success'],
-  ['warning', 'Medium Risk', '1', '-3%', 'warning'],
-  ['dangerous', 'High Risk', '2', '+2%', 'danger'],
-  ['rule', 'Requires Review', '4', 'Queue 14m', 'primary']
-];
-
-const selectedReport = moderationReports[0];
+function riskTone(risk) {
+  if (risk === 'High') {
+    return 'danger';
+  }
+  if (risk === 'Low') {
+    return 'success';
+  }
+  return 'warning';
+}
 
 export function ModerationPage() {
+  const { workflowState } = useWorkflowStore();
+  const moderationItems = workflowState.snapshot.reviewQueueItems;
+  const selectedReport = moderationItems[0] || {
+    id: 'RQ-empty',
+    risk: 'Low',
+    platform: 'No artifacts',
+    owner: 'No active policy check',
+    source: 'Review',
+    title: 'No moderation artifacts yet',
+    preview: 'Generate Workspace output to create review and moderation artifacts.',
+    reason: 'No review records are currently stored.',
+    checks: []
+  };
+  const summaryCards = [
+    ['check_circle', 'Low Risk', moderationItems.filter((item) => item.risk === 'Low').length, 'Stored', 'success'],
+    ['warning', 'Medium Risk', moderationItems.filter((item) => item.risk === 'Medium').length, 'Stored', 'warning'],
+    ['dangerous', 'High Risk', moderationItems.filter((item) => item.risk === 'High').length, 'Stored', 'danger'],
+    [
+      'rule',
+      'Requires Review',
+      moderationItems.filter((item) => !['Approved', 'Closed'].includes(item.status)).length,
+      'Queue',
+      'primary'
+    ]
+  ];
+
   return (
     <div className="page moderation-page original-moderation-page">
       <header className="section-title-row">
@@ -71,22 +98,22 @@ export function ModerationPage() {
                 </tr>
               </thead>
               <tbody>
-                {moderationReports.map((report, index) => (
+                {moderationItems.map((report, index) => (
                   <tr className={index === 0 ? 'selected-row' : ''} key={report.id}>
                     <td>
                       <span className="artifact-id">
-                        <Icon name={report.action === 'Reply' ? 'forum' : 'description'} />
-                        ART-89{21 - index}
+                        <Icon name={report.source === 'Drafts' ? 'forum' : 'description'} />
+                        {report.id}
                       </span>
                     </td>
-                    <td>{index % 2 === 0 ? 'Twitter / X' : 'LinkedIn'}</td>
+                    <td>{report.platform}</td>
                     <td>
-                      <Badge tone={report.risk === 'High' ? 'danger' : report.risk === 'Medium' ? 'warning' : 'success'}>{report.risk}</Badge>
+                      <Badge tone={riskTone(report.risk)}>{report.risk}</Badge>
                     </td>
-                    <td>{report.classification}</td>
+                    <td>{report.owner || report.artifactType}</td>
                     <td>
                       <button className="text-action" type="button">
-                        {report.action === 'Ignore' ? 'Details' : 'Review'}
+                        {report.status === 'Approved' ? 'Details' : 'Review'}
                       </button>
                     </td>
                   </tr>
@@ -95,7 +122,7 @@ export function ModerationPage() {
             </table>
           </div>
           <footer className="table-footer">
-            <span>Showing 1-5 of 5 moderation artifacts</span>
+            <span>Showing {moderationItems.length} moderation artifacts from workflow store</span>
             <div>
               <button type="button">
                 <Icon name="chevron_left" />
@@ -110,10 +137,10 @@ export function ModerationPage() {
         <aside className="moderation-detail-panel">
           <header>
             <div>
-              <span>ART-8921 Details</span>
-              <Badge tone="danger">Block</Badge>
+              <span>{selectedReport.id} Details</span>
+              <Badge tone={riskTone(selectedReport.risk)}>{selectedReport.risk}</Badge>
             </div>
-            <h2>Policy Violation Detected</h2>
+            <h2>{selectedReport.owner || 'Policy Check'}</h2>
           </header>
 
           <div className="detail-scroll">
@@ -123,7 +150,7 @@ export function ModerationPage() {
                 Drafted Content
               </h3>
               <div className="quoted-content">
-                "{selectedReport.source}"
+                "{selectedReport.preview}"
               </div>
             </section>
 
@@ -132,16 +159,16 @@ export function ModerationPage() {
                 <span>Triggered Policy</span>
                 <strong>
                   <Icon name="policy" />
-                  Clinical Safety
+                  {selectedReport.artifactType || selectedReport.source}
                 </strong>
               </article>
               <article>
                 <span>Confidence Score</span>
-                <strong>98.4%</strong>
+                <strong>{selectedReport.risk === 'High' ? '96.0%' : selectedReport.risk === 'Medium' ? '88.0%' : '72.0%'}</strong>
               </article>
               <article className="wide">
                 <span>Reasoning</span>
-                <p>This comment asks whether the dashboard diagnoses symptoms. The response must clearly state that the dashboard supports intake workflow only.</p>
+                <p>{selectedReport.reason}</p>
               </article>
             </section>
 
@@ -151,7 +178,9 @@ export function ModerationPage() {
                 Suggested Safer Reply
               </h3>
               <div className="safe-rewrite">
-                {selectedReport.reply}
+                {(selectedReport.checks || [])
+                  .map(([label, detail]) => `${label}: ${detail}`)
+                  .join('\n') || 'No rewrite is required yet. Generate or route a draft to review first.'}
               </div>
             </section>
           </div>

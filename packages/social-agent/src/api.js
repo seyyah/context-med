@@ -30,6 +30,11 @@ const {
   getLlmConfig,
   providerMetadata
 } = require('./llm');
+const {
+  defaultDatabasePath,
+  openWorkflowStore
+} = require('./storage/sqlite-store');
+const { runWorkspacePipeline } = require('./workflow/workspace-pipeline');
 
 const DEFAULT_DEMO_SOURCE = [
   '# Context-Med social launch briefing',
@@ -659,6 +664,9 @@ module.exports = {
   createLlmProvider,
   createSocialAgentDemo,
   createSocialAgentDemoPayload,
+  defaultDatabasePath,
   getLlmConfig,
-  providerMetadata
+  openWorkflowStore,
+  providerMetadata,
+  runWorkspacePipeline
 };

@@ -732,7 +732,8 @@ describe('social-agent CLI comprehensive behavior', () => {
         ...process.env,
         GEMINI_API_KEY: '',
         GOOGLE_API_KEY: '',
-        SOCIAL_AGENT_LLM_MODE: 'deterministic'
+        SOCIAL_AGENT_LLM_MODE: 'deterministic',
+        SOCIAL_AGENT_DB_PATH: path.join(tempDir, 'workflow.sqlite')
       },
       stdio: ['ignore', 'pipe', 'pipe']
     });
@@ -788,6 +789,39 @@ describe('social-agent CLI comprehensive behavior', () => {
       });
       expect(resetDemo.statusCode).toBe(200);
       expect(JSON.parse(resetDemo.body).summary.topic).toBe('Context-Med social launch briefing');
+
+      const workspaceRun = await requestText(`http://127.0.0.1:${port}/api/workspace-runs`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          sourceText: '# Patient intake dashboard update\n\nCare teams need faster intake routing with human review gates.',
+          platforms: ['linkedin', 'x']
+        })
+      });
+      const workspacePayload = JSON.parse(workspaceRun.body);
+      expect(workspaceRun.statusCode).toBe(200);
+      expect(workspacePayload.run).toMatchObject({
+        type: 'workspace_run',
+        schema_version: 'social-agent.workspace.v1'
+      });
+      expect(workspacePayload.run.adaptations.length).toBe(2);
+      expect(workspacePayload.run.planSeeds.length).toBeGreaterThanOrEqual(2);
+      expect(workspacePayload.run.draftSeeds.length).toBeGreaterThanOrEqual(2);
+      expect(workspacePayload.run.reviewItems.length).toBeGreaterThanOrEqual(1);
+      expect(workspacePayload.run.generation.provider).toBe('mock');
+
+      const latestWorkspaceRun = await requestText(`http://127.0.0.1:${port}/api/workspace-runs/latest`);
+      expect(latestWorkspaceRun.statusCode).toBe(200);
+      expect(JSON.parse(latestWorkspaceRun.body).item.payload.id).toBe(workspacePayload.run.id);
+
+      const workflowSnapshot = await requestText(`http://127.0.0.1:${port}/api/workflow-snapshot`);
+      const snapshotPayload = JSON.parse(workflowSnapshot.body);
+      expect(workflowSnapshot.statusCode).toBe(200);
+      expect(snapshotPayload.snapshot.contentPlans.length).toBeGreaterThanOrEqual(1);
+      expect(snapshotPayload.snapshot.drafts.length).toBeGreaterThanOrEqual(2);
+      expect(snapshotPayload.snapshot.reviewQueueItems.length).toBeGreaterThanOrEqual(1);
+      expect(snapshotPayload.snapshot.packages.length).toBeGreaterThanOrEqual(1);
+      expect(snapshotPayload.snapshot.contentPlans[0].slots.length).toBeGreaterThanOrEqual(2);
 
       const demoAsset = await requestText(`http://127.0.0.1:${port}/assets/social-agent-demo.js`);
       expect(demoAsset.statusCode).toBe(200);

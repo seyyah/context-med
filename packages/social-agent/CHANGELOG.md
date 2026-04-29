@@ -5,6 +5,30 @@ Format: [Keep a Changelog](https://keepachangelog.com) - [Semantic Versioning](h
 
 ## [Unreleased]
 
+## [social-agent-v0.5.0] - 2026-04-29
+
+### Contributors
+
+- Akbulut55
+
+### Added
+
+- Added a package-local SQLite workflow store for persisted workflow items.
+- Added workflow item HTTP endpoints for saving and loading UI state through the package server.
+- Added a backend Workspace pipeline endpoint that generates raw adaptations, plan seeds, draft seeds, and review items from one source input and persists each run to SQLite.
+- Added a workflow snapshot endpoint that serves store-backed content plans, drafts, review items, and package manifests.
+
+### Changed
+
+- Connected the React Overview page to shared Plan, Drafts, Moderation, Review Queue, and package handoff data summaries.
+- Centralized React standalone UI workflow data so Workspace, Plan, Drafts, Overview, Moderation, and Review Queue read from the same source.
+- Connected React Workspace, Plan, and Drafts state to a shared workflow store with SQLite API persistence and browser fallback.
+- Updated React Workspace generation to call the backend pipeline endpoint before falling back to browser mock generation.
+- Updated React Plan, Drafts, Review Queue, Overview, and Packages pages to read workflow data from the SQLite-backed snapshot instead of static page placeholders.
+- Updated Drafts review routing so sending a draft to review creates a persisted `review_item`.
+- Removed stale React mock data and unused draft card code.
+- Bumped package metadata to `0.5.0`.
+
 ## [social-agent-v0.4.4] - 2026-04-29
 
 ### Contributors
