@@ -5,17 +5,6 @@ Format: [Keep a Changelog](https://keepachangelog.com) — [Semantic Versioning]
 
 ## [Unreleased]
 
-<<<<<<< HEAD
-## [pixel-office-v0.1.1] — 2026-04-25
-
-### Katkıda Bulunan
-- Ahmetngz
-
-### İyileştirmeler
-- 📦 `pixel-office` 3D dashboard modülü Claw3D altyapısı ile entegre edildi.
-- 🎨 Object-centric (Nesne Merkezli) arayüz mimarisi ile 3D objelere doğrudan tıklanabilir arayüzler eklendi.
-- 🗑️ Gereksiz 2D UI etiketleri kaldırılarak temiz bir 3D görünüm elde edildi.
-=======
 ## [istabot-nokta-v0.1.0] — 2026-04-25
 
 ### Katkıda Bulunan
@@ -73,7 +62,6 @@ Format: [Keep a Changelog](https://keepachangelog.com) — [Semantic Versioning]
 - 📦 istabot-nokta paketi güncellendi.
 - Merge remote-tracking branch 'upstream/main' into feat/context-cert-implementation
 
->>>>>>> 32d7780366fcfc4a7f535454ca436e232b38c3cf
 
 ## [social-agent-v0.1.0] — 2026-04-24
 

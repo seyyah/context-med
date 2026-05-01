@@ -6,10 +6,7 @@ on:
 
 permissions:
   pull-requests: write
-<<<<<<< HEAD
-=======
   issues: write
->>>>>>> 32d7780366fcfc4a7f535454ca436e232b38c3cf
   contents: read
 
 jobs:
@@ -202,8 +199,6 @@ jobs:
               repo: context.repo.repo,
               body: message
             });
-<<<<<<< HEAD
-=======
 
 
       - name: Post Conflict Resolution Guide
@@ -282,7 +277,6 @@ jobs:
               repo: context.repo.repo,
               body: message
             });
->>>>>>> 32d7780366fcfc4a7f535454ca436e232b38c3cf
 
       - name: Gate Check
         if: steps.test.outputs.conclusion == 'failure' || steps.unwanted.outputs.has_unwanted == 'true'
